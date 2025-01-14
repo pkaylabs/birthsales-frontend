@@ -1,10 +1,15 @@
 import "./App.css";
+import LayoutProvider from "./layout";
+import NotificationProvider from "./notifications";
+import RoutesProvider from "./router";
 
 function App() {
   return (
-    <div>
-      <h1 className="text-4xl text-blue-500">Test</h1>
-    </div>
+    <NotificationProvider>
+    <RoutesProvider>
+      <LayoutProvider />
+    </RoutesProvider>
+  </NotificationProvider>
   );
 }
 
