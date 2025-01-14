@@ -1,0 +1,74 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: "#257CFF",
+          50: "#EEF6FF",
+          100: "#D4E8FF",
+          200: "#AACFFF",
+          300: "#7FB6FF",
+          400: "#559DFF",
+          500: "#257CFF",
+          600: "#1C61CC",
+          700: "#144699",
+          800: "#0C2B66",
+          900: "#061133",
+        },
+        secondary: "#38CDA1",
+        orange: "#FF6433",
+        lightpink: "#E9353533",
+        red: "#E93535",
+        lightash: "#969696",
+        lamaSky: "#C3EBFA",
+        lamasKyLight: "#EDF9FD",
+        lamasKyPurple: "#CFCEFF",
+        lamaPurpleLight: "#F1F0FF",
+        lamaYellow: "#FAE27C",
+        lamaYellowLight: "#FEFCE8",
+      },
+      screens: {
+        print: { raw: "print" },
+        mobile: { max: "635px" },
+        tablet: { max: "1200px" },
+        desktop: { max: "1280px" },
+        "large-screen": { max: "1536px" },
+      },
+      fontFamily: {
+        Merriweather: ["Merriweather", "serif"],
+        museo: ["MuseoModerno", "sans"],
+        manrope: ["Manrope", "sans"],
+        poppins: ["Poppins"],
+        Raleway: ["Raleway", "sans"],
+        Museo: ["museo-sans", "sans-serif"],
+        montserrat: ["Montserrat", "sans-serif"],
+        inter: ["Inter", "sans-serif"],
+      },
+      keyframes: {
+        "open-menu": {
+          "0%": { transform: "scaleX(0)" },
+          "100%": { transform: "scaleX(1)" },
+        },
+        "drop-down": {
+          "0%": { transform: "rotateX(-90deg)", opacity: "0" },
+          "50%": { transform: "rotateX(20deg)" },
+          "100%": { transform: "rotateX(0deg)", opacity: "1" },
+        },
+        "nav-show": {
+          "0%": { opacity: "0" },
+          "50%": { opacity: "0.5" },
+          "100%": { opacity: "1" },
+        },
+      },
+      animation: {
+        "open-menu": "open-menu 0.5s ease-in-out forwards",
+        "drop-down": "drop-down 0.3s  ease-in-out forwards ",
+        "nav-show": "nav-show 0.3s  ease-in-out forwards ",
+        "spin-slow": "spin 3s linear infinite",
+      },
+    },
+  },
+  plugins: [],
+};
