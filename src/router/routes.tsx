@@ -3,6 +3,7 @@ import { LocationGenerics } from "./location";
 import Home from "@/pages/home";
 import SignUp from "@/pages/signUp";
 import Login from "@/pages/login/Login";
+import WishList from "@/pages/wishList";
 
 
 export type RouteProps = Omit<Route, "children"> & {
@@ -30,6 +31,13 @@ const routes: RouteProps[] = [
   {
     path: "/login",
     element: <Login />,
+    meta: {
+      layout: "App",
+    },
+  },
+  {
+    path: "/wish-list",
+    element: <WishList />,
     meta: {
       layout: "App",
     },

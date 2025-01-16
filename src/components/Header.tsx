@@ -7,7 +7,7 @@ import {
 
 const Header = () => {
   return (
-    <div className="bg-white h-[10vh] fixed shadow-lg  w-full">
+    <div className="bg-white h-[10vh] fixed shadow-lg z-30  w-full">
       <div className="flex justify-between items-center max-w-[80rem] pl-4 m-auto">
         {/* Logo text */}
         <h1 className="font-bold text-2xl">Exclusive</h1>
