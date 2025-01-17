@@ -8,6 +8,7 @@ export default function AuthLayout() {
     <main className="w-full h-screen flex justify-between items-center">
       <div className="">auth</div>
       <Outlet />
+      
     </main>
   );
 }
