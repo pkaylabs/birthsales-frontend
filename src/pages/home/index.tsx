@@ -143,7 +143,7 @@ const Home = () => {
   return (
     <main className="w-full max-w-[80rem] mx-auto ">
       <header className="w-full flex items-start">
-        <aside className="w-64 pt-5 pr-5 border-r-[0.5px] border-black ">
+        <aside className="w-64 h-[23.7rem] pt-5 pr-5 border-r-[0.5px] border-black overflow-y-scroll">
           <Dropdown items={sidebarLinks} />
         </aside>
         <div className="w-full flex-1 pt-5 pl-5 ">
