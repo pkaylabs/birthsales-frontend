@@ -6,6 +6,11 @@ import SwiperExample from "./components/custom-swiper";
 import Dropdown from "./components/sidebar-dropdown";
 import Carousel from "./components/swiper";
 import speaker from "@/assets/images/speaker.png";
+import ps from "@/assets/images/ps5.png";
+import woman from "@/assets/images/womanInHut.png";
+import amazon from "@/assets/images/amazonSpeaker.png";
+import pef from "@/assets/images/pef.png";
+import BottomCards from "./components/bottom-cards";
 
 interface DropdownItem {
   title: string;
@@ -221,10 +226,82 @@ const Home = () => {
       </section>
 
       <section className="mt-16">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 mb-3">
           <div className="w-5 h-10 bg-[#DB4444] rounded-md " />
           <p className="font-semibold text-base text-[#DB4444] ">Featured</p>
         </div>
+        <h2 className="font-semibold text-4xl text-balck ">New Arrival</h2>
+
+        <div className="w-full h-[600px] mt-8 flex gap-8">
+          <div className="relative flex-1 h-full bg-black flex items-end justify-center rounded overflow-hidden">
+            <img
+              src={ps}
+              alt="ps-5"
+              className="w-[511px] h-[511px] object-contain"
+            />
+            <div className="absolute z-10 inset-0 p-8 flex space-y-3.5 flex-col justify-end text-white">
+              <h5 className="font-semibold text-2xl ">PlayStation 5</h5>
+              <p className="text-sm max-w-60">
+                Black and White version of the PS5 coming out on sale.
+              </p>
+              <button className="font-medium w-fit border-b border-white ">
+                Shop Now
+              </button>
+            </div>
+          </div>
+          <div className="flex-1 flex flex-col gap-8 h-full">
+            <div className="relative flex-1 flex justify-end bg-[#0D0D0D] rounded overflow-hidden">
+              <img
+                src={woman}
+                alt="woman"
+                className=" h-[286px] object-contain"
+              />
+              <div className="absolute z-10 inset-0 p-8 flex space-y-3.5 flex-col justify-end text-white">
+                <h5 className="font-semibold text-2xl ">Women's Collections</h5>
+                <p className="text-sm max-w-60">
+                  Featured woman collections that give you another vibe.
+                </p>
+                <button className="font-medium w-fit border-b border-white ">
+                  Shop Now
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 flex gap-8 ">
+              <div className="relative flex-1 flex justify-center items-center bg-black rounded overflow-hidden">
+                <img
+                  src={amazon}
+                  alt="amazon speaker"
+                  className="w-auto h-[221px] object-contain"
+                />
+                <div className="absolute z-10 inset-0 p-8 flex space-y-1 flex-col justify-end text-white">
+                  <h5 className="font-semibold text-2xl ">Speakers</h5>
+                  <p className="text-sm max-w-60">Amazon wireless speakers</p>
+                  <button className="font-medium w-fit border-b border-white ">
+                    Shop Now
+                  </button>
+                </div>
+              </div>
+              <div className="relative flex-1 flex justify-center items-center bg-black rounded overflow-hidden">
+                <img
+                  src={pef}
+                  alt="pef"
+                  className="w-auto h-[221px] object-contain"
+                />
+                <div className="absolute z-10 inset-0 p-8 flex space-y-1 flex-col justify-end text-white">
+                  <h5 className="font-semibold text-2xl ">Perfume</h5>
+                  <p className="text-sm max-w-60">GUCCI INTENSE OUD EDP</p>
+                  <button className="font-medium w-fit border-b border-white ">
+                    Shop Now
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-24">
+        <BottomCards />
       </section>
     </main>
   );
