@@ -1,9 +1,9 @@
 import { Outlet, Route, SearchPredicate } from "react-location";
 import { LocationGenerics } from "./location";
-import Home from "@/pages/home";
-import SignUp from "@/pages/signUp";
-import Login from "@/pages/login/Login";
-
+import Home from "@/pages/client/home";
+import SignUp from "@/pages/auth/signUp";
+import Login from "@/pages/auth/login/Login";
+import ProductDetails from "@/pages/client/product/details";
 
 export type RouteProps = Omit<Route, "children"> & {
   navigation?: boolean;
@@ -16,6 +16,13 @@ const routes: RouteProps[] = [
   {
     path: "/",
     element: <Home />,
+    meta: {
+      layout: "App",
+    },
+  },
+  {
+    path: "/product-details",
+    element: <ProductDetails />,
     meta: {
       layout: "App",
     },

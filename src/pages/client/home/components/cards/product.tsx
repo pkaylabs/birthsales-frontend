@@ -4,8 +4,20 @@ import { LuEye } from "react-icons/lu";
 import pad from "@/assets/images/pad.png";
 import { motion } from "framer-motion";
 import { IoStar } from "react-icons/io5";
+import { useNavigate } from "react-location";
 
 const ProductCard = () => {
+  const navigate = useNavigate();
+
+  const handleProductClick = () => {
+    navigate({
+      to: `/product-details`,
+      search: {
+        id: 1,
+      },
+    });
+  };
+
   return (
     <div
       className="flex-shrink-0 w-1/4 px-2 box-border "
@@ -17,12 +29,15 @@ const ProductCard = () => {
         </div>
 
         <div className="absolute right-3 top-4">
-          <div className="w-9 h-9 rounded-full bg-white flex justify-center items-center cursor-pointer mb-2">
+          <button className="w-9 h-9 rounded-full bg-white flex justify-center items-center cursor-pointer mb-2 shadow-sm">
             <GrFavorite className="size-5" aria-hidden="true" />
-          </div>
-          <div className="w-9 h-9 rounded-full bg-white flex justify-center items-center cursor-pointer">
+          </button>
+          <button
+            onClick={handleProductClick}
+            className="w-9 h-9 rounded-full bg-white flex justify-center items-center cursor-pointer shadow-sm"
+          >
             <LuEye className="size-5" aria-hidden="true" />
-          </div>
+          </button>
         </div>
 
         <div className="w-full flex justify-center">
