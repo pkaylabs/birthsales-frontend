@@ -119,7 +119,7 @@ const tilt = (
   </div>
 );
 
-const productCards = [
+export const productCards = [
   ProductCard,
   ProductCard,
   ProductCard,

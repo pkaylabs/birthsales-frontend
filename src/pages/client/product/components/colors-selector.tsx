@@ -27,13 +27,15 @@ const ColorSelector: React.FC<SelectComponentProps> = ({
       {options.map((option) => (
         <motion.div
           key={option.value}
-          className={`w-5 h-5 flex justify-center items-center cursor-pointer rounded-full text-sm text-center transition-all duration-300 ease-in-out ${
-            selectedValue === option.value ? "border-2 border-black " : ""
-          } ${option.name}`}
+          className={`w-5 h-5 flex justify-center items-center cursor-pointer rounded-full text-sm text-center transition-all duration-300 ease-in-out overflow-hidden ${
+            selectedValue === option.value ? "border-2 border-black p-0.5" : ""
+          }`}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => handleSelect(option.value)}
-        ></motion.div>
+        >
+          <motion.div className={`w-full h-full rounded-full ${option.name}`} />
+        </motion.div>
       ))}
     </div>
   );

@@ -11,6 +11,9 @@ import ColorSelector from "./components/colors-selector";
 import { MdOutlineFavoriteBorder } from "react-icons/md";
 import { TbTruckDelivery } from "react-icons/tb";
 import { GrPowerCycle } from "react-icons/gr";
+import { motion } from "framer-motion";
+import CardCarousel from "../home/components/cards-carousel";
+import { productCards } from "../home";
 
 const ProductDetails = () => {
   const search = useSearch<any>();
@@ -18,6 +21,12 @@ const ProductDetails = () => {
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
   const [numberOfItems, setNumberOfItems] = useState(1);
+
+  const [selectedImage, setSelectedImage] = useState<string>(mainPad);
+
+  const handleImageClick = (imageSrc: string) => {
+    setSelectedImage(imageSrc);
+  };
 
   const images = [
     {
@@ -59,24 +68,41 @@ const ProductDetails = () => {
       </div>
 
       <div className="w-full h-[600px] mt-8 flex gap-8">
+        {/* Side Images */}
         <div className="w-[170px] flex flex-col justify-between gap-4">
-          {images.map((image) => (
-            <div className="w-full h-[170px] bg-[#F5F5F5] rounded flex justify-center items-center">
+          {images.map((image, index) => (
+            <motion.div
+              key={index}
+              className="w-full h-[170px] bg-[#F5F5F5] rounded flex justify-center items-center cursor-pointer"
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.9, rotate: -3 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              onClick={() => handleImageClick(image.src)}
+            >
               <img
                 src={image.src}
-                alt="product"
-                className="w-32 h-28 object-contain "
+                alt={`product-${index}`}
+                className="w-32 h-28 object-contain"
               />
-            </div>
+            </motion.div>
           ))}
         </div>
-        <div className="w-[500px] bg-[#F5F5F5] rounded flex justify-center items-center">
+
+        {/* Main Image */}
+        <motion.div
+          className="w-[500px] bg-[#F5F5F5] rounded flex justify-center items-center"
+          key={selectedImage}
+          initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          exit={{ opacity: 0, scale: 0.8, rotate: 10 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+        >
           <img
-            src={mainPad}
-            alt="product"
-            className="w-[446px] h-[315px] object-contain "
+            src={selectedImage}
+            alt="main-product"
+            className="w-[446px] h-[315px] object-contain"
           />
-        </div>
+        </motion.div>
         <div className="flex-1 pl-14 flex flex-col justify-between">
           <div className="pb-6 border-b border-black ">
             <h2 className="font-semibold text-2xl mb-2">
@@ -176,6 +202,15 @@ const ProductDetails = () => {
           </div>
         </div>
       </div>
+
+      <section className="mt-20">
+        <CardCarousel
+          type="Related Item"
+          itemsPerView={4}
+          title=""
+          items={productCards}
+        />
+      </section>
     </main>
   );
 };
