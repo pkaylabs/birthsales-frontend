@@ -13,7 +13,7 @@ import { MdOutlineCancel } from "react-icons/md";
 import { IoIosStarOutline } from "react-icons/io";
 import { BiLogOut } from "react-icons/bi";
 import { Link } from "react-location";
-import { CONTACT, HOME } from "@/constants";
+import { CONTACT, HOME, SIGN_UP } from "@/constants";
 
 const dropdownTabs = [
   {
@@ -52,10 +52,16 @@ const Header = () => {
         {/* nav items */}
         <nav>
           <ul className="flex p-4 space-x-4 text-sm md:text-[1rem]">
-            <Link to={HOME} className=" p-2">Home</Link>
-            <Link to={CONTACT} className=" p-2">Contact</Link>
+            <Link to={HOME} className=" p-2">
+              Home
+            </Link>
+            <Link to={CONTACT} className=" p-2">
+              Contact
+            </Link>
             <li className=" p-2">About</li>
-            <li className=" p-2">Sign Up</li>
+            <Link to={SIGN_UP} className=" p-2">
+              Sign Up
+            </Link>
           </ul>
         </nav>
         {/* search input, wishlist and cart */}

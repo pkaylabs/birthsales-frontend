@@ -1,10 +1,14 @@
 import { Outlet, Route, SearchPredicate } from "react-location";
 import { LocationGenerics } from "./location";
+
 import Home from "@/pages/client/home";
 import Contact from "@/pages/client/contact";
 import SignUp from "@/pages/auth/signUp";
 import Login from "@/pages/auth/login/Login";
+import WishList from "@/pages/client/wishList";
 import ProductDetails from "@/pages/client/product/details";
+import { CONTACT, HOME, LOGIN, PRODUCT_DETAILS, SIGN_UP, WISH_LIST } from "@/constants";
+
 
 export type RouteProps = Omit<Route, "children"> & {
   navigation?: boolean;
@@ -15,36 +19,43 @@ export type RouteProps = Omit<Route, "children"> & {
 
 const routes: RouteProps[] = [
   {
-    path: "/",
+    path: HOME,
     element: <Home />,
     meta: {
       layout: "App",
     },
   },
   {
-    path: "/contact",
+    path: CONTACT,
     element: <Contact />,
     meta: {
       layout: "App",
     },
   },
   {
-    path: "/product-details",
+    path: PRODUCT_DETAILS,
     element: <ProductDetails />,
     meta: {
       layout: "App",
     },
   },
   {
-    path: "/sign-up",
+    path: SIGN_UP,
     element: <SignUp />,
     meta: {
       layout: "App",
     },
   },
   {
-    path: "/login",
+    path: LOGIN,
     element: <Login />,
+    meta: {
+      layout: "App",
+    },
+  },
+  {
+    path: WISH_LIST,
+    element: <WishList />,
     meta: {
       layout: "App",
     },
