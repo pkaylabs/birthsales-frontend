@@ -1,6 +1,7 @@
 import { Outlet, Route, SearchPredicate } from "react-location";
 import { LocationGenerics } from "./location";
 import Home from "@/pages/client/home";
+import Contact from "@/pages/client/contact";
 import SignUp from "@/pages/auth/signUp";
 import Login from "@/pages/auth/login/Login";
 import ProductDetails from "@/pages/client/product/details";
@@ -16,6 +17,13 @@ const routes: RouteProps[] = [
   {
     path: "/",
     element: <Home />,
+    meta: {
+      layout: "App",
+    },
+  },
+  {
+    path: "/contact",
+    element: <Contact />,
     meta: {
       layout: "App",
     },
