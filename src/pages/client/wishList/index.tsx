@@ -1,5 +1,5 @@
 import React from "react";
-import WishCard from "./component/WishCard";
+import WishCard from "./components/WishCard";
 
 const WishList = () => {
   return (

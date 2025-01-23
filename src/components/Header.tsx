@@ -45,8 +45,8 @@ const dropdownTabs = [
 
 const Header = () => {
   return (
-    <div className=" bg-white h-[10vh] fixed shadow-sm  w-full z-50">
-      <div className="flex justify-between items-center max-w-[80rem] pl-4 m-auto">
+    <div className=" bg-white h-[10vh] fixed shadow-sm  w-full z-50 inset-0">
+      <div className="flex justify-between items-center max-w-[80rem] pl-4 mx-auto">
         {/* Logo text */}
         <h1 className="font-bold text-2xl">Exclusive</h1>
         {/* nav items */}

@@ -43,14 +43,14 @@ const routes: RouteProps[] = [
     path: SIGN_UP,
     element: <SignUp />,
     meta: {
-      layout: "App",
+      layout: "Auth",
     },
   },
   {
     path: LOGIN,
     element: <Login />,
     meta: {
-      layout: "App",
+      layout: "Auth",
     },
   },
   {
