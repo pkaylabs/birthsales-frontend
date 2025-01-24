@@ -19,7 +19,7 @@ const WishCard = ({
         className="w-[700px] h-[150px] object-contain rounded-md bg-[#F5F5F5]"
         src={img}
       />
-      <button className="flex items-center justify-center w-full text-white bg-black rounded-b-md mb-2">
+      <button className="flex items-center justify-center w-full text-white bg-black rounded-b-md mb-2 p-2">
         <FontAwesomeIcon icon={faShoppingCart} />
         <span className="ml-2">Add To Cart</span>
       </button>
