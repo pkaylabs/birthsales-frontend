@@ -14,7 +14,7 @@ const Account = () => {
       </div>
 
       <section className="mt-14 flex justify-between space-x-10">
-        <div className="w-[25rem]  rounded px-5 py-12">
+        <div className="w-[20rem]  rounded px-5 py-12 ">
           <div className="flex flex-col justify-between gap-5 ">
             <div className=" flex flex-col gap-2">
               <h1 className="font-medium text-base">Manage My Account</h1>
@@ -142,19 +142,3 @@ const Account = () => {
 };
 
 export default Account;
-
-
-{
-  /* <div className="w-full bg-green-400">
-<input
-  type="text"
-  className="rounded h-12 bg-[#F5F5F5] px-4 flex-1"
-  placeholder="Your Name"
-/>
-<input
-  type="email"
-  className="rounded h-12 bg-[#F5F5F5] px-4 flex-1"
-  placeholder="Your Email"
-/>
-</div> */
-}

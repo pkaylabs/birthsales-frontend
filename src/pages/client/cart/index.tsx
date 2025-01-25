@@ -37,6 +37,27 @@ const CartPage = () => {
         "https://s3-alpha-sig.figma.com/img/5e63/4682/db5174aff99bb9337d2dc9598a0b44e4?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=RnZBP6XHKL1eWojlZdtQ34ovsdqdutd59ypgeygnMWW7ausWWKwH46NASbMA03eD1k3Wl-cj6P20Y76~2wxqwIyZVqrFjnNpCbdyxGGQ3j9LhkxMieqmWhHCSltl2K1nSeRSi-GUU12S7UCGS0A9DFvIUL5ARDcCiGkDwMmz8HPQ5K7oj6zG49Q46ukHtTdvoYG4Vw0GqXxKoPTLxk1n9sRLM-YVJ87fpFE7svXGpPptgn7mLF--Sn7E9I4F9ZrS6Da6d8c-oKXBTCPjrOtWJ5Iz5QTmIVjSXWtevkWRirfKtCkoGAuce53VqWTDAYwU-HFaIrab7Pue4aiS1KRnZQ__",
       price: 100,
     },
+    {
+      id: 5,
+      name: "Hisense TV",
+      image:
+        "https://s3-alpha-sig.figma.com/img/5e63/4682/db5174aff99bb9337d2dc9598a0b44e4?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=RnZBP6XHKL1eWojlZdtQ34ovsdqdutd59ypgeygnMWW7ausWWKwH46NASbMA03eD1k3Wl-cj6P20Y76~2wxqwIyZVqrFjnNpCbdyxGGQ3j9LhkxMieqmWhHCSltl2K1nSeRSi-GUU12S7UCGS0A9DFvIUL5ARDcCiGkDwMmz8HPQ5K7oj6zG49Q46ukHtTdvoYG4Vw0GqXxKoPTLxk1n9sRLM-YVJ87fpFE7svXGpPptgn7mLF--Sn7E9I4F9ZrS6Da6d8c-oKXBTCPjrOtWJ5Iz5QTmIVjSXWtevkWRirfKtCkoGAuce53VqWTDAYwU-HFaIrab7Pue4aiS1KRnZQ__",
+      price: 100,
+    },
+    {
+      id: 6,
+      name: "Hisense TV",
+      image:
+        "https://s3-alpha-sig.figma.com/img/5e63/4682/db5174aff99bb9337d2dc9598a0b44e4?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=RnZBP6XHKL1eWojlZdtQ34ovsdqdutd59ypgeygnMWW7ausWWKwH46NASbMA03eD1k3Wl-cj6P20Y76~2wxqwIyZVqrFjnNpCbdyxGGQ3j9LhkxMieqmWhHCSltl2K1nSeRSi-GUU12S7UCGS0A9DFvIUL5ARDcCiGkDwMmz8HPQ5K7oj6zG49Q46ukHtTdvoYG4Vw0GqXxKoPTLxk1n9sRLM-YVJ87fpFE7svXGpPptgn7mLF--Sn7E9I4F9ZrS6Da6d8c-oKXBTCPjrOtWJ5Iz5QTmIVjSXWtevkWRirfKtCkoGAuce53VqWTDAYwU-HFaIrab7Pue4aiS1KRnZQ__",
+      price: 100,
+    },
+    {
+      id: 7,
+      name: "Hisense TV",
+      image:
+        "https://s3-alpha-sig.figma.com/img/5e63/4682/db5174aff99bb9337d2dc9598a0b44e4?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=RnZBP6XHKL1eWojlZdtQ34ovsdqdutd59ypgeygnMWW7ausWWKwH46NASbMA03eD1k3Wl-cj6P20Y76~2wxqwIyZVqrFjnNpCbdyxGGQ3j9LhkxMieqmWhHCSltl2K1nSeRSi-GUU12S7UCGS0A9DFvIUL5ARDcCiGkDwMmz8HPQ5K7oj6zG49Q46ukHtTdvoYG4Vw0GqXxKoPTLxk1n9sRLM-YVJ87fpFE7svXGpPptgn7mLF--Sn7E9I4F9ZrS6Da6d8c-oKXBTCPjrOtWJ5Iz5QTmIVjSXWtevkWRirfKtCkoGAuce53VqWTDAYwU-HFaIrab7Pue4aiS1KRnZQ__",
+      price: 100,
+    },
   ];
 
   const [quantities, setQuantities] = useState<Record<number, number>>({});
@@ -96,7 +117,7 @@ const CartPage = () => {
                     <p>{product.name}</p>
                   </div>
                 </td>
-                <td className="p-6 ">{product.price}</td>
+                <td className="p-6 ">${product.price}</td>
                 <td className="p-6">
                   <input
                     className="border-2 border-gray-400 w-[68px] h-[40px] rounded-md pl-3"

@@ -80,17 +80,17 @@ const Login = () => {
               ) : (
                 ""
               )}
-              <button
-                type="submit"
-                className="bg-[#DB4444] p-2 rounded-md w-full"
-              >
-                Create Account
-              </button>
+              <div className="w-full flex justify-between items-center">
+                <button
+                  type="submit"
+                  className="bg-[#DB4444] py-2 px-5 w-36 rounded-md text-white text-center"
+                >
+                  Login
+                </button>
+                <p className="text-[#DB4444] cursor-pointer">Forget Password?</p>
+              </div>
             </div>
           </form>
-          <p className="mt-5 flex items-center justify-center">
-            New to Exclusive?<span className="ml-1 text-blue-400">Register</span>
-          </p>
         </div>
       </div>
     </div>

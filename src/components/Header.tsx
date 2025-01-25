@@ -12,13 +12,13 @@ import { FiShoppingBag } from "react-icons/fi";
 import { MdOutlineCancel } from "react-icons/md";
 import { IoIosStarOutline } from "react-icons/io";
 import { BiLogOut } from "react-icons/bi";
-import { Link } from "react-location";
-import { CONTACT, HOME, SIGN_UP } from "@/constants";
+import { Link, useNavigate } from "react-location";
+import { ABOUT, CART_PAGE, CONTACT, HOME, SIGN_UP, WISH_LIST } from "@/constants";
 
 const dropdownTabs = [
   {
     title: "Manage My Account",
-    link: "#",
+    link: "/account",
     icon: RiUser3Line,
   },
   {
@@ -44,6 +44,8 @@ const dropdownTabs = [
 ];
 
 const Header = () => {
+  const navigate = useNavigate();
+
   return (
     <div className=" bg-white h-[10vh] fixed shadow-sm  w-full z-50 inset-0">
       <div className="flex justify-between items-center max-w-[80rem] pl-4 mx-auto">
@@ -58,7 +60,10 @@ const Header = () => {
             <Link to={CONTACT} className=" p-2">
               Contact
             </Link>
-            <li className=" p-2">About</li>
+            <Link to={ABOUT} className=" p-2">
+              About
+            </Link>
+
             <Link to={SIGN_UP} className=" p-2">
               Sign Up
             </Link>
@@ -76,10 +81,10 @@ const Header = () => {
               <FontAwesomeIcon icon={faMagnifyingGlass} />
             </button>
           </div>
-          <button>
+          <button onClick={() => navigate({ to: WISH_LIST })}>
             <FontAwesomeIcon icon={faHeart} />
           </button>
-          <button>
+          <button onClick={() => navigate({to: CART_PAGE})}>
             <FontAwesomeIcon icon={faShoppingCart} />
           </button>
           <Menu as="div" className="relative inline-block text-left">

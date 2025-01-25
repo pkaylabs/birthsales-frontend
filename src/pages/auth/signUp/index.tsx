@@ -2,6 +2,8 @@ import React from "react";
 import { FcGoogle } from "react-icons/fc";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { Link } from "react-location";
+import { LOGIN, SIGN_UP } from "@/constants";
 
 const SignUp = () => {
   const { values, handleBlur, handleChange, errors, touched, handleSubmit } =
@@ -98,7 +100,7 @@ const SignUp = () => {
               )}
               <button
                 type="submit"
-                className="bg-[#DB4444] p-2 rounded-md w-full"
+                className="bg-[#DB4444] p-2 rounded-md w-full text-white text-center"
               >
                 Create Account
               </button>
@@ -110,7 +112,7 @@ const SignUp = () => {
             </div>
           </form>
           <p className="mt-5 flex items-center justify-center">
-            Already have an account?<span className="ml-1">Log in</span>
+            Already have an account?<Link to={LOGIN} className="ml-1 active:text-rose-300">Log in</Link>
           </p>
         </div>
       </div>

@@ -20,7 +20,7 @@ const ProductCard = () => {
 
   return (
     <div
-      className="flex-shrink-0 w-1/4 px-2 box-border "
+      className="flex-shrink-0 w-1/4 px-2 box-border"
       style={{ maxWidth: "25%" }}
     >
       <motion.div className="relative w-full h-64 bg-gray-100 rounded-md p-4 overflow-hidden group">
