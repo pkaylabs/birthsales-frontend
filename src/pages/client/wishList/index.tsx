@@ -1,11 +1,11 @@
 import React from "react";
-import WishCard from "./component/WishCard";
+import WishCard from "./components/WishCard";
 
 const WishList = () => {
   return (
     <div className="max-w-[80rem] m-auto mt-5">
       {/* wishlist */}
-      <div className="flex flex-col gap-5 mb-5">
+      <div className="flex flex-col  gap-5 mb-5">
         {/* Headers */}
         <div className="flex justify-between items-center">
           <h1 className="">WishList (4)</h1>
@@ -14,7 +14,7 @@ const WishList = () => {
           </button>
         </div>
         {/* wishcards */}
-        <div className="flex flex-wrap justify-center gap-5 slide-up">
+        <div className="flex justify-between w-full slide-up">
           <WishCard
             price={"$600"}
             title={"RGB liquid CPU Cooler"}
@@ -57,7 +57,7 @@ const WishList = () => {
           <button className="p-2 border border-gray-300 rounded-md">See All</button>
         </div>
         {/* wishcards */}
-        <div className="flex flex-wrap justify-center gap-5 slide-up">
+        <div className="flex justify-between gap-5 slide-up">
           <WishCard
             price={"$960"}
             title={"ASUS FHD Gaming Laptop"}

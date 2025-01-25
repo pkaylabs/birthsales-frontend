@@ -7,6 +7,7 @@ import SignUp from "@/pages/auth/signUp";
 import Login from "@/pages/auth/login/Login";
 import WishList from "@/pages/client/wishList";
 import ProductDetails from "@/pages/client/product/details";
+
 import {
   ADMIN_HOME,
   CONTACT,
@@ -15,8 +16,13 @@ import {
   PRODUCT_DETAILS,
   SIGN_UP,
   WISH_LIST,
+  ACCOUNT,
+  CART_PAGE,
 } from "@/constants";
 import AdminHomePage from "@/pages/admin/home";
+
+import CartPage from "@/pages/client/cart";
+import Account from "@/pages/client/account";
 
 export type RouteProps = Omit<Route, "children"> & {
   navigation?: boolean;
@@ -58,19 +64,33 @@ const routes: RouteProps[] = [
     path: SIGN_UP,
     element: <SignUp />,
     meta: {
-      layout: "App",
+      layout: "Auth",
     },
   },
   {
     path: LOGIN,
     element: <Login />,
     meta: {
-      layout: "App",
+      layout: "Auth",
     },
   },
   {
     path: WISH_LIST,
     element: <WishList />,
+    meta: {
+      layout: "App",
+    },
+  },
+  {
+    path: CART_PAGE,
+    element: <CartPage />,
+    meta: {
+      layout: "App",
+    },
+  },
+  {
+    path: ACCOUNT,
+    element: <Account />,
     meta: {
       layout: "App",
     },

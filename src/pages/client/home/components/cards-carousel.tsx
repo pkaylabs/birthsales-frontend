@@ -15,15 +15,15 @@ interface CarouselProps {
 
 const CardCarousel: React.FC<CarouselProps> = ({
   type,
-itemsPerView,
+  itemsPerView,
   title,
   showControls,
   showCountdown,
-    showViewAll,
+  showViewAll,
   items,
 }) => {
   const [startIndex, setStartIndex] = useState(0);
-//   const itemsPerView = itemsPerView;
+  //   const itemsPerView = itemsPerView;
 
   const nextSlide = () => {
     setStartIndex((prevIndex) =>
@@ -90,7 +90,7 @@ itemsPerView,
         {/* View All Button */}
         {showViewAll && (
           <button className="font-medium w-40 h-12 flex justify-center items-center bg-[#DB4444] rounded-md text-white text-base">
-            View All 
+            View All
           </button>
         )}
       </div>
