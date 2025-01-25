@@ -7,8 +7,16 @@ import SignUp from "@/pages/auth/signUp";
 import Login from "@/pages/auth/login/Login";
 import WishList from "@/pages/client/wishList";
 import ProductDetails from "@/pages/client/product/details";
-import { CONTACT, HOME, LOGIN, PRODUCT_DETAILS, SIGN_UP, WISH_LIST } from "@/constants";
-
+import {
+  ADMIN_HOME,
+  CONTACT,
+  HOME,
+  LOGIN,
+  PRODUCT_DETAILS,
+  SIGN_UP,
+  WISH_LIST,
+} from "@/constants";
+import AdminHomePage from "@/pages/admin/home";
 
 export type RouteProps = Omit<Route, "children"> & {
   navigation?: boolean;
@@ -23,6 +31,13 @@ const routes: RouteProps[] = [
     element: <Home />,
     meta: {
       layout: "App",
+    },
+  },
+  {
+    path: ADMIN_HOME,
+    element: <AdminHomePage />,
+    meta: {
+      layout: "Admin",
     },
   },
   {
