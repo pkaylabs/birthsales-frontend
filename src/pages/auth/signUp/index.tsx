@@ -3,7 +3,7 @@ import { FcGoogle } from "react-icons/fc";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Link } from "react-location";
-import { LOGIN, SIGN_UP } from "@/constants";
+import { LOGIN } from "@/constants";
 
 const SignUp = () => {
   const { values, handleBlur, handleChange, errors, touched, handleSubmit } =

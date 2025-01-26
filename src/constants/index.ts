@@ -7,3 +7,4 @@ export const SIGN_UP = "/sign-up";
 export const LOGIN = "/login";
 export const WISH_LIST = "/wish-list";
 export const CART_PAGE = "/cart";
+export const SERVICES = "services"

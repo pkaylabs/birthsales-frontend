@@ -7,10 +7,11 @@ import SignUp from "@/pages/auth/signUp";
 import Login from "@/pages/auth/login/Login";
 import WishList from "@/pages/client/wishList";
 import ProductDetails from "@/pages/client/product/details";
-import { ABOUT, ACCOUNT, CART_PAGE, CONTACT, HOME, LOGIN, PRODUCT_DETAILS, SIGN_UP, WISH_LIST } from "@/constants";
+import { ABOUT, ACCOUNT, CART_PAGE, CONTACT, HOME, LOGIN, PRODUCT_DETAILS, SERVICES, SIGN_UP, WISH_LIST } from "@/constants";
 import CartPage from "@/pages/client/cart";
 import Account from "@/pages/client/account";
 import About from "@/pages/client/about";
+import Services from "@/pages/client/services";
 
 
 export type RouteProps = Omit<Route, "children"> & {
@@ -80,6 +81,13 @@ const routes: RouteProps[] = [
   {
     path: ABOUT,
     element: <About />,
+    meta: {
+      layout: "App",
+    },
+  },
+  {
+    path: SERVICES,
+    element: <Services />,
     meta: {
       layout: "App",
     },
