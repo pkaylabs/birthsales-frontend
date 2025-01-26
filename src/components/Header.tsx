@@ -58,7 +58,7 @@ const Header = () => {
     <div className=" bg-white h-[10vh] fixed shadow-sm  w-full z-50 inset-0">
       <div className="flex justify-between items-center max-w-[80rem] pl-4 mx-auto">
         {/* Logo text */}
-        <h1 className="font-bold text-2xl">Exclusive</h1>
+        <h1 className="font-bold text-2xl">Birthsales</h1>
         {/* nav items */}
         <nav>
           <ul className="flex p-4 space-x-4 text-sm md:text-[1rem]">

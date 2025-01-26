@@ -7,12 +7,28 @@ import SignUp from "@/pages/auth/signUp";
 import Login from "@/pages/auth/login/Login";
 import WishList from "@/pages/client/wishList";
 import ProductDetails from "@/pages/client/product/details";
-import { ABOUT, ACCOUNT, CART_PAGE, CONTACT, HOME, LOGIN, PRODUCT_DETAILS, SERVICES, SIGN_UP, WISH_LIST } from "@/constants";
+
+
+import {
+  ADMIN_HOME,
+  CONTACT,
+  HOME,
+  LOGIN,
+  PRODUCT_DETAILS,
+  SIGN_UP,
+  WISH_LIST,
+  ACCOUNT,
+  CART_PAGE,
+  SERVICES,
+  ABOUT,
+} from "@/constants";
+import AdminHomePage from "@/pages/admin/home";
+
+
 import CartPage from "@/pages/client/cart";
 import Account from "@/pages/client/account";
 import About from "@/pages/client/about";
 import Services from "@/pages/client/services";
-
 
 export type RouteProps = Omit<Route, "children"> & {
   navigation?: boolean;
@@ -27,6 +43,13 @@ const routes: RouteProps[] = [
     element: <Home />,
     meta: {
       layout: "App",
+    },
+  },
+  {
+    path: ADMIN_HOME,
+    element: <AdminHomePage />,
+    meta: {
+      layout: "Admin",
     },
   },
   {

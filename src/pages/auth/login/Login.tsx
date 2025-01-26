@@ -45,7 +45,7 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
             <div className="flex flex-col gap-2">
               <h1 className="font-medium text-4xl leading-7">
-                Login to Exclusive
+                Login to Birthsales
               </h1>
               <p className="font-normal text-base">Enter your details below</p>
             </div>
