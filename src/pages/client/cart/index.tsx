@@ -81,7 +81,7 @@ const CartPage = () => {
   }, 0);
 
   return (
-    <div className="max-w-[80rem] mx-auto">
+    <div className="max-w-[80rem] mx-auto slide-up">
       {/* home / cart */}
       <div className="mt-6 flex items-center space-x-3 text-gray-400">
         <p>Home</p> <span>/</span> <p className="text-black">Cart</p>

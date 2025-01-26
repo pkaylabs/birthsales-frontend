@@ -33,7 +33,7 @@ const SignUp = () => {
     });
 
   return (
-    <div className="mt-[6rem] w-full ">
+    <div className="mt-[6rem] w-full slide-up">
       <div className="flex  mb-20">
         {/* Image */}
         <div className="w-[805px]">

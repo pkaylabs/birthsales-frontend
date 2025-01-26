@@ -13,7 +13,15 @@ import { MdOutlineCancel } from "react-icons/md";
 import { IoIosStarOutline } from "react-icons/io";
 import { BiLogOut } from "react-icons/bi";
 import { Link, useNavigate } from "react-location";
-import { ABOUT, CART_PAGE, CONTACT, HOME, SERVICES, SIGN_UP, WISH_LIST } from "@/constants";
+import {
+  ABOUT,
+  CART_PAGE,
+  CONTACT,
+  HOME,
+  SERVICES,
+  SIGN_UP,
+  WISH_LIST,
+} from "@/constants";
 
 const dropdownTabs = [
   {
@@ -57,18 +65,17 @@ const Header = () => {
             <Link to={HOME} className=" p-2">
               Home
             </Link>
-            <Link to={CONTACT} className=" p-2">
-              Contact
-            </Link>
             <Link to={SERVICES} className=" p-2">
               Services
             </Link>
             <Link to={ABOUT} className=" p-2">
               About
             </Link>
-
             <Link to={SIGN_UP} className=" p-2">
               Sign Up
+            </Link>
+            <Link to={CONTACT} className=" p-2">
+              Contact
             </Link>
           </ul>
         </nav>
@@ -87,7 +94,7 @@ const Header = () => {
           <button onClick={() => navigate({ to: WISH_LIST })}>
             <FontAwesomeIcon icon={faHeart} />
           </button>
-          <button onClick={() => navigate({to: CART_PAGE})}>
+          <button onClick={() => navigate({ to: CART_PAGE })}>
             <FontAwesomeIcon icon={faShoppingCart} />
           </button>
           <Menu as="div" className="relative inline-block text-left">

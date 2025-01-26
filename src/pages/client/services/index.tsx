@@ -3,7 +3,7 @@ import ServiceCard from "./components/ServiceCard";
 
 const Services = () => {
   return (
-    <div className="max-w-[80rem] m-auto">
+    <div className="max-w-[80rem] m-auto slide-up">
       <div className="flex flex-col gap-5">
         <div className="mt-6 flex items-center space-x-3 text-gray-400">
           <p className="">Home</p> <span>/</span>{" "}

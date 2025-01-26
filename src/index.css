@@ -109,3 +109,16 @@ html {
     @apply flex items-center justify-center font-manrope w-full h-[44px] py-4 rounded-lg text-white mb-4;
   }
 }
+
+.custom-scrollbar::-webkit-scrollbar {
+  height: 0px; /* Adjust scrollbar height */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #9ca3af; /* Tailwind gray-400 */
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: #f3f4f6; /* Tailwind gray-100 */
+}

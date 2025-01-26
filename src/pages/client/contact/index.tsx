@@ -4,7 +4,7 @@ import { GoMail } from "react-icons/go";
 
 const Contact = () => {
   return (
-    <main className="w-full max-w-[80rem] mx-auto ">
+    <main className="w-full max-w-[80rem] mx-auto slide-up">
       <div className="mt-6 flex items-center space-x-3 text-gray-400">
         <p className="">Home</p> <span>/</span>{" "}
         <p className="text-black">Contact</p>
