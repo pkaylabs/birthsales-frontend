@@ -9,4 +9,5 @@ export const WISH_LIST = "/wish-list";
 export const ADMIN_HOME = "/admin";
 export const CART_PAGE = "/cart";
 export const SERVICES = "services"
-
+export const CHECKOUT = '/checkout'
+export const CONFIRM_ORDER = "/orderPlaced"

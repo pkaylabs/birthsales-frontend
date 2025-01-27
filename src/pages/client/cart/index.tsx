@@ -1,4 +1,6 @@
+import { CHECKOUT } from "@/constants";
 import React, { useState } from "react";
+import { useNavigate } from "react-location";
 
 interface Product {
   id: number;
@@ -8,6 +10,7 @@ interface Product {
 }
 
 const CartPage = () => {
+  const navigate = useNavigate();
   const products: Product[] = [
     {
       id: 1,
@@ -25,39 +28,12 @@ const CartPage = () => {
     },
     {
       id: 3,
-      name: "Game Pad",
-      image:
-        "https://s3-alpha-sig.figma.com/img/5d5c/2e52/50752d55f8b60f2aa2923183dadbc135?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=czfunfCbXPnzsf0N7ax9wZEEIArT-LrnrkTRpAfZfeMsnw6SGIR38TJfJpt7iq6QCDSH3PCph3ABqoKD3aIKXmk3IbyOyfhaG4KhYEpAOJpUEHZsIG9fp6WpOPHNJXgJYUPUsnX3M4K4F4-TJ2rTTYeCCiTB9IXuARkBk9HITOaf5K9yQD9Wj2Eqh~n4anc4jO7RwGa01307bybciV7jQZIjJdOBlAV7mmQ6aA9KTPVXGtH2uBOlgrYWlsYMOUAoL2NbxgJ2fEMB72wKWhG7YLC4coNmDBgLyFs7GS5-G51FiJt9C9dBvdVjSMC1b1bF28AE7ESynB1N5rKMR-wdZQ__",
-      price: 230,
-    },
-    {
-      id: 4,
       name: "Hisense TV",
       image:
         "https://s3-alpha-sig.figma.com/img/5e63/4682/db5174aff99bb9337d2dc9598a0b44e4?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=RnZBP6XHKL1eWojlZdtQ34ovsdqdutd59ypgeygnMWW7ausWWKwH46NASbMA03eD1k3Wl-cj6P20Y76~2wxqwIyZVqrFjnNpCbdyxGGQ3j9LhkxMieqmWhHCSltl2K1nSeRSi-GUU12S7UCGS0A9DFvIUL5ARDcCiGkDwMmz8HPQ5K7oj6zG49Q46ukHtTdvoYG4Vw0GqXxKoPTLxk1n9sRLM-YVJ87fpFE7svXGpPptgn7mLF--Sn7E9I4F9ZrS6Da6d8c-oKXBTCPjrOtWJ5Iz5QTmIVjSXWtevkWRirfKtCkoGAuce53VqWTDAYwU-HFaIrab7Pue4aiS1KRnZQ__",
       price: 100,
     },
-    {
-      id: 5,
-      name: "Hisense TV",
-      image:
-        "https://s3-alpha-sig.figma.com/img/5e63/4682/db5174aff99bb9337d2dc9598a0b44e4?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=RnZBP6XHKL1eWojlZdtQ34ovsdqdutd59ypgeygnMWW7ausWWKwH46NASbMA03eD1k3Wl-cj6P20Y76~2wxqwIyZVqrFjnNpCbdyxGGQ3j9LhkxMieqmWhHCSltl2K1nSeRSi-GUU12S7UCGS0A9DFvIUL5ARDcCiGkDwMmz8HPQ5K7oj6zG49Q46ukHtTdvoYG4Vw0GqXxKoPTLxk1n9sRLM-YVJ87fpFE7svXGpPptgn7mLF--Sn7E9I4F9ZrS6Da6d8c-oKXBTCPjrOtWJ5Iz5QTmIVjSXWtevkWRirfKtCkoGAuce53VqWTDAYwU-HFaIrab7Pue4aiS1KRnZQ__",
-      price: 100,
-    },
-    {
-      id: 6,
-      name: "Hisense TV",
-      image:
-        "https://s3-alpha-sig.figma.com/img/5e63/4682/db5174aff99bb9337d2dc9598a0b44e4?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=RnZBP6XHKL1eWojlZdtQ34ovsdqdutd59ypgeygnMWW7ausWWKwH46NASbMA03eD1k3Wl-cj6P20Y76~2wxqwIyZVqrFjnNpCbdyxGGQ3j9LhkxMieqmWhHCSltl2K1nSeRSi-GUU12S7UCGS0A9DFvIUL5ARDcCiGkDwMmz8HPQ5K7oj6zG49Q46ukHtTdvoYG4Vw0GqXxKoPTLxk1n9sRLM-YVJ87fpFE7svXGpPptgn7mLF--Sn7E9I4F9ZrS6Da6d8c-oKXBTCPjrOtWJ5Iz5QTmIVjSXWtevkWRirfKtCkoGAuce53VqWTDAYwU-HFaIrab7Pue4aiS1KRnZQ__",
-      price: 100,
-    },
-    {
-      id: 7,
-      name: "Hisense TV",
-      image:
-        "https://s3-alpha-sig.figma.com/img/5e63/4682/db5174aff99bb9337d2dc9598a0b44e4?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=RnZBP6XHKL1eWojlZdtQ34ovsdqdutd59ypgeygnMWW7ausWWKwH46NASbMA03eD1k3Wl-cj6P20Y76~2wxqwIyZVqrFjnNpCbdyxGGQ3j9LhkxMieqmWhHCSltl2K1nSeRSi-GUU12S7UCGS0A9DFvIUL5ARDcCiGkDwMmz8HPQ5K7oj6zG49Q46ukHtTdvoYG4Vw0GqXxKoPTLxk1n9sRLM-YVJ87fpFE7svXGpPptgn7mLF--Sn7E9I4F9ZrS6Da6d8c-oKXBTCPjrOtWJ5Iz5QTmIVjSXWtevkWRirfKtCkoGAuce53VqWTDAYwU-HFaIrab7Pue4aiS1KRnZQ__",
-      price: 100,
-    },
+  
   ];
 
   const [quantities, setQuantities] = useState<Record<number, number>>({});
@@ -87,7 +63,7 @@ const CartPage = () => {
         <p>Home</p> <span>/</span> <p className="text-black">Cart</p>
       </div>
       {/* cart table */}
-      <div className="w-full mt-[3rem] ">
+      <div className="w-full mt-[1rem] ">
         {/* table */}
         <table className="w-full border-spacing-y-8 border-separate table-fixed">
           <tr className="rounded-md shadow-md  text-lg">
@@ -133,10 +109,10 @@ const CartPage = () => {
           })}
         </table>
         <div className=" flex justify-between">
-          <button className="w-[200px] h-[48px] rounded border border-gray-400">
+          <button className="w-[200px] h-[48px] rounded border border-gray-400 hover:bg-black hover:text-white">
             Return To Shop
           </button>
-          <button className="w-[200px] h-[48px] rounded border border-gray-400">
+          <button className="w-[200px] h-[48px] rounded border border-gray-400 hover:bg-black hover:text-white">
             Update Cart
           </button>
         </div>
@@ -147,7 +123,7 @@ const CartPage = () => {
               className="rounded-md text-base border border-gray-500 w-[250px] px-5 h-[48px] outline-none"
               placeholder="Coupon Code"
             />
-            <button className="w-[200px] h-[48px] rounded border bg-[#DB4444] text-white">
+            <button className="w-[200px] h-[48px] rounded border bg-[#DB4444] text-white hover:opacity-75">
               Apply Coupon
             </button>
           </div>
@@ -157,7 +133,7 @@ const CartPage = () => {
             <div className="flex flex-col justify-between gap-3">
               <div className="flex justify-between">
                 <p>Subtotal:</p>
-                <p>${subTotal}</p>
+                <p>${subTotal.toFixed(2)}</p>
               </div>
               <div className=" border border-gray-300" />
               <div className="flex justify-between">
@@ -167,11 +143,18 @@ const CartPage = () => {
               <div className=" border border-gray-300" />
               <div className="flex justify-between">
                 <p>GrandTotal:</p>
-                <p>${subTotal + shippingFee}</p>
+                <p className="font-bold  pulse mx-2">
+                  ${subTotal + shippingFee}
+                </p>
               </div>
             </div>
             <div className="flex items-center justify-center">
-              <button className="w-[200px] h-[48px] rounded border bg-[#DB4444] text-white">
+              <button
+                onClick={() =>
+                  navigate({ to: CHECKOUT, search: { total: subTotal } })
+                }
+                className="w-[200px] hover:opacity-75 h-[48px] rounded border bg-[#DB4444] text-white"
+              >
                 Proceed to checkout
               </button>
             </div>

@@ -85,7 +85,7 @@ const ServiceDetails = () => {
           />
         </motion.div>
         <div className="flex-1 pl-14 flex flex-col justify-between">
-          <div className="pb-6 border-b border-black ">
+          <div className="pb-10 border-b border-black ">
             <h2 className="font-semibold text-2xl mb-2">{search.title}</h2>
             <div className="flex items-center space-x-3 my-2">
               <div className="flex items-center space-x-1.5">

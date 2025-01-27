@@ -20,6 +20,8 @@ import {
   CART_PAGE,
   SERVICES,
   ABOUT,
+  CHECKOUT,
+  CONFIRM_ORDER,
 } from "@/constants";
 import AdminHomePage from "@/pages/admin/home";
 
@@ -28,6 +30,8 @@ import Account from "@/pages/client/account";
 import About from "@/pages/client/about";
 import Services from "@/pages/client/services";
 import ServiceDetails from "@/pages/client/services/ServiceDetails";
+import Checkout from "@/pages/client/checkout";
+import ConfirmOrder from "@/pages/client/confirmOrder";
 
 export type RouteProps = Omit<Route, "children"> & {
   navigation?: boolean;
@@ -129,6 +133,20 @@ const routes: RouteProps[] = [
         },
       },
     ],
+  },
+  {
+    path: CHECKOUT,
+    element: <Checkout />,
+    meta: {
+      layout: "App",
+    },
+  },
+  {
+    path: CONFIRM_ORDER,
+    element: <ConfirmOrder />,
+    meta: {
+      layout: "App",
+    },
   },
 ];
 
