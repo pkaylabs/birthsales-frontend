@@ -8,7 +8,6 @@ import Login from "@/pages/auth/login/Login";
 import WishList from "@/pages/client/wishList";
 import ProductDetails from "@/pages/client/product/details";
 
-
 import {
   ADMIN_HOME,
   CONTACT,
@@ -24,11 +23,11 @@ import {
 } from "@/constants";
 import AdminHomePage from "@/pages/admin/home";
 
-
 import CartPage from "@/pages/client/cart";
 import Account from "@/pages/client/account";
 import About from "@/pages/client/about";
 import Services from "@/pages/client/services";
+import ServiceDetails from "@/pages/client/services/ServiceDetails";
 
 export type RouteProps = Omit<Route, "children"> & {
   navigation?: boolean;
@@ -110,10 +109,26 @@ const routes: RouteProps[] = [
   },
   {
     path: SERVICES,
-    element: <Services />,
+    element: <Outlet />,
     meta: {
       layout: "App",
     },
+    children: [
+      {
+        path: "/",
+        element: <Services />,
+        meta: {
+          layout: "App",
+        },
+      },
+      {
+        path: "/:id",
+        element: <ServiceDetails />,
+        meta: {
+          layout: "App",
+        },
+      },
+    ],
   },
 ];
 

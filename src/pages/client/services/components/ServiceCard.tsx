@@ -1,21 +1,42 @@
 import React from "react";
+import { useNavigate } from "react-location";
 
 const ServiceCard = ({
+  id,
   img,
   title,
   description,
   startPrice,
   endPrice,
 }: {
+  id: number;
   img: string;
   title: string;
   description: string;
   startPrice: number;
   endPrice: number;
 }) => {
+  const navigate = useNavigate();
+
+  const handleServiceClick = (id: number) => {
+    navigate({
+      to: `/services/${id}`,
+      search: {
+        img,
+        title,
+        description,
+        startPrice,
+        endPrice
+      },
+    });
+  };
+
   return (
-    <div className="w-[300px] flex flex-col justify-between p-4 mb-6 rounded-xl relative hover:scale-90 tranform transition-transform duration-500 ease-in-out shadow-lg">
-      <div className="rounded-xl h-2/3 bg-slate-100">
+    <div
+      onClick={() => handleServiceClick(id)}
+      className="w-[300px] flex flex-col justify-between p-4 mb-6 rounded-xl relative hover:scale-90 tranform transition-transform duration-500 ease-in-out shadow-lg"
+    >
+      <div className="rounded-xl h-2/3 bg-slate-100 flex-1">
         <img
           src={img}
           alt="thumbnails"
