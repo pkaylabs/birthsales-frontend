@@ -24,21 +24,21 @@ const products: Product[] = [
       "https://s3-alpha-sig.figma.com/img/5d5c/2e52/50752d55f8b60f2aa2923183dadbc135?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=czfunfCbXPnzsf0N7ax9wZEEIArT-LrnrkTRpAfZfeMsnw6SGIR38TJfJpt7iq6QCDSH3PCph3ABqoKD3aIKXmk3IbyOyfhaG4KhYEpAOJpUEHZsIG9fp6WpOPHNJXgJYUPUsnX3M4K4F4-TJ2rTTYeCCiTB9IXuARkBk9HITOaf5K9yQD9Wj2Eqh~n4anc4jO7RwGa01307bybciV7jQZIjJdOBlAV7mmQ6aA9KTPVXGtH2uBOlgrYWlsYMOUAoL2NbxgJ2fEMB72wKWhG7YLC4coNmDBgLyFs7GS5-G51FiJt9C9dBvdVjSMC1b1bF28AE7ESynB1N5rKMR-wdZQ__",
     price: 650,
   },
-  // },
-  //   {
-  //     id: 3,
-  //     name: "Game Pad",
-  //     image:
-  //       "https://s3-alpha-sig.figma.com/img/5d5c/2e52/50752d55f8b60f2aa2923183dadbc135?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=czfunfCbXPnzsf0N7ax9wZEEIArT-LrnrkTRpAfZfeMsnw6SGIR38TJfJpt7iq6QCDSH3PCph3ABqoKD3aIKXmk3IbyOyfhaG4KhYEpAOJpUEHZsIG9fp6WpOPHNJXgJYUPUsnX3M4K4F4-TJ2rTTYeCCiTB9IXuARkBk9HITOaf5K9yQD9Wj2Eqh~n4anc4jO7RwGa01307bybciV7jQZIjJdOBlAV7mmQ6aA9KTPVXGtH2uBOlgrYWlsYMOUAoL2NbxgJ2fEMB72wKWhG7YLC4coNmDBgLyFs7GS5-G51FiJt9C9dBvdVjSMC1b1bF28AE7ESynB1N5rKMR-wdZQ__",
-  //     price: 230,
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Hisense TV",
-  //     image:
-  //       "https://s3-alpha-sig.figma.com/img/5e63/4682/db5174aff99bb9337d2dc9598a0b44e4?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=RnZBP6XHKL1eWojlZdtQ34ovsdqdutd59ypgeygnMWW7ausWWKwH46NASbMA03eD1k3Wl-cj6P20Y76~2wxqwIyZVqrFjnNpCbdyxGGQ3j9LhkxMieqmWhHCSltl2K1nSeRSi-GUU12S7UCGS0A9DFvIUL5ARDcCiGkDwMmz8HPQ5K7oj6zG49Q46ukHtTdvoYG4Vw0GqXxKoPTLxk1n9sRLM-YVJ87fpFE7svXGpPptgn7mLF--Sn7E9I4F9ZrS6Da6d8c-oKXBTCPjrOtWJ5Iz5QTmIVjSXWtevkWRirfKtCkoGAuce53VqWTDAYwU-HFaIrab7Pue4aiS1KRnZQ__",
-  //     price: 100,
-  //   },
+
+    // {
+    //   id: 3,
+    //   name: "Game Pad",
+    //   image:
+    //     "https://s3-alpha-sig.figma.com/img/5d5c/2e52/50752d55f8b60f2aa2923183dadbc135?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=czfunfCbXPnzsf0N7ax9wZEEIArT-LrnrkTRpAfZfeMsnw6SGIR38TJfJpt7iq6QCDSH3PCph3ABqoKD3aIKXmk3IbyOyfhaG4KhYEpAOJpUEHZsIG9fp6WpOPHNJXgJYUPUsnX3M4K4F4-TJ2rTTYeCCiTB9IXuARkBk9HITOaf5K9yQD9Wj2Eqh~n4anc4jO7RwGa01307bybciV7jQZIjJdOBlAV7mmQ6aA9KTPVXGtH2uBOlgrYWlsYMOUAoL2NbxgJ2fEMB72wKWhG7YLC4coNmDBgLyFs7GS5-G51FiJt9C9dBvdVjSMC1b1bF28AE7ESynB1N5rKMR-wdZQ__",
+    //   price: 230,
+    // },
+    // {
+    //   id: 4,
+    //   name: "Hisense TV",
+    //   image:
+    //     "https://s3-alpha-sig.figma.com/img/5e63/4682/db5174aff99bb9337d2dc9598a0b44e4?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=RnZBP6XHKL1eWojlZdtQ34ovsdqdutd59ypgeygnMWW7ausWWKwH46NASbMA03eD1k3Wl-cj6P20Y76~2wxqwIyZVqrFjnNpCbdyxGGQ3j9LhkxMieqmWhHCSltl2K1nSeRSi-GUU12S7UCGS0A9DFvIUL5ARDcCiGkDwMmz8HPQ5K7oj6zG49Q46ukHtTdvoYG4Vw0GqXxKoPTLxk1n9sRLM-YVJ87fpFE7svXGpPptgn7mLF--Sn7E9I4F9ZrS6Da6d8c-oKXBTCPjrOtWJ5Iz5QTmIVjSXWtevkWRirfKtCkoGAuce53VqWTDAYwU-HFaIrab7Pue4aiS1KRnZQ__",
+    //   price: 100,
+    // },
   //   {
   //     id: 5,
   //     name: "Hisense TV",
@@ -166,7 +166,7 @@ const Checkout = () => {
         {/* ordering */}
 
         <div className="rounded p-5 flex flex-col justify-between gap-5 mt-[3rem] flex-1 ">
-          <div className="flex flex-col justify-between gap-2  overflow-y-auto flex-shrink-0 h-[110px] custom-scrollbar">
+          <div className="flex flex-col justify-between gap-2  overflow-y-auto flex-shrink-0 max-h-[150px] pr-2">
             {products.map((product) => {
               return (
                 <div className="flex justify-between items-center">

@@ -28,7 +28,7 @@ const ConfirmOrder = () => {
           <div className="mx-auto text-center">
             <div className="payment-loader mx-auto mb-6"></div>
             <h1 className="font-semibold text-2xl text-gray-600">
-              Processing your payment...
+              Processing .....
             </h1>
           </div>
         </div>

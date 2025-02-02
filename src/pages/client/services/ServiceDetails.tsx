@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useMatch, useSearch } from "react-location";
+import { Link, useMatch, useNavigate, useSearch } from "react-location";
 import { IoStar } from "react-icons/io5";
 import { MdOutlineFavoriteBorder } from "react-icons/md";
 import { TbTruckDelivery } from "react-icons/tb";
@@ -7,10 +7,13 @@ import { GrPowerCycle } from "react-icons/gr";
 import { motion } from "framer-motion";
 import { LocationGenerics } from "@/router/location";
 import ServiceCard from "./components/ServiceCard";
+import { CONFIRM_ORDER } from "@/constants";
 
 const ServiceDetails = () => {
   const { params } = useMatch<LocationGenerics>();
  
+  const navigate = useNavigate()
+
   const search = useSearch<any>();
 
   const [numberOfItems, setNumberOfItems] = useState(1);
@@ -112,27 +115,8 @@ const ServiceDetails = () => {
           </div>
           <div className="">
             <div className="flex justify-between items-center gap-6">
-              <div className="flex-1 flex items-center select-none">
-                <div
-                  onClick={() =>
-                    numberOfItems > 1 && setNumberOfItems(numberOfItems - 1)
-                  }
-                  className="w-10 h-11 flex justify-center items-center border border-black rounded-s text-2xl hover:bg-[#DB4444] hover:text-white hover:border-[#DB4444] transition-all duration-150 ease-in-out cursor-pointer"
-                >
-                  -
-                </div>
-                <div className="flex-1 h-11 flex justify-center items-center border-y border-black text-xl">
-                  {numberOfItems}
-                </div>
-                <div
-                  onClick={() => setNumberOfItems(numberOfItems + 1)}
-                  className="w-10 h-11 flex justify-center items-center border border-black rounded-e text-2xl hover:bg-[#DB4444] hover:text-white hover:border-[#DB4444] transition-all duration-150 ease-in-out cursor-pointer"
-                >
-                  +
-                </div>
-              </div>
               <div className="flex-1">
-                <button className="w-full h-11 flex justify-center items-center bg-[#DB4444] text-white rounded-md">
+                <button onClick={() => navigate({to: CONFIRM_ORDER})} className="w-full h-11 flex justify-center items-center bg-[#DB4444] text-white rounded-md">
                   Book Now
                 </button>
               </div>
@@ -149,7 +133,7 @@ const ServiceDetails = () => {
               <TbTruckDelivery className="size-10 text-black" />
               <div className="">
                 <h2 className=" font-medium text-base">
-                  FREE AND FAST DELIVERY
+                  FREE AND FAST SERVICE DELIVERY
                 </h2>
                 <p className="text-sm underline">
                   Enter your postal code for Delivery Availability
