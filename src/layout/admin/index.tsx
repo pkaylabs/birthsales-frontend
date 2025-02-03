@@ -14,13 +14,12 @@ import {
 import {
   Bars3Icon,
   BellIcon,
-  CalendarIcon,
-  ChartPieIcon,
+  ShoppingCartIcon,
   Cog6ToothIcon,
-  DocumentDuplicateIcon,
-  FolderIcon,
+  ShoppingBagIcon,
+  UserGroupIcon,
   HomeIcon,
-  UsersIcon,
+  MegaphoneIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import {
@@ -32,11 +31,12 @@ import { Outlet } from "react-location";
 
 const navigation = [
   { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
-  { name: "Team", href: "#", icon: UsersIcon, current: false },
-  { name: "Projects", href: "#", icon: FolderIcon, current: false },
-  { name: "Calendar", href: "#", icon: CalendarIcon, current: false },
-  { name: "Documents", href: "#", icon: DocumentDuplicateIcon, current: false },
-  { name: "Reports", href: "#", icon: ChartPieIcon, current: false },
+  { name: "Products", href: "#", icon: ShoppingBagIcon, current: false },
+  { name: "Services", href: "#", icon: UserGroupIcon, current: false },
+  { name: "Orders", href: "#", icon: ShoppingBagIcon, current: false },
+  { name: "Carts", href: "#", icon: ShoppingCartIcon, current: false },
+  { name: "Adds", href: "#", icon: MegaphoneIcon, current: false },
+  { name: "Users", href: "#", icon: UserGroupIcon, current: false },
 ];
 const teams = [
   { id: 1, name: "Heroicons", href: "#", initial: "H", current: false },
