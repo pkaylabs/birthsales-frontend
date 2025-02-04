@@ -22,6 +22,12 @@ import {
   ABOUT,
   CHECKOUT,
   CONFIRM_ORDER,
+  ADMIN_PRODUCT,
+  ADMIN_SERVICES,
+  ADMIN_ORDERS,
+  ADMIN_CARTS,
+  ADMIN_ADS,
+  USERS,
 } from "@/constants";
 import AdminHomePage from "@/pages/admin/home";
 
@@ -32,6 +38,12 @@ import Services from "@/pages/client/services";
 import ServiceDetails from "@/pages/client/services/ServiceDetails";
 import Checkout from "@/pages/client/checkout";
 import ConfirmOrder from "@/pages/client/confirmOrder";
+import Products from "@/pages/admin/products";
+import AdminServices from "@/pages/admin/services";
+import Orders from "@/pages/admin/orders";
+import Carts from "@/pages/admin/carts";
+import Ads from "@/pages/admin/ads";
+import Users from "@/pages/admin/users";
 
 export type RouteProps = Omit<Route, "children"> & {
   navigation?: boolean;
@@ -51,6 +63,48 @@ const routes: RouteProps[] = [
   {
     path: ADMIN_HOME,
     element: <AdminHomePage />,
+    meta: {
+      layout: "Admin",
+    },
+  },
+  {
+    path: ADMIN_PRODUCT,
+    element: <Products />,
+    meta: {
+      layout: "Admin",
+    },
+  },
+  {
+    path: ADMIN_SERVICES,
+    element: <AdminServices />,
+    meta: {
+      layout: "Admin",
+    },
+  },
+  {
+    path: ADMIN_ORDERS,
+    element: <Orders />,
+    meta: {
+      layout: "Admin",
+    },
+  },
+  {
+    path: ADMIN_CARTS,
+    element: <Carts />,
+    meta: {
+      layout: "Admin",
+    },
+  },
+  {
+    path: ADMIN_ADS,
+    element: <Ads />,
+    meta: {
+      layout: "Admin",
+    },
+  },
+  {
+    path: USERS,
+    element: <Users />,
     meta: {
       layout: "Admin",
     },

@@ -30,19 +30,15 @@ import { classNames } from "@/utils";
 import { Outlet } from "react-location";
 
 const navigation = [
-  { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
-  { name: "Products", href: "#", icon: ShoppingBagIcon, current: false },
-  { name: "Services", href: "#", icon: UserGroupIcon, current: false },
-  { name: "Orders", href: "#", icon: ShoppingBagIcon, current: false },
-  { name: "Carts", href: "#", icon: ShoppingCartIcon, current: false },
-  { name: "Adds", href: "#", icon: MegaphoneIcon, current: false },
-  { name: "Users", href: "#", icon: UserGroupIcon, current: false },
+  { name: "Dashboard", href: "/admin", icon: HomeIcon, current: true },
+  { name: "Products", href: "/products", icon: ShoppingBagIcon, current: false },
+  { name: "Services", href: "/admin-services", icon: UserGroupIcon, current: false },
+  { name: "Orders", href: "/admin-orders", icon: ShoppingBagIcon, current: false },
+  { name: "Carts", href: "/admin-carts", icon: ShoppingCartIcon, current: false },
+  { name: "Adds", href: "/admin-ads", icon: MegaphoneIcon, current: false },
+  { name: "Users", href: "/users", icon: UserGroupIcon, current: false },
 ];
-const teams = [
-  { id: 1, name: "Heroicons", href: "#", initial: "H", current: false },
-  { id: 2, name: "Tailwind Labs", href: "#", initial: "T", current: false },
-  { id: 3, name: "Workcation", href: "#", initial: "W", current: false },
-];
+
 const userNavigation = [
   { name: "Your profile", href: "#" },
   { name: "Sign out", href: "#" },
@@ -89,7 +85,7 @@ export default function AdminLayout() {
                 <div className="flex h-16 shrink-0 items-center">
                   <img
                     alt="Your Company"
-                    src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=500"
+                    src="../public/logo.jpg"
                     className="h-8 w-auto"
                   />
                 </div>
@@ -118,31 +114,7 @@ export default function AdminLayout() {
                         ))}
                       </ul>
                     </li>
-                    <li>
-                      <div className="text-xs/6 font-semibold text-gray-400">
-                        Your teams
-                      </div>
-                      <ul role="list" className="-mx-2 mt-2 space-y-1">
-                        {teams.map((team) => (
-                          <li key={team.name}>
-                            <a
-                              href={team.href}
-                              className={classNames(
-                                team.current
-                                  ? "bg-gray-800 text-white"
-                                  : "text-gray-400 hover:bg-gray-800 hover:text-white",
-                                "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold"
-                              )}
-                            >
-                              <span className="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-[0.625rem] font-medium text-gray-400 group-hover:text-white">
-                                {team.initial}
-                              </span>
-                              <span className="truncate">{team.name}</span>
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </li>
+
                     <li className="mt-auto">
                       <a
                         href="#"
@@ -169,8 +141,8 @@ export default function AdminLayout() {
             <div className="flex h-16 shrink-0 items-center">
               <img
                 alt="Your Company"
-                src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=500"
-                className="h-8 w-auto"
+                src="../public/logo.jpg"
+                className="h-8 w-auto object-contain rounded-sm"
               />
             </div>
             <nav className="flex flex-1 flex-col">
@@ -198,31 +170,7 @@ export default function AdminLayout() {
                     ))}
                   </ul>
                 </li>
-                <li>
-                  <div className="text-xs/6 font-semibold text-gray-400">
-                    Your teams
-                  </div>
-                  <ul role="list" className="-mx-2 mt-2 space-y-1">
-                    {teams.map((team) => (
-                      <li key={team.name}>
-                        <a
-                          href={team.href}
-                          className={classNames(
-                            team.current
-                              ? "bg-gray-800 text-white"
-                              : "text-gray-400 hover:bg-gray-800 hover:text-white",
-                            "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold"
-                          )}
-                        >
-                          <span className="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-[0.625rem] font-medium text-gray-400 group-hover:text-white">
-                            {team.initial}
-                          </span>
-                          <span className="truncate">{team.name}</span>
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
+
                 <li className="mt-auto">
                   <a
                     href="#"
