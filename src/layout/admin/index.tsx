@@ -85,7 +85,7 @@ export default function AdminLayout() {
                 <div className="flex h-16 shrink-0 items-center">
                   <img
                     alt="Your Company"
-                    src="../public/logo.jpg"
+                    src="/logo.jpg"
                     className="h-8 w-auto"
                   />
                 </div>
@@ -141,7 +141,7 @@ export default function AdminLayout() {
             <div className="flex h-16 shrink-0 items-center">
               <img
                 alt="Your Company"
-                src="../public/logo.jpg"
+                src="/logo.jpg"
                 className="h-8 w-auto object-contain rounded-sm"
               />
             </div>
