@@ -4,12 +4,15 @@ import {
   UserGroupIcon,
   WalletIcon,
 } from "@heroicons/react/24/outline";
+import { useNavigate } from "react-location";
 
 interface WidgetProp {
   type: string;
+  path: string;
 }
 
-const Widget = ({ type }: WidgetProp) => {
+const Widget = ({ type, path }: WidgetProp) => {
+  const navigate = useNavigate();
   const amount = 100;
   const diff = 20;
 
@@ -67,7 +70,7 @@ const Widget = ({ type }: WidgetProp) => {
         <span className="text-3xl font-light">
           {data?.isMoney && "$"} {amount}
         </span>
-        <span className="text-xs border-b border-gray-400 w-max">
+        <span className="text-xs border-b border-gray-400 w-max cursor-pointer" onClick={() => navigate({to: path})}>
           {data?.link}
         </span>
       </div>

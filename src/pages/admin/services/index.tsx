@@ -209,7 +209,7 @@ const AdminServices = () => {
           rows={rows}
           columns={userColumns.concat(actionColumn)}
           initialState={{ pagination: { paginationModel } }}
-          pageSizeOptions={[9, 10]}
+          pageSizeOptions={[10]}
           checkboxSelection
           sx={{ border: 0 }}
         />
