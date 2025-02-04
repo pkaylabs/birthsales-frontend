@@ -16,7 +16,7 @@ const AdminHomePage = () => {
       {/* Charts */}
       <div className="flex gap-5 py-2 ">
         <FeaturedChart />
-        <Chart />
+        <Chart aspect={2 / 1} title="Last 6 months (Revenue)"/>
       </div>
       {/* list of transactions */}
       <div className="shadow-lg p-5 m-5">

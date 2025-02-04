@@ -27,14 +27,35 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
 import { classNames } from "@/utils";
-import { Outlet } from "react-location";
+import { Outlet, useNavigate } from "react-location";
+import { ADMIN_HOME } from "@/constants";
 
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: HomeIcon, current: true },
-  { name: "Products", href: "/products", icon: ShoppingBagIcon, current: false },
-  { name: "Services", href: "/admin-services", icon: UserGroupIcon, current: false },
-  { name: "Orders", href: "/admin-orders", icon: ShoppingBagIcon, current: false },
-  { name: "Carts", href: "/admin-carts", icon: ShoppingCartIcon, current: false },
+  {
+    name: "Products",
+    href: "/products",
+    icon: ShoppingBagIcon,
+    current: false,
+  },
+  {
+    name: "Services",
+    href: "/admin-services",
+    icon: UserGroupIcon,
+    current: false,
+  },
+  {
+    name: "Orders",
+    href: "/admin-orders",
+    icon: ShoppingBagIcon,
+    current: false,
+  },
+  {
+    name: "Carts",
+    href: "/admin-carts",
+    icon: ShoppingCartIcon,
+    current: false,
+  },
   { name: "Adds", href: "/admin-ads", icon: MegaphoneIcon, current: false },
   { name: "Users", href: "/users", icon: UserGroupIcon, current: false },
 ];
@@ -46,6 +67,7 @@ const userNavigation = [
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <>
@@ -82,11 +104,11 @@ export default function AdminLayout() {
               </TransitionChild>
               {/* Sidebar component, swap this element with another sidebar if you like */}
               <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4 ring-1 ring-white/10">
-                <div className="flex h-16 shrink-0 items-center">
+                <div className="flex h-16 shrink-0 items-center"  onClick={() => navigate({ to: ADMIN_HOME })}>
                   <img
                     alt="Your Company"
                     src="/logo.jpg"
-                    className="h-8 w-auto"
+                    className="h-8 w-auto cursor-pointer"
                   />
                 </div>
                 <nav className="flex flex-1 flex-col">
@@ -138,11 +160,14 @@ export default function AdminLayout() {
         <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
           {/* Sidebar component, swap this element with another sidebar if you like */}
           <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4">
-            <div className="flex h-16 shrink-0 items-center">
+            <div
+              className="flex h-16 shrink-0 items-center"
+              onClick={() => navigate({ to: ADMIN_HOME })}
+            >
               <img
                 alt="Your Company"
                 src="/logo.jpg"
-                className="h-8 w-auto object-contain rounded-sm"
+                className="h-8 w-auto object-contain rounded-sm cursor-pointer"
               />
             </div>
             <nav className="flex flex-1 flex-col">

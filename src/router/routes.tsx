@@ -44,6 +44,15 @@ import Orders from "@/pages/admin/orders";
 import Carts from "@/pages/admin/carts";
 import Ads from "@/pages/admin/ads";
 import Users from "@/pages/admin/users";
+import UserDetails from "@/pages/admin/users/UserDetails";
+import AddNewUser from "@/pages/admin/users/AddNewUser";
+import {
+  productInputs,
+  serviceInputs,
+  userInputs,
+} from "@/pages/admin/utils/formSource";
+import ProductAdminDetails from "@/pages/admin/products/ProductAdminDetails";
+import AddNewProduct from "@/pages/admin/products/AddNewProduct";
 
 export type RouteProps = Omit<Route, "children"> & {
   navigation?: boolean;
@@ -69,24 +78,74 @@ const routes: RouteProps[] = [
   },
   {
     path: ADMIN_PRODUCT,
-    element: <Products />,
+    element: <Outlet />,
     meta: {
       layout: "Admin",
     },
+    children: [
+      {
+        path: "/",
+        element: <Products />,
+        meta: {
+          layout: "Admin",
+        },
+      },
+      {
+        path: "/add",
+        element: <AddNewUser inputs={productInputs} title="Add New Product" />,
+        meta: {
+          layout: "Admin",
+        },
+      },
+      {
+        path: "/:id",
+        element: <ProductAdminDetails />,
+        meta: {
+          layout: "Admin",
+        },
+      },
+    ],
   },
   {
     path: ADMIN_SERVICES,
-    element: <AdminServices />,
+    element: <Outlet />,
     meta: {
       layout: "Admin",
     },
+    children: [
+      {
+        path: "/",
+        element: <AdminServices />,
+        meta: {
+          layout: "Admin",
+        },
+      },
+      {
+        path: "/add",
+        element: (
+          <AddNewUser inputs={serviceInputs} title={"Add New Service"} />
+        ),
+        meta: {
+          layout: "Admin",
+        },
+      },
+    ],
   },
   {
     path: ADMIN_ORDERS,
-    element: <Orders />,
+    element: <Outlet />,
     meta: {
       layout: "Admin",
     },
+    children: [
+      {
+        path: "/",
+        element: <Orders />,
+        meta: {
+          layout: "Admin",
+        },
+      },
+    ],
   },
   {
     path: ADMIN_CARTS,
@@ -104,10 +163,33 @@ const routes: RouteProps[] = [
   },
   {
     path: USERS,
-    element: <Users />,
+    element: <Outlet />,
     meta: {
       layout: "Admin",
     },
+    children: [
+      {
+        path: "/",
+        element: <Users />,
+        meta: {
+          layout: "Admin",
+        },
+      },
+      {
+        path: "/add",
+        element: <AddNewUser inputs={userInputs} title="Add New User" />,
+        meta: {
+          layout: "Admin",
+        },
+      },
+      {
+        path: "/:id",
+        element: <UserDetails />,
+        meta: {
+          layout: "Admin",
+        },
+      },
+    ],
   },
   {
     path: CONTACT,

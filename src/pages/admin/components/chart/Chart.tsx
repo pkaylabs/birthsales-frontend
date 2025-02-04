@@ -34,11 +34,11 @@ const data = [
   },
 ];
 
-const Chart = () => {
+const Chart = ({ aspect, title }: { aspect: number; title: string }) => {
   return (
     <div className="flex-[4] flex flex-col  shadow-lg p-[10px] text-gray-400">
-      <div className="mb-5">Last 6 months Income</div>
-      <ResponsiveContainer width="100%" aspect={2 / 1}>
+      <div className="mb-5">{title}</div>
+      <ResponsiveContainer width="100%" aspect={aspect}>
         <AreaChart
           width={730}
           height={250}
@@ -51,8 +51,8 @@ const Chart = () => {
               <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <XAxis dataKey="name" stroke="gray"/>
-          <CartesianGrid strokeDasharray="3 3" className="text-gray-200"/>
+          <XAxis dataKey="name" stroke="gray" />
+          <CartesianGrid strokeDasharray="3 3" className="text-gray-200" />
           <Tooltip />
           <Area
             type="monotone"

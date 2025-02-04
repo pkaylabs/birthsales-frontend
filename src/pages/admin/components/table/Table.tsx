@@ -84,7 +84,7 @@ const Tables = () => {
               </TableCell>
               <TableCell>{row.customer}</TableCell>
               <TableCell>{row.date}</TableCell>
-              <TableCell>{row.amount}</TableCell>
+              <TableCell>${row.amount}</TableCell>
               <TableCell>{row.method}</TableCell>
               <TableCell>
                 <span

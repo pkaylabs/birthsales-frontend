@@ -1,11 +1,12 @@
-import React from 'react'
+import React from "react";
+import DataTable from "../components/datatable/DataTable";
 
 const Users = () => {
   return (
     <div>
-      users
+      <DataTable />
     </div>
-  )
-}
+  );
+};
 
-export default Users
+export default Users;
