@@ -38,7 +38,6 @@ import Services from "@/pages/client/services";
 import ServiceDetails from "@/pages/client/services/ServiceDetails";
 import Checkout from "@/pages/client/checkout";
 import ConfirmOrder from "@/pages/client/confirmOrder";
-import Products from "@/pages/admin/products";
 import AdminServices from "@/pages/admin/services";
 import Orders from "@/pages/admin/orders";
 import Carts from "@/pages/admin/carts";
@@ -52,6 +51,7 @@ import {
   userInputs,
 } from "@/pages/admin/utils/formSource";
 import ProductAdminDetails from "@/pages/admin/products/ProductAdminDetails";
+import ProductsPage from "@/pages/admin/products";
 
 
 export type RouteProps = Omit<Route, "children"> & {
@@ -85,7 +85,7 @@ const routes: RouteProps[] = [
     children: [
       {
         path: "/",
-        element: <Products />,
+        element: <ProductsPage />,
         meta: {
           layout: "Admin",
         },
