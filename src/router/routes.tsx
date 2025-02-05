@@ -52,7 +52,7 @@ import {
   userInputs,
 } from "@/pages/admin/utils/formSource";
 import ProductAdminDetails from "@/pages/admin/products/ProductAdminDetails";
-import AddNewProduct from "@/pages/admin/products/AddNewProduct";
+
 
 export type RouteProps = Omit<Route, "children"> & {
   navigation?: boolean;

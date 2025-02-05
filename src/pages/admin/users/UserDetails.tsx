@@ -3,6 +3,7 @@ import Chart from "../components/chart/Chart";
 import Tables from "../components/table/Table";
 
 const UserDetails = () => {
+
   return (
     <div>
       {/* top */}

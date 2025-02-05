@@ -7,7 +7,7 @@ export const userInputs = [
     },
     {
       id: 2,
-      label: "Name and surname",
+      label: "Name",
       type: "text",
       placeholder: "Jamal nasir",
     },
@@ -33,12 +33,6 @@ export const userInputs = [
       label: "Address",
       type: "text",
       placeholder: "Knust, Kumasi",
-    },
-    {
-      id: 7,
-      label: "Country",
-      type: "text",
-      placeholder: "Ghana",
     },
   ];
   
@@ -113,10 +107,5 @@ export const userInputs = [
       type: "text",
       placeholder: "Active",
     },
-    {
-      id: 7,
-      label: "Date",
-      type: "date",
-      placeholder: "date",
-    },
+   
   ];

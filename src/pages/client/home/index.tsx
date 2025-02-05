@@ -114,8 +114,8 @@ const sidebarLinks: DropdownItem[] = [
 ];
 
 const tilt = (
-  <div className="h-[22.5rem] bg-yellow-500 w-full flex justify-center items-center">
-    <h2>rjkdfv</h2>
+  <div className="h-[22.5rem] bg-black w-full flex justify-center items-center">
+    <h2 className="text-white">We will change this text later please.</h2>
   </div>
 );
 

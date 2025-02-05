@@ -16,7 +16,7 @@ const WishCard = ({
   return (
     <div className="w-[17rem] py-4 mb-6 rounded-xl relative hover:scale-90 tranform transition-transform duration-500 ease-in-out">
       <img
-        className="w-[700px] h-[150px] object-contain rounded-md bg-[#F5F5F5]"
+        className="w-full h-[160px] object-cover rounded-md bg-[#F5F5F5]"
         src={img}
       />
       <button className="flex items-center justify-center w-full text-white bg-black rounded-b-md mb-2 p-2">
@@ -33,14 +33,14 @@ const WishCard = ({
 };
 
 export const withLabel = (WishCard: FC) => {
-    return (props) => {
-        return (
-            <div className="relative">
-                <label className="absolute">-35%</label>
-                <WishCard {...props}/>
-            </div>
-        )
-    }
-}
+  return (props) => {
+    return (
+      <div className="relative">
+        <label className="absolute">-35%</label>
+        <WishCard {...props} />
+      </div>
+    );
+  };
+};
 
 export default WishCard;

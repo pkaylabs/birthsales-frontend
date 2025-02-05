@@ -194,12 +194,12 @@ const AdminServices = () => {
   return (
     <div className="p-5">
       <div className="w-full text-2xl text-gray-300 mb-[10px] flex items-center justify-between">
-        Add New Service
+        All Services
         <span
           onClick={() => navigate({ to: "/admin-services/add" })}
           className="text-green-400 text-base font-normal border border-green-400 p-[5px] rounded-[5px] cursor-pointer"
         >
-          Add New
+          Add Service
         </span>
       </div>
       {loading ? (
