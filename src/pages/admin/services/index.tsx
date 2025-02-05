@@ -1,221 +1,514 @@
-import { DataGrid } from "@mui/x-data-grid";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
 import { useNavigate } from "react-location";
+import { useServices } from "../utils/ServiceContext";
 import ShimmerTable from "../components/Shimmer";
 
-const userRows = [
-  {
-    id: 1,
-    service: "Website Devleopment",
-    category: "IT Services",
-    image:
-      "data:image/jpeg;base64,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",
-    status: "active",
-    email: "jamal@gmail.com",
-    price: "$20",
-    date: "2024-07-05",
-    provider: "jamal",
-  },
-  {
-    id: 2,
-    service: "Website Devleopment",
-    category: "IT Services",
-    image:
-      "data:image/jpeg;base64,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",
-    status: "active",
-    email: "jamal@gmail.com",
-    price: "$20",
-    provider: "jamal",
-    date: "2024-07-05",
-  },
-  {
-    id: 3,
-    service: "Website Devleopment",
-    category: "IT Services",
-    image:
-      "data:image/jpeg;base64,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",
-    status: "pending",
-    email: "jamal@gmail.com",
-    price: "$20",
-    date: "2024-07-05",
-    provider: "jamal",
-  },
-  {
-    id: 4,
-    service: "Website Devleopment",
-    category: "IT Services",
-    image:
-      "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N//AABEIAJQAzgMBIgACEQEDEQH/xAAcAAACAgMBAQAAAAAAAAAAAAAAAQIDBAYHBQj/xAA+EAABBAECAwYEBAMFCQEAAAABAAIDEQQFIQYSMQcTQVFhcSKBkaEUMkLBUrGyIyYzovEkNmJydMLR4fAV/8QAGQEBAQEBAQEAAAAAAAAAAAAAAAECAwQF/8QAIREBAQACAwEAAgMBAAAAAAAAAAECEQMSMSEyQRMigQT/2gAMAwEAAhEDEQA/AOpkIUqQAio0nSlSdIIgIpSpOkRCk006QQ5UUpI6oI9FpHEfaVo2jvdBih2oZANEQmo2n1d/4BWp9rHGGcdUm0PAldDiwgNnLDvK4iyCfIbbLnOMwvcC1x69CFNtSOljta1AnvP/AM3E7o9AHuJHudl7Wjdqum5LS3VMZ+IW1Toz3jT5+AIXJJ3jGFxgcx67brBuUnnERAvqAQs7a6vqPTdQxNUxGZWn5EeRA/8AK9hsLJpfPnBXG2XwxP3Xd97hSPueEjf/AJm+Rr6r6Bxpo8nHinhdzRyND2nzBWpWLNJUilNJVECEqVlJUghSCFOkqQVkKJCtIUSEFRCjStIUaQZKKToJgIoCKUkwERGkUp0lSCNJUp0kgjSOm6nSVIPmLUoczXOKc5jPjmflS2T5B5A+wW36P2bZsrA7IzWQNPVrASVi6XhOx+PdW5BUcORI436uJ/db7FxdomIeWTNb8P5uVpdX0Xl5M8u2o9fFhOu6r07s00PGp+S05UgF/wBp0PyWfmaRp4xTjjDh7sbBvIKXqYGuafqMPe4mQHMrrRC8nVuJdCxSY585jJB+nckrllu+OuOp65nxto+Jjva+CMMcxwG3iCuq9muadQ4L06QinRh0B3v8ji0fYBcw4vzsXVYZjgzc5aOdw5S00PddK7Kcf8PwJp3MOXvTJLXo57q+1L0cFuvrz/8ARJ2+NrpFKaKXd50aSpSIRSCKCpUlSCBCiQrCooKyFGlYUkF9JgJphAUnSYTQIBCaEEaRSlSEEKpY+o94NPyu4eWS9y7kcP0uo0fkspIt5gQRYIo+yl8WX7HH34bzxJqEjm1NkxRmWtrcbBI9wrzouoYjTDhO/Dw7BnJjd4XDxsj916WuE4GuYskoAbToSfbdpP3XuHW8THhiZzNL5B8DSav1PovBd7fSxks+PP4d0f8ACTmSbm5ntcHMc0DbqLA8Vq83DUkzpcuCabv3PJuNgcWfIraouKtHGpPhnygx4ad+U8v1Xi6dxdprtSmhwngsBPxybNO/gU/tPq3V+V4eZw/k47H5OaH262s7wAOII3uluXZY+ePT340r3GIRMdEwm+QD4dvdeXxRrcGXp3PCQTzcp9Ctj7OcZ7dKdkzNILw2Jlira3r8rP2XXi3a4c8xkrbKRSlSKXreFGkUpUmioUlSnSKQV0oqwhRKCshKlMpIL6TAQmEDQEBNAIQhAkJoQRR4JoQar2iYzXcPSZLWNMmPIx4dW9XRWiYuBFruM1+Nk91kxtLRzbt822PI+i6nxFAMnQdRhIvnx3gfRcS0zIdo2o8mYHNa4jlfezh/9/Nebmn3b1cGV/xt2Hw1i5UBZmsw3SgfFWI5/wBDa8jVuG4YpWYmFNFAwH43DHa0hvpufuvceYsmIT4+p9xYs1RBXlallYOnxufLmOyZPcfNcpXq1N7ebmwwjUtL0TBbzd7Oxz7Nk2RX2t3su4gAN5W9BsK8lyHsqgi1nijK1XJaXSYzOeO/B7jV/JooLr69XFNR4ObPtkSaELo4hCEIEik0iEVEpEKXmolBAhJSKSC5MJJhBJCSaBoQhAJJpHa/RAkLG1HUcLS4DPqOXDjRAWXSvDf9VoWv9rWm4hdDo2LJnyjpLIe7iH/cfoAfNNI9ftK1+bRtMxIMYN73OyWwuc79MdjnP02+a8PVNFx9R08tkYC4Dy3XNeKeLNU4kmifqT4+6iJ7uKJnK1l9ffoPFbbwTxaydrNP1Z4D6DYpnGuf0Pr/ADXHnwt1Y78OcnytV1bTc7TnGOGaUwA/DRul5AZNPII5JJHknYFde1fTGHmB2a7pYWsTaZhYIkz8yVscTDTfU+Q9Vxxzvn7dssf2xOGdYn4V17TRE7+wyJBHlM8HNJr5EXY9l3zpsvlPVtTOZqBkYKa00xt/lA6Lb+H+0/iLTA2PKfHqMLQAG5Ap1eXOP3B+a9eGN6vLnZcnfkLRdD7VOH9SpmYJtNlO1T/FGT6PH70t1xcrHzIu9w54p4/4onhw+y1YwtQhCgEk0kCKipJFFQcoqRUSguQCoWmCgsTUAVK0DTUbWHrGpwaPpmRqGWT3MDC4gdXeQHudkGFxPxRpnDWGJ9QkJkffdQR0XyH0HgPU7Lk2u9p+uai58eCW6dAendfFJXq4/sFquu6vla5qs+oZryZpjsLtrG+DR5ALz3bb+J6rpIi3IyJcmczZEsk0rtzJI8vcfmd1USB06KH6vkmeh9lREtuOisLIbI8tYOjd16IHRQcz4w7ah1bSlhGTo3EWq6PPzgyzxEUYZpS5rvLrdfJYWs6vqeuZQlznbM/w4WDla32H7qyuYgNBJ8AEntDWmxuB91npjvbXa60xIYiy3P8AzePoslooN86RykAB3VxtTI3taZoj/VfmsjFzMjByG5GFPLjyt6PieWn6j+Sx2CiUHewqOmcK9rGTAY8biSL8RE6h+Kipr2WRu4bAjzIo+i7BFKyaNksL2yRyNDmOabDgehXyi4Dr9F1rsX4ldIyTh3KkJMbTLicx/T+pg9uv18lmwdXSKSLWFBUSUyVElBEpIKSCdoBULRaC0FO1XadoLFzTtu1J0Gn6bpsZP+0yvmkHm1lAD6uH0XSbXE+2nJdLxTjwB3wwYjRXq4kn9vorPStEHLuD9FFxocp9wi/A9f5KEp2rw8F0Qx+YeimRuqoySR6jf3VyAQUJFERZsbsgjoQk+yDaOj/kh5s15oDq+/IWpKLdy4+HQJlFHj8lXzfCDfzTe6nMVMJ5hv0CC6yemxWTpOoyaPq+JqEDiH40okPte4+lj5rEf+Wy7lCgWgRku2BFDzUo+r4ZmTwsmjNskaHN9iLUrXh8EZX4zg/Rsnxfhxg+4FH7he0SuapEqJSSQBSQVGygZKAVAlAKC1FqNp2gla4T2sHveMsk/wAMUbf8q7pa4R2n/wC+2cf+GP8ApC1j6VqdeZvyKrfsKPUK+wBRCrkAIFeC3UUc1V5g7rIDtliHZ5vxVzHbUpKLrSJUbSLlUNga6YNe7laRu7ySdTXkNJLQdiRRI/0ScfiafNI0CgsjHwJOSBpqre5FRlcRRB3ClGO7jaOW30qiC5wBPisxo8vqoKhHR7yY9NwPAKnfIlDiDyDoFdKDK7k/SOvqpVX5VR3fsmnM3AeACb7qSaP6SOr7ELcLWidjTr4OcPBuZLXz5VvNrnVO0EpKJKgCUrSJUUBe6YKje6YQStStQtNBK1w/tRbXGuSf4ooz/lXb+q4x2usMXFrH1/iYrD9CR+y1j6laYQqHgjdvQq1z+VpcQfZu6xnZMf6g8V1PL0XS6SPf0PgfW9cj/ExRMx8Us5o5pnUJfQf+15ms6LqWhZPcaniSQuP5X1bH+zuny6rtnAeZjScG6UyGdrjHitEjHHo4DdZWpDA1XT5h3mPkY/IXOYSHscB13HT3Xj/mvZ6pxY2Pn3m2S5lna7j4cGpzt00l+JfNHbubl822sFrXOHwtJXpxu5t58pq6Dv0+6TzW6mxgd+axXXZX90w0eWz42tMsQvAbZKrLwRdFeiGsb0FBepw/w03iKadkWa3HfEA4tMXPYO19Qs5WYzdaxna6a1Ef7Zvus2wAfBbTqvZ8NI02fPfqb5nwDm5BDytdvXWytQle8O+Fov8AiKnHnMpuLnjcbqrm1y7KqWQN+Fu7v5ILiGgTnf8AiAoIIodVth2bsWkvhbJjP6Mx/wB2tW/Bc87FB/d3O/6w/wBDV0Nc60ZKiUFJQJRJTKigfipBJCBjqpIQgFyftsaG6lozwPidBKCfMBza/qKaFrH1L45rJvyNs091Glc1jQNmgAdAOiELpiyucLaGndtDY9FU8NYC9rGh1VzVuhCuoW1LoEt/NCED+ZKrurQhQVv3ba2fsvleOLWRg/DJjycw86LUIXLl/Ct8f5LOLeIdQ1HMnw5Htixo3OYY4gQHi/1XdrWXAcrRQojohC1xyTH4md3VBsF7LtrelqJ2GyELSOzdiw/upku8TmP/AKWrfghC51oFRKEKBFRKEIP/2Q==",
-    status: "passive",
-    email: "jamal@gmail.com",
-    price: "$20",
-    date: "2024-07-05",
-    provider: "jamal",
-  },
-  {
-    id: 5,
-    service: "Website Devleopment",
-    category: "IT Services",
-    image:
-      "data:image/jpeg;base64,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",
-    status: "passive",
-    email: "jamal@gmail.com",
-    price: "$20",
-    date: "2024-07-05",
-    provider: "jamal",
-  },
-  {
-    id: 6,
-    service: "Website Devleopment",
-    category: "IT Services",
-    image:
-      "data:image/jpeg;base64,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",
-    status: "passive",
-    email: "jamal@gmail.com",
-    price: "$20",
-    date: "2024-07-05",
-    provider: "jamal",
-  },
-  {
-    id: 7,
-    service: "Website Devleopment",
-    category: "IT Services",
-    image:
-      "data:image/jpeg;base64,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",
-    status: "passive",
-    email: "jamal@gmail.com",
-    price: "$20",
-    date: "2024-07-05",
-    provider: "jamal",
-  },
-];
+interface Service {
+  id?: number;
+  name: string;
+  description: string;
+  price: number | string;
+  image?: string;
+  bookings?: number;
+  provider: string;
+  category: string;
+}
 
-const userColumns = [
-  {
-    field: "id",
-    headerName: "ID",
-    width: 80,
-  },
-  {
-    field: "service",
-    headerName: "SERVICE",
-    width: 250,
-    renderCell: (params) => {
-      return (
-        <div className="flex items-center">
-          <img
-            src={params.row.image}
-            alt="avatar"
-            className="w-10 h-10 rounded-full object-cover mr-5"
-          />
-          {params.row.service}
-        </div>
-      );
-    },
-  },
-  {
-    field: "category",
-    headerName: "CATEGORY",
-    width: 150,
-  },
-  {
-    field: "price",
-    headerName: "PRICE",
-    width: 100,
-  },
-  {
-    field: "date",
-    headerName: "DATE",
-    width: 120,
-  },
-  {
-    field: "provider",
-    headerName: "PROVIDER",
-    width: 100,
-  },
-  {
-    field: "status",
-    headerName: "STATUS",
-    width: 120,
-    renderCell: (params) => {
-      return (
-        <div
-          className={`rounded-md ${
-            params.row.status === "active"
-              ? "text-green-300 "
-              : params.row.status === "passive"
-              ? "text-yellow-300"
-              : "text-rose-300"
-          }`}
-        >
-          {params.row.status}
-        </div>
-      );
-    },
-  },
-];
-
-const paginationModel = { page: 0, pageSize: 10 };
-
-const AdminServices = () => {
-  const navigate = useNavigate();
+export default function ServicesPage() {
   const [loading, setLoading] = useState(true);
-  const [rows, setRows] = useState<any>([]);
-  const actionColumn = [
-    {
-      field: "action",
-      headerName: "ACTION",
-      width: 150,
-      renderCell: () => {
-        return (
-          <div className="flex items-center gap-4">
-            <div
-              className="py-[2px] px-[5px] rounded-[5px] text-blue-500 cursor-pointer"
-              onClick={() => navigate({ to: "/admin-services/test" })}
-            >
-              View
-            </div>
-            <div className="py-[2px] px-[5px] rounded-[5px] text-rose-400 cursor-pointer">
-              Delete
-            </div>
-          </div>
-        );
-      },
-    },
+  const navigate = useNavigate();
+  const globalServices = useServices();
+
+  // Available categories consistent with the product page
+  const availableCategories = [
+    { id: 1, name: "Electronics" },
+    { id: 2, name: "Clothing" },
+    { id: 3, name: "Accessories" },
+    { id: 4, name: "Beauty" },
+    { id: 5, name: "Wellness" },
+  ];
+  // Available categories consistent with the product page
+  const availableServiceProviders = [
+    { id: 1, name: "Jamal" },
+    { id: 2, name: "Prince" },
+    { id: 3, name: "Isaac" },
   ];
 
+  // Sample data for services
+  const [services, setServices] = useState<Service[]>(globalServices);
+
+  // State for adding a new service
+  const [newService, setNewService] = useState<Service>({
+    name: "",
+    description: "",
+    price: "",
+    image: "",
+    bookings: 0,
+    provider: "",
+    category: "", // Will be selected from dropdown
+  });
+  const [openAdd, setOpenAdd] = useState(false);
+
+  // State for editing a service
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editService, setEditService] = useState<Service | null>(null);
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Upload state for adding service image
+  const [serviceImageUploading, setServiceImageUploading] = useState(false);
+  // Upload state for editing service image
+  const [editServiceImageUploading, setEditServiceImageUploading] =
+    useState(false);
+
+  // Handler for adding a new service image
+  const handleServiceImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      setServiceImageUploading(true);
+      setTimeout(() => {
+        setNewService((prev) => ({
+          ...prev,
+          image: URL.createObjectURL(file),
+        }));
+        setServiceImageUploading(false);
+      }, 1000);
+    }
+  };
+
+  // Handler for editing a service image
+  const handleEditServiceImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files && e.target.files[0];
+    if (file && editService) {
+      setEditServiceImageUploading(true);
+      setTimeout(() => {
+        setEditService({ ...editService, image: URL.createObjectURL(file) });
+        setEditServiceImageUploading(false);
+      }, 1000);
+    }
+  };
+
+  const handleAddService = () => {
+    const price = parseFloat(newService.price.toString()) || 0;
+    setServices([
+      ...services,
+      { ...newService, id: services.length + 1, price },
+    ]);
+    setOpenAdd(false);
+  };
+
+  const handleEditServiceSave = () => {
+    if (!editService) return;
+    const price = parseFloat(editService.price.toString()) || 0;
+
+    setServices(
+      services.map((s) =>
+        s.id === editService.id ? { ...editService, price } : s
+      )
+    );
+    setOpenEdit(false);
+    setEditService(null);
+  };
+
+  const handleDeleteService = (id: number | undefined) => {
+    setServices(services.filter((s) => s.id !== id));
+  };
+
+  const filteredServices = services.filter(
+    (service) =>
+      service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      service.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      service.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      service.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   useEffect(() => {
-    setTimeout(() => {
-      setRows(userRows);
-      setLoading(false);
-    }, 2000);
-  }, []);
+    setTimeout(()=>{
+      setLoading(false)
+    },1500)
+  },[])
 
   return (
-    <div className="p-5">
-      <div className="w-full text-2xl text-gray-300 mb-[10px] flex items-center justify-between">
-        All Services
-        <span
-          onClick={() => navigate({ to: "/admin-services/add" })}
-          className="text-green-400 text-base font-normal border border-green-400 p-[5px] rounded-[5px] cursor-pointer"
-        >
-          Add Service
-        </span>
+    <div className="p-6 space-y-6">
+      {/* Dashboard Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent>Total Services: {services.length}</CardContent>
+        </Card>
+        <Card>
+          <CardContent>
+            Total Bookings:{" "}
+            {services.reduce((sum, s) => sum + (s.bookings ?? 0), 0)}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent>
+            Total Revenue: $
+            {/* {services.reduce((sum, s) => sum + s.bookings * s.price, 0)} */}
+          </CardContent>
+        </Card>
       </div>
-      {loading ? (
-        <ShimmerTable />
-      ) : (
-        <DataGrid
-          rows={rows}
-          columns={userColumns.concat(actionColumn)}
-          initialState={{ pagination: { paginationModel } }}
-          pageSizeOptions={[10]}
-          checkboxSelection
-          sx={{ border: 0 }}
-        />
-      )}
+
+      {/* Service Management Area */}
+      <div className="bg-white shadow rounded p-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+          <h2 className="text-xl font-bold mb-2 md:mb-0">Manage Services</h2>
+          <div className="flex gap-2 flex-wrap">
+            <TextField
+              variant="outlined"
+              size="small"
+              placeholder="Search services..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setOpenAdd(true)}
+            >
+              Add New Service
+            </Button>
+          </div>
+
+          {/* Add New Service Dialog */}
+          <Dialog open={openAdd} onClose={() => setOpenAdd(false)}>
+            <DialogTitle>Add New Service</DialogTitle>
+            <DialogContent>
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Service Name"
+                variant="outlined"
+                onChange={(e) =>
+                  setNewService({ ...newService, name: e.target.value })
+                }
+              />
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Description"
+                variant="outlined"
+                onChange={(e) =>
+                  setNewService({ ...newService, description: e.target.value })
+                }
+              />
+              <TextField
+                fullWidth
+                margin="dense"
+                label="Price"
+                variant="outlined"
+                type="number"
+                onChange={(e) =>
+                  setNewService({ ...newService, price: e.target.value })
+                }
+              />
+              {/* Provider Dropdown */}
+              <FormControl fullWidth margin="dense">
+                <InputLabel id="service-provider-label">Provider</InputLabel>
+                <Select
+                  labelId="service-provider-label"
+                  label="Provider"
+                  value={newService.provider || ""}
+                  onChange={(e) =>
+                    setNewService({ ...newService, provider: e.target.value })
+                  }
+                >
+                  {availableServiceProviders.map((provider) => (
+                    <MenuItem key={provider.id} value={provider.name}>
+                      {provider.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              {/* Category Dropdown */}
+              <FormControl fullWidth margin="dense">
+                <InputLabel id="service-category-label">Category</InputLabel>
+                <Select
+                  labelId="service-category-label"
+                  label="Category"
+                  value={newService.category || ""}
+                  onChange={(e) =>
+                    setNewService({ ...newService, category: e.target.value })
+                  }
+                >
+                  {availableCategories.map((cat) => (
+                    <MenuItem key={cat.id} value={cat.name}>
+                      {cat.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <div
+                style={{
+                  marginTop: 16,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 16,
+                }}
+              >
+                <Button variant="contained" component="label">
+                  Upload Image
+                  <input
+                    hidden
+                    type="file"
+                    accept="image/*"
+                    onChange={handleServiceImageChange}
+                  />
+                </Button>
+                {serviceImageUploading ? (
+                  <CircularProgress size={24} />
+                ) : newService.image ? (
+                  <img
+                    src={newService.image}
+                    alt="Service"
+                    width="50"
+                    height="50"
+                  />
+                ) : null}
+              </div>
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{ mt: 2, display: "block" }}
+                onClick={handleAddService}
+              >
+                Save
+              </Button>
+            </DialogContent>
+          </Dialog>
+
+          {/* Edit Service Dialog */}
+          <Dialog open={openEdit} onClose={() => setOpenEdit(false)}>
+            <DialogTitle>Edit Service</DialogTitle>
+            <DialogContent>
+              {editService && (
+                <>
+                  <TextField
+                    fullWidth
+                    margin="dense"
+                    label="Service Name"
+                    variant="outlined"
+                    value={editService.name}
+                    onChange={(e) =>
+                      setEditService({ ...editService, name: e.target.value })
+                    }
+                  />
+                  <TextField
+                    fullWidth
+                    margin="dense"
+                    label="Description"
+                    variant="outlined"
+                    value={editService.description}
+                    onChange={(e) =>
+                      setEditService({
+                        ...editService,
+                        description: e.target.value,
+                      })
+                    }
+                  />
+                  <TextField
+                    fullWidth
+                    margin="dense"
+                    label="Price"
+                    variant="outlined"
+                    type="number"
+                    value={editService.price}
+                    onChange={(e) =>
+                      setEditService({ ...editService, price: e.target.value })
+                    }
+                  />
+
+                  <TextField
+                    fullWidth
+                    margin="dense"
+                    label="Provider"
+                    variant="outlined"
+                    value={editService.provider}
+                    onChange={(e) =>
+                      setEditService({
+                        ...editService,
+                        provider: e.target.value,
+                      })
+                    }
+                  />
+                  {/* Category Dropdown for Edit */}
+                  <FormControl fullWidth margin="dense">
+                    <InputLabel id="edit-service-category-label">
+                      Category
+                    </InputLabel>
+                    <Select
+                      labelId="edit-service-category-label"
+                      label="Category"
+                      value={editService.category || ""}
+                      onChange={(e) =>
+                        setEditService({
+                          ...editService,
+                          category: e.target.value,
+                        })
+                      }
+                    >
+                      {availableCategories.map((cat) => (
+                        <MenuItem key={cat.id} value={cat.name}>
+                          {cat.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <div
+                    style={{
+                      marginTop: 16,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 16,
+                    }}
+                  >
+                    <Button variant="contained" component="label">
+                      Upload Image
+                      <input
+                        hidden
+                        type="file"
+                        accept="image/*"
+                        onChange={handleEditServiceImageChange}
+                      />
+                    </Button>
+                    {editServiceImageUploading ? (
+                      <CircularProgress size={24} />
+                    ) : editService.image ? (
+                      <img
+                        src={editService.image}
+                        alt="Service"
+                        width="50"
+                        height="50"
+                      />
+                    ) : null}
+                  </div>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ mt: 2, display: "block" }}
+                    onClick={handleEditServiceSave}
+                  >
+                    Save Changes
+                  </Button>
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* Services Table */}
+        {loading ? (
+          <ShimmerTable />
+        ) : (
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Service</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>Price ($)</TableCell>
+
+                  <TableCell>Provider</TableCell>
+                  <TableCell>Category</TableCell>
+                  <TableCell>Bookings</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredServices.map((service) => (
+                  <TableRow key={service.id} className="">
+                    <TableCell
+                      style={{ display: "flex", alignItems: "center" }}
+                    >
+                      <img
+                        src={service.image}
+                        alt={service.name}
+                        style={{ marginRight: 10 }}
+                        className="w-[3rem] h-[3rem] rounded-full object-cover"
+                      />
+                      {service.name}
+                    </TableCell>
+                    <TableCell>{service.description}</TableCell>
+                    <TableCell>{service.price}</TableCell>
+
+                    <TableCell>{service.provider}</TableCell>
+                    <TableCell>{service.category}</TableCell>
+                    <TableCell>{service.bookings}</TableCell>
+                    <TableCell style={{}}>
+                      <Button
+                        color="primary"
+                        onClick={() =>
+                          navigate({ to: `/admin-services/${service.id}` })
+                        }
+                      >
+                        View
+                      </Button>
+                      <Button
+                        color="secondary"
+                        onClick={() => {
+                          setEditService(service);
+                          setOpenEdit(true);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        color="error"
+                        onClick={() => handleDeleteService(service.id)}
+                      >
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </div>
+
+      {/* Service Bookings Analytics Chart */}
+      {/* <div className="bg-white shadow rounded p-4">
+        <h2 className="text-xl font-bold mb-4">Service Bookings</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={bookingsData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="bookings"
+              stroke="#3b82f6"
+              strokeWidth={2}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div> */}
     </div>
   );
-};
-
-export default AdminServices;
+}

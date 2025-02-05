@@ -17,4 +17,5 @@ export const ADMIN_ORDERS = "/admin-orders";
 export const ADMIN_CARTS = "/admin-carts";
 export const ADMIN_ADS = "/admin-ads";
 export const USERS = "/users";
+export const CATEGORIES = "/categories";
 

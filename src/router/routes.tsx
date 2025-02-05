@@ -28,6 +28,7 @@ import {
   ADMIN_CARTS,
   ADMIN_ADS,
   USERS,
+  CATEGORIES,
 } from "@/constants";
 import AdminHomePage from "@/pages/admin/home";
 
@@ -38,7 +39,6 @@ import Services from "@/pages/client/services";
 import ServiceDetails from "@/pages/client/services/ServiceDetails";
 import Checkout from "@/pages/client/checkout";
 import ConfirmOrder from "@/pages/client/confirmOrder";
-import AdminServices from "@/pages/admin/services";
 import Orders from "@/pages/admin/orders";
 import Carts from "@/pages/admin/carts";
 import Ads from "@/pages/admin/ads";
@@ -46,12 +46,13 @@ import Users from "@/pages/admin/users";
 import UserDetails from "@/pages/admin/users/UserDetails";
 import AddNewUser from "@/pages/admin/users/AddNewUser";
 import {
-  productInputs,
-  serviceInputs,
   userInputs,
 } from "@/pages/admin/utils/formSource";
 import ProductAdminDetails from "@/pages/admin/products/ProductAdminDetails";
 import ProductsPage from "@/pages/admin/products";
+import Category from "@/pages/admin/category";
+import ServicesPage from "@/pages/admin/services";
+import AdminServiceDetails from "@/pages/admin/services/AdminServiceDetails";
 
 
 export type RouteProps = Omit<Route, "children"> & {
@@ -91,13 +92,6 @@ const routes: RouteProps[] = [
         },
       },
       {
-        path: "/add",
-        element: <AddNewUser inputs={productInputs} title="Add New Product" />,
-        meta: {
-          layout: "Admin",
-        },
-      },
-      {
         path: "/:id",
         element: <ProductAdminDetails />,
         meta: {
@@ -115,16 +109,14 @@ const routes: RouteProps[] = [
     children: [
       {
         path: "/",
-        element: <AdminServices />,
+        element: <ServicesPage />,
         meta: {
           layout: "Admin",
         },
       },
       {
-        path: "/add",
-        element: (
-          <AddNewUser inputs={serviceInputs} title={"Add New Service"} />
-        ),
+        path: "/:id",
+        element: <AdminServiceDetails />,
         meta: {
           layout: "Admin",
         },
@@ -157,6 +149,13 @@ const routes: RouteProps[] = [
   {
     path: ADMIN_ADS,
     element: <Ads />,
+    meta: {
+      layout: "Admin",
+    },
+  },
+  {
+    path: CATEGORIES,
+    element: <Category />,
     meta: {
       layout: "Admin",
     },

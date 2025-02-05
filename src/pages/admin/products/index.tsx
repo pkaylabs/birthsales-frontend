@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -15,83 +15,54 @@ import {
   DialogContent,
   TextField,
   TablePagination,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+
+import { useNavigate } from "react-location";
+import { useProducts } from "../utils/ProductContext";
+import ShimmerTable from "../components/Shimmer";
 
 interface Product {
   id: number;
   name: string;
-  image: string | null;
-  additionalImages: string[];
+  image?: string;
+  additionalImages?: string[];
   category: string;
   price: string | number;
   dateAdded: string;
   quantity: string | number;
-  stock: number;
+  stock?: number;
   sales?: number;
   revenue?: number;
 }
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([
-    {
-      id: 1,
-      name: "Laptop",
-      image:
-        "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      additionalImages: [
-        "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      ],
-      category: "Electronics",
-      price: 1200,
-      dateAdded: "2025-01-15",
-      quantity: 50,
-      stock: 50,
-      sales: 120,
-      revenue: 60000,
-    },
-    {
-      id: 2,
-      name: "Smartphone",
-      image:
-        "https://plus.unsplash.com/premium_photo-1680623400141-7e129b7c56d0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      additionalImages: [
-        "https://plus.unsplash.com/premium_photo-1680623400141-7e129b7c56d0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        "https://plus.unsplash.com/premium_photo-1680623400141-7e129b7c56d0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        "https://plus.unsplash.com/premium_photo-1680623400141-7e129b7c56d0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        "https://plus.unsplash.com/premium_photo-1680623400141-7e129b7c56d0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      ],
-      category: "Electronics",
-      price: 800,
-      dateAdded: "2025-01-10",
-      quantity: 30,
-      stock: 30,
-      sales: 200,
-      revenue: 80000,
-    },
-  ]);
+  const [loading, setLoading] = useState(true);
+  const globalProduct = useProducts();
+  const [products, setProducts] = useState<Product[]>(globalProduct);
+
+  //  available categories for selection
+  const availableCategories = [
+    { id: 1, name: "Electronics" },
+    { id: 2, name: "Clothing" },
+    { id: 3, name: "Accessories" },
+  ];
 
   // New state for search/filter
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+  const navigate = useNavigate();
 
   // State for adding a new product
-  const [newProduct, setNewProduct] = useState({
+  const [newProduct, setNewProduct] = useState<Product>({
+    id: 0,
     name: "",
-    image: null,
+    image: "",
     additionalImages: [],
     category: "",
     price: "",
@@ -102,41 +73,64 @@ export default function ProductsPage() {
 
   // State for editing an existing product
   const [editOpen, setEditOpen] = useState(false);
-  const [editProduct, setEditProduct] = useState<any>(null);
+  const [editProduct, setEditProduct] = useState<Product | null>(null);
 
   const [totalRevenue, setTotalRevenue] = useState(0);
 
+  // Upload status states for adding product
+  const [mainImageUploading, setMainImageUploading] = useState(false);
+  const [additionalImagesUploading, setAdditionalImagesUploading] =
+    useState(false);
+
+  // Upload status states for editing product
+  const [editMainImageUploading, setEditMainImageUploading] = useState(false);
+  const [editAdditionalImagesUploading, setEditAdditionalImagesUploading] =
+    useState(false);
+
   useEffect(() => {
     const revenueSum = products.reduce(
-      (sum, product) => sum + parseFloat(product.revenue),
+      (sum, product) => sum + (product.revenue ?? 0),
       0
     );
     setTotalRevenue(revenueSum);
   }, [products]);
 
-  const salesData = [
-    { month: "Jan", sales: 300 },
-    { month: "Feb", sales: 450 },
-    { month: "Mar", sales: 500 },
-    { month: "Apr", sales: 650 },
-    { month: "May", sales: 800 },
-  ];
+  useEffect(() => {
+    setTimeout(() => {
+      setLoading(false)
+    },1500)
+  },[])
+
+ 
 
   // --- Handlers for "Add New Product" dialog ---
-  const handleMainImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setNewProduct((prev) => ({ ...prev, image: URL.createObjectURL(file) }));
+  const handleMainImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setMainImageUploading(true);
+      setTimeout(() => {
+        setNewProduct((prev) => ({
+          ...prev,
+          image: URL.createObjectURL(file),
+        }));
+        setMainImageUploading(false);
+      }, 1000);
     }
   };
 
-  const handleAdditionalImagesChange = (e) => {
+  const handleAdditionalImagesChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      const urls = Array.from(files)
-        .slice(0, 4)
-        .map((file) => URL.createObjectURL(file));
-      setNewProduct((prev) => ({ ...prev, additionalImages: urls }));
+      setAdditionalImagesUploading(true);
+      setTimeout(() => {
+        const urls = Array.from(files)
+          .slice(0, 4)
+          .map((file) => URL.createObjectURL(file));
+        setNewProduct((prev) => ({ ...prev, additionalImages: urls }));
+        setAdditionalImagesUploading(false);
+      }, 1500);
     }
   };
 
@@ -145,14 +139,14 @@ export default function ProductsPage() {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: any) => {
-    setRowsPerPage(parseInt("5"));
+  const handleChangeRowsPerPage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(rowsPerPage);
     setPage(0);
   };
 
   const handleSave = () => {
-    const quantity = parseFloat(newProduct.quantity) || 0;
-    const price = parseFloat(newProduct.price) || 0;
+    const quantity = parseFloat(newProduct.quantity.toString()) || 0;
+    const price = parseFloat(newProduct.price.toString()) || 0;
     setProducts([
       ...products,
       {
@@ -168,26 +162,39 @@ export default function ProductsPage() {
   };
 
   // --- Handlers for the "Edit Product" dialog ---
-  const handleEditMainImageChange = (e) => {
-    const file = e.target.files[0];
+  const handleEditMainImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files && e.target.files[0];
     if (file && editProduct) {
-      setEditProduct({ ...editProduct, image: URL.createObjectURL(file) });
+      setEditMainImageUploading(true);
+      setTimeout(() => {
+        setEditProduct({ ...editProduct, image: URL.createObjectURL(file) });
+        setEditMainImageUploading(false);
+      }, 1000);
     }
   };
 
-  const handleEditAdditionalImagesChange = (e) => {
+  const handleEditAdditionalImagesChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = e.target.files;
     if (files && files.length > 0 && editProduct) {
-      const urls = Array.from(files)
-        .slice(0, 4)
-        .map((file) => URL.createObjectURL(file));
-      setEditProduct({ ...editProduct, additionalImages: urls });
+      setEditAdditionalImagesUploading(true);
+      setTimeout(() => {
+        const urls = Array.from(files)
+          .slice(0, 4)
+          .map((file) => URL.createObjectURL(file));
+        setEditProduct({ ...editProduct, additionalImages: urls });
+        setEditAdditionalImagesUploading(false);
+      }, 1500);
     }
   };
 
   const handleEditSave = () => {
-    const quantity = parseFloat(editProduct.quantity) || 0;
-    const price = parseFloat(editProduct.price) || 0;
+    if (!editProduct) return;
+    const quantity = parseFloat(editProduct.quantity.toString()) || 0;
+    const price = parseFloat(editProduct.price.toString()) || 0;
     setProducts(
       products.map((product) =>
         product.id === editProduct.id
@@ -200,7 +207,7 @@ export default function ProductsPage() {
   };
 
   // Delete handler remains the same.
-  const handleDelete = (id) => {
+  const handleDelete = (id: number) => {
     setProducts(products.filter((product) => product.id !== id));
   };
 
@@ -209,6 +216,12 @@ export default function ProductsPage() {
     (product) =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Determine products to display based on current page and rows per page
+  const paginatedProducts = filteredProducts.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
   );
 
   return (
@@ -220,12 +233,12 @@ export default function ProductsPage() {
         </Card>
         <Card>
           <CardContent>
-            In Stock: {products.reduce((sum, p) => sum + p.stock, 0)}
+            In Stock: {products.reduce((sum, p) => sum + (p.stock ?? 0), 0)}
           </CardContent>
         </Card>
         <Card>
           <CardContent>
-            Total Sales: {products.reduce((sum, p) => sum + p.sales, 0)}
+            Total Sales: {products.reduce((sum, p) => sum + (p.sales ?? 0), 0)}
           </CardContent>
         </Card>
         <Card>
@@ -267,15 +280,24 @@ export default function ProductsPage() {
                   setNewProduct({ ...newProduct, name: e.target.value })
                 }
               />
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Category"
-                variant="outlined"
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, category: e.target.value })
-                }
-              />
+              {/* Category Dropdown */}
+              <FormControl fullWidth margin="dense">
+                <InputLabel id="category-label">Category</InputLabel>
+                <Select
+                  labelId="category-label"
+                  label="Category"
+                  value={newProduct.category || ""}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, category: e.target.value })
+                  }
+                >
+                  {availableCategories.map((cat) => (
+                    <MenuItem key={cat.id} value={cat.name}>
+                      {cat.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
               <TextField
                 fullWidth
                 margin="dense"
@@ -306,29 +328,66 @@ export default function ProductsPage() {
                   setNewProduct({ ...newProduct, quantity: e.target.value })
                 }
               />
-              <Button
-                variant="contained"
-                component="label"
-                sx={{ mt: 2, mr: 2 }}
+              <div
+                style={{
+                  marginTop: 16,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 16,
+                }}
               >
-                Upload Main Image
-                <input
-                  hidden
-                  type="file"
-                  accept="image/*"
-                  onChange={handleMainImageChange}
-                />
-              </Button>
-              <Button variant="contained" component="label" sx={{ mt: 2 }}>
-                Upload Additional Images
-                <input
-                  hidden
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleAdditionalImagesChange}
-                />
-              </Button>
+                <Button variant="contained" component="label">
+                  Upload Main Image
+                  <input
+                    hidden
+                    type="file"
+                    accept="image/*"
+                    onChange={handleMainImageChange}
+                  />
+                </Button>
+                {mainImageUploading ? (
+                  <CircularProgress size={24} />
+                ) : newProduct.image ? (
+                  <img
+                    src={newProduct.image}
+                    alt="Uploaded"
+                    width="50"
+                    height="50"
+                  />
+                ) : null}
+              </div>
+              <div
+                style={{
+                  marginTop: 16,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 16,
+                }}
+              >
+                <Button variant="contained" component="label">
+                  Upload Additional Images
+                  <input
+                    hidden
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleAdditionalImagesChange}
+                  />
+                </Button>
+                {additionalImagesUploading ? (
+                  <CircularProgress size={24} />
+                ) : (newProduct.additionalImages ?? []).length > 0 ? (
+                  (newProduct.additionalImages ?? []).map((img, idx) => (
+                    <img
+                      key={idx}
+                      src={img}
+                      alt={`Uploaded ${idx}`}
+                      width="50"
+                      height="50"
+                    />
+                  ))
+                ) : null}
+              </div>
               <Button
                 variant="contained"
                 color="primary"
@@ -356,19 +415,27 @@ export default function ProductsPage() {
                       setEditProduct({ ...editProduct, name: e.target.value })
                     }
                   />
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Category"
-                    variant="outlined"
-                    value={editProduct.category}
-                    onChange={(e) =>
-                      setEditProduct({
-                        ...editProduct,
-                        category: e.target.value,
-                      })
-                    }
-                  />
+                  {/* Category Dropdown for Edit */}
+                  <FormControl fullWidth margin="dense">
+                    <InputLabel id="edit-category-label">Category</InputLabel>
+                    <Select
+                      labelId="edit-category-label"
+                      label="Category"
+                      value={editProduct.category || ""}
+                      onChange={(e) =>
+                        setEditProduct({
+                          ...editProduct,
+                          category: e.target.value,
+                        })
+                      }
+                    >
+                      {availableCategories.map((cat) => (
+                        <MenuItem key={cat.id} value={cat.name}>
+                          {cat.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                   <TextField
                     fullWidth
                     margin="dense"
@@ -408,29 +475,67 @@ export default function ProductsPage() {
                       })
                     }
                   />
-                  <Button
-                    variant="contained"
-                    component="label"
-                    sx={{ mt: 2, mr: 2 }}
+                  <div
+                    style={{
+                      marginTop: 16,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 16,
+                    }}
                   >
-                    Upload Main Image
-                    <input
-                      hidden
-                      type="file"
-                      accept="image/*"
-                      onChange={handleEditMainImageChange}
-                    />
-                  </Button>
-                  <Button variant="contained" component="label" sx={{ mt: 2 }}>
-                    Upload Additional Images
-                    <input
-                      hidden
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleEditAdditionalImagesChange}
-                    />
-                  </Button>
+                    <Button variant="contained" component="label">
+                      Upload Main Image
+                      <input
+                        hidden
+                        type="file"
+                        accept="image/*"
+                        onChange={handleEditMainImageChange}
+                      />
+                    </Button>
+                    {editMainImageUploading ? (
+                      <CircularProgress size={24} />
+                    ) : editProduct.image ? (
+                      <img
+                        src={editProduct.image}
+                        alt="Uploaded"
+                        width="50"
+                        height="50"
+                      />
+                    ) : null}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 16,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 16,
+                    }}
+                  >
+                    <Button variant="contained" component="label">
+                      Upload Additional Images
+                      <input
+                        hidden
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleEditAdditionalImagesChange}
+                      />
+                    </Button>
+                    {editAdditionalImagesUploading ? (
+                      <CircularProgress size={24} />
+                    ) : editProduct.additionalImages &&
+                      editProduct.additionalImages.length > 0 ? (
+                      editProduct.additionalImages.map((img, idx) => (
+                        <img
+                          key={idx}
+                          src={img}
+                          alt={`Uploaded ${idx}`}
+                          width="50"
+                          height="50"
+                        />
+                      ))
+                    ) : null}
+                  </div>
                   <Button
                     variant="contained"
                     color="primary"
@@ -445,65 +550,78 @@ export default function ProductsPage() {
           </Dialog>
         </div>
         <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Product</TableCell>
-                <TableCell>Category</TableCell>
-                <TableCell>Price ($)</TableCell>
-                <TableCell>Date Added</TableCell>
-                <TableCell>Quantity</TableCell>
-                <TableCell>Stock</TableCell>
-                <TableCell>Sales</TableCell>
-                <TableCell>Revenue ($)</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredProducts.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell style={{ display: "flex", alignItems: "center" }}>
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      style={{ marginRight: 10 }}
-                      className="w-[3rem] h-[3rem] object-cover rounded-full"
-                    />
-                    {product.name}
-                  </TableCell>
-                  <TableCell>{product.category}</TableCell>
-                  <TableCell>{product.price}</TableCell>
-                  <TableCell>{product.dateAdded}</TableCell>
-                  <TableCell>{product.quantity}</TableCell>
-                  <TableCell>{product.stock}</TableCell>
-                  <TableCell>{product.sales}</TableCell>
-                  <TableCell>{product.revenue}</TableCell>
-                  <TableCell>
-                    <Button color="primary">View</Button>
-                    <Button
-                      color="secondary"
-                      onClick={() => {
-                        setEditProduct(product);
-                        setEditOpen(true);
-                      }}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      color="error"
-                      onClick={() => handleDelete(product.id)}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
+          {loading ? (
+            <ShimmerTable />
+          ) : (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Product</TableCell>
+                  <TableCell>Category</TableCell>
+                  <TableCell>Price ($)</TableCell>
+                  <TableCell>Date Added</TableCell>
+                  <TableCell>Quantity</TableCell>
+                  <TableCell>Stock</TableCell>
+                  <TableCell>Sales</TableCell>
+                  <TableCell>Revenue ($)</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHead>
+              <TableBody>
+                {paginatedProducts.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell
+                      style={{ display: "flex", alignItems: "center" }}
+                    >
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        style={{ marginRight: 10 }}
+                        className="w-[3rem] h-[3rem] object-cover rounded-full"
+                      />
+                      {product.name}
+                    </TableCell>
+                    <TableCell>{product.category}</TableCell>
+                    <TableCell>{product.price}</TableCell>
+                    <TableCell>{product.dateAdded}</TableCell>
+                    <TableCell>{product.quantity}</TableCell>
+                    <TableCell>{product.stock}</TableCell>
+                    <TableCell>{product.sales}</TableCell>
+                    <TableCell>{product.revenue}</TableCell>
+                    <TableCell>
+                      <Button
+                        color="primary"
+                        onClick={() =>
+                          navigate({ to: `/products/${product.id}` })
+                        }
+                      >
+                        View
+                      </Button>
+                      <Button
+                        color="secondary"
+                        onClick={() => {
+                          setEditProduct(product);
+                          setEditOpen(true);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        color="error"
+                        onClick={() => handleDelete(product.id)}
+                      >
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </TableContainer>
         {/* Pagination */}
         <TablePagination
-          component={"div"}
+          component="div"
           count={filteredProducts.length}
           page={page}
           onPageChange={handleChangePage}
@@ -512,25 +630,7 @@ export default function ProductsPage() {
         />
       </div>
 
-      {/* Sales Analytics Chart */}
-      <div className="bg-white shadow rounded p-4">
-        <h2 className="text-xl font-bold mb-4">Sales Performance</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={salesData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="sales"
-              stroke="#3b82f6"
-              strokeWidth={2}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+
     </div>
   );
 }

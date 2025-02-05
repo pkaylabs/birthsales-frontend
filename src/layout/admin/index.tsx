@@ -21,6 +21,7 @@ import {
   HomeIcon,
   MegaphoneIcon,
   XMarkIcon,
+  TagIcon,
 } from "@heroicons/react/24/outline";
 import {
   ChevronDownIcon,
@@ -55,6 +56,12 @@ const navigation = [
     name: "Carts",
     href: "/admin-carts",
     icon: ShoppingCartIcon,
+    current: false,
+  },
+  {
+    name: "Category",
+    href: "/categories",
+    icon: TagIcon,
     current: false,
   },
   { name: "Ads", href: "/admin-ads", icon: MegaphoneIcon, current: false },
