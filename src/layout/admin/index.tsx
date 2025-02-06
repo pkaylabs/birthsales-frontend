@@ -32,7 +32,7 @@ import { Outlet, useNavigate } from "react-location";
 import { ADMIN_HOME } from "@/constants";
 
 const navigation = [
-  { name: "Dashboard", href: "/admin", icon: HomeIcon, current: false },
+  { name: "Dashboard", href: ADMIN_HOME, icon: HomeIcon, current: false },
   {
     name: "Products",
     href: "/products",
@@ -127,8 +127,8 @@ export default function AdminLayout() {
                       <ul role="list" className="-mx-2 space-y-1">
                         {navigation.map((item) => (
                           <li key={item.name}>
-                            <a
-                              href={item.href}
+                            <button
+                              onClick={() => navigate({ to: item.href })}
                               className={classNames(
                                 item.current
                                   ? "bg-gray-800 text-white"
@@ -141,7 +141,7 @@ export default function AdminLayout() {
                                 className="size-6 shrink-0"
                               />
                               {item.name}
-                            </a>
+                            </button>
                           </li>
                         ))}
                       </ul>
@@ -186,8 +186,8 @@ export default function AdminLayout() {
                   <ul role="list" className="-mx-2 space-y-2">
                     {navigation.map((item) => (
                       <li key={item.name}>
-                        <a
-                          href={item.href}
+                        <button
+                          onClick={() => navigate({ to: item.href })}
                           className={classNames(
                             item.current
                               ? "bg-gray-800 text-white"
@@ -200,7 +200,7 @@ export default function AdminLayout() {
                             className="size-6 shrink-0"
                           />
                           {item.name}
-                        </a>
+                        </button>
                       </li>
                     ))}
                   </ul>
