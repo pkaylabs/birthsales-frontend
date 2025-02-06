@@ -28,7 +28,7 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
 import { classNames } from "@/utils";
-import { Outlet, useNavigate } from "react-location";
+import { Link, Outlet, useNavigate } from "react-location";
 import { ADMIN_HOME } from "@/constants";
 
 const navigation = [
@@ -127,8 +127,8 @@ export default function AdminLayout() {
                       <ul role="list" className="-mx-2 space-y-1">
                         {navigation.map((item) => (
                           <li key={item.name}>
-                            <button
-                              onClick={() => navigate({ to: item.href })}
+                            <Link
+                              to={item.href}
                               className={classNames(
                                 item.current
                                   ? "bg-gray-800 text-white"
@@ -141,7 +141,7 @@ export default function AdminLayout() {
                                 className="size-6 shrink-0"
                               />
                               {item.name}
-                            </button>
+                            </Link>
                           </li>
                         ))}
                       </ul>
@@ -186,8 +186,8 @@ export default function AdminLayout() {
                   <ul role="list" className="-mx-2 space-y-2">
                     {navigation.map((item) => (
                       <li key={item.name}>
-                        <button
-                          onClick={() => navigate({ to: item.href })}
+                        <Link
+                          to={item.href}
                           className={classNames(
                             item.current
                               ? "bg-gray-800 text-white"
@@ -200,7 +200,7 @@ export default function AdminLayout() {
                             className="size-6 shrink-0"
                           />
                           {item.name}
-                        </button>
+                        </Link>
                       </li>
                     ))}
                   </ul>

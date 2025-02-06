@@ -44,7 +44,6 @@ import Carts from "@/pages/admin/carts";
 import Ads from "@/pages/admin/ads";
 import Users from "@/pages/admin/users";
 import UserDetails from "@/pages/admin/users/UserDetails";
-import AddNewUser from "@/pages/admin/users/AddNewUser";
 import {
   userInputs,
 } from "@/pages/admin/utils/formSource";
@@ -170,13 +169,6 @@ const routes: RouteProps[] = [
       {
         path: "/",
         element: <Users />,
-        meta: {
-          layout: "Admin",
-        },
-      },
-      {
-        path: "/add",
-        element: <AddNewUser inputs={userInputs} title="Add New User" />,
         meta: {
           layout: "Admin",
         },
