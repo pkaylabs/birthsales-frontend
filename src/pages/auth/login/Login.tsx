@@ -30,13 +30,13 @@ const Login = () => {
     });
 
   return (
-    <div className="mt-[6rem] w-full slide-up">
+    <div className="mt-[5rem] w-full slide-up">
       <div className="flex  mb-20">
         {/* Image */}
-        <div className="w-[805px]">
+        <div className="flex flex-[2]">
           <img
             alt="sign up image"
-            src="https://s3-alpha-sig.figma.com/img/75f3/94c0/a1c7dc5b68a42239311e510f54d8cd59?Expires=1737936000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=nV9ZtiMyfHw~oGBA2bAdQQhJRoDiX3SjhvUS31oEqYzU4hUmZ9VLGWmHEjtU18F4kBu4fSoZJ7OP3ubaKPbOzuTlzhcS8bpuf8hGgzxmBh4lS5m2PtGUF4MqEoNNrQKh6KUoIv0-nSDr~oVp4N-0JtdrFGM6j7AKZ7Hvl~shXPQUojth3jrO9GIhqqTiGfjUz4-QBk3F45leNpdREHtUkyl7UM8ogCjXT~e740kL9TA~MCAumyy~IpVMp-zSFTrdIAoSY-sFcrDORYmvOKXjErqJsu0PxRS8eeF~oHOq2HBnn679xsX~ZOIYC3VyePfI-bDy5OaygWONaM-F1xywaQ__"
+            src="https://plus.unsplash.com/premium_photo-1728224403721-a4affa8e30ff?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             className="object-contain"
           />
         </div>

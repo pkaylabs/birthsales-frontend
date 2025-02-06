@@ -11,8 +11,8 @@ import { CONFIRM_ORDER } from "@/constants";
 
 const ServiceDetails = () => {
   const { params } = useMatch<LocationGenerics>();
- 
-  const navigate = useNavigate()
+
+  const navigate = useNavigate();
 
   const search = useSearch<any>();
 
@@ -43,7 +43,6 @@ const ServiceDetails = () => {
     },
   ];
 
-
   return (
     <main className="w-full max-w-[80rem] mx-auto">
       <div className="mt-6 flex items-center space-x-3 text-gray-400">
@@ -57,7 +56,7 @@ const ServiceDetails = () => {
           {images.map((image, index) => (
             <motion.div
               key={index}
-              className="w-full h-[170px] bg-[#F5F5F5] rounded flex justify-center items-center cursor-pointer"
+              className="w-full h-full bg-[#F5F5F5] rounded flex justify-center items-center cursor-pointer"
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.9, rotate: -3 }}
               transition={{ type: "spring", stiffness: 300 }}
@@ -66,7 +65,7 @@ const ServiceDetails = () => {
               <img
                 src={image.src}
                 alt={`product-${index}`}
-                className="w-32 h-28 object-contain"
+                className="w-full h-full object-cover"
               />
             </motion.div>
           ))}
@@ -84,7 +83,7 @@ const ServiceDetails = () => {
           <img
             src={selectedImage}
             alt="main-product"
-            className="w-[446px] h-[315px] object-contain"
+            className="w-full h-full object-cover"
           />
         </motion.div>
         <div className="flex-1 pl-14 flex flex-col justify-between">
@@ -105,7 +104,6 @@ const ServiceDetails = () => {
               <p className="font-medium text-base text-gray-400 ">
                 (150 Reviews)
               </p>
-             
             </div>
             <h4 className="text-2xl mb-4">
               ${search.startPrice} - ${search.endPrice}
@@ -115,11 +113,13 @@ const ServiceDetails = () => {
           <div className="">
             <div className="flex justify-between items-center gap-6">
               <div className="flex-1">
-                <button onClick={() => navigate({to: CONFIRM_ORDER})} className="w-full h-11 flex justify-center items-center bg-[#DB4444] text-white rounded-md">
+                <button
+                  onClick={() => navigate({ to: CONFIRM_ORDER })}
+                  className="w-full h-11 flex justify-center items-center bg-[#DB4444] text-white rounded-md"
+                >
                   Book Now
                 </button>
               </div>
-              
             </div>
           </div>
           <div className="border border-[#1C1B1F] rounded ">
@@ -152,43 +152,43 @@ const ServiceDetails = () => {
 
       <section className="mt-20">
         <h1 className="font-semibold text-2xl mb-2">Related Services</h1>
-        <div className="flex justify-between items-center">
+        <div className="flex items-center gap-4">
           <ServiceCard
-            id={6}
+            id={8}
             img={
-              "https://images.unsplash.com/photo-1691534986134-cac9b2db495f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             }
-            title="Shirts"
+            title="Home Rentals"
             description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
             startPrice={100}
             endPrice={600}
           />
           <ServiceCard
-            id={7}
+            id={8}
             img={
-              "https://images.unsplash.com/photo-1691534986134-cac9b2db495f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             }
-            title="Keyboards"
+            title="Home Rentals"
             description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
             startPrice={100}
             endPrice={600}
           />
           <ServiceCard
-            id={7}
+            id={8}
             img={
-              "https://images.unsplash.com/photo-1691534986134-cac9b2db495f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             }
-            title="Keyboards"
+            title="Home Rentals"
             description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
             startPrice={100}
             endPrice={600}
           />
           <ServiceCard
-            id={7}
+            id={8}
             img={
-              "https://images.unsplash.com/photo-1691534986134-cac9b2db495f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             }
-            title="Keyboards"
+            title="Home Rentals"
             description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
             startPrice={100}
             endPrice={600}

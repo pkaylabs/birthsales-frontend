@@ -9,13 +9,13 @@ const Services = () => {
           <p className="">Home</p> <span>/</span>{" "}
           <p className="text-black text-2xl">Services</p>
         </div>
-        <div className=" flex justify-between flex-wrap">
+        <div className="grid grid-cols-3 gap-2">
           <ServiceCard
             id={1}
             img={
-              "https://images.unsplash.com/photo-1691534986134-cac9b2db495f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              "https://plus.unsplash.com/premium_photo-1663047523120-055de6d869d6?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             }
-            title="Speakers"
+            title="Hair Dressing"
             description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
             startPrice={300}
             endPrice={500}
@@ -24,9 +24,9 @@ const Services = () => {
           <ServiceCard
             id={2}
             img={
-              "https://images.unsplash.com/photo-1733811073382-95d5b79c4cf1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              "https://plus.unsplash.com/premium_photo-1664109999537-088e7d964da2?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             }
-            title="Bags"
+            title="Health and Fitness"
             description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
             startPrice={50}
             endPrice={100}
@@ -35,9 +35,9 @@ const Services = () => {
           <ServiceCard
             id={3}
             img={
-              "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              "https://images.unsplash.com/photo-1573167101669-476636b96cea?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             }
-            title="Bags"
+            title="IT Services"
             description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
             startPrice={50}
             endPrice={100}
@@ -45,9 +45,9 @@ const Services = () => {
           <ServiceCard
             id={4}
             img={
-              "https://images.unsplash.com/photo-1691534986134-cac9b2db495f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             }
-            title="Speakers"
+            title="Car Services"
             description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
             startPrice={300}
             endPrice={500}
@@ -55,9 +55,9 @@ const Services = () => {
           <ServiceCard
             id={5}
             img={
-              "https://images.unsplash.com/photo-1691534986134-cac9b2db495f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              "https://plus.unsplash.com/premium_photo-1677444398697-d565239637f7?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             }
-            title="Speakers"
+            title="Barbering Services"
             description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
             startPrice={100}
             endPrice={600}
@@ -65,9 +65,9 @@ const Services = () => {
           <ServiceCard
             id={6}
             img={
-              "https://images.unsplash.com/photo-1691534986134-cac9b2db495f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              "https://images.unsplash.com/photo-1578574577315-3fbeb0cecdc2?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             }
-            title="Shirts"
+            title="Life Coaching"
             description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
             startPrice={100}
             endPrice={600}
@@ -75,9 +75,9 @@ const Services = () => {
           <ServiceCard
             id={7}
             img={
-              "https://images.unsplash.com/photo-1691534986134-cac9b2db495f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              "https://plus.unsplash.com/premium_photo-1673108852141-e8c3c22a4a22?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             }
-            title="Keyboards"
+            title="Food Services"
             description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
             startPrice={100}
             endPrice={600}
@@ -85,9 +85,9 @@ const Services = () => {
           <ServiceCard
             id={8}
             img={
-              "https://images.unsplash.com/photo-1691534986134-cac9b2db495f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             }
-            title="Speakers"
+            title="Home Rentals"
             description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
             startPrice={100}
             endPrice={600}
