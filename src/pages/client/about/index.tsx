@@ -43,7 +43,7 @@ const About = () => {
             </div>
             <div className="w-1/2">
               <img
-                src="https://s3-alpha-sig.figma.com/img/fcc8/9aaa/7b85f8c1dcce81e71e2eb178be13bd4d?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=imexDryZgDM1HfWASx~LWewQrgzDWr4dT2HMdB8YpwH5bAHrvVvDTpt7CBMK1OC9-758dcKG7NG3iarHrwYRrGfUYG0Shv5rWMZX-rAGH6LKckc~CzOCAMGPqTq7K5O~58RbYA4i-qJZRb4rSduf8UIErEFNxW22Oo~TzI867GxIbaPhK0ybls-kPnN6bJ8LqAV4t1hUL6AJja5JBuXffe30Nos0o9K2VYuTcJsqsbziyeP8TICl-CjoQBi~~3o9zOTt4FtLd~Fss7Y6lBpbbf3aH3yKLKIusL6jujDvg9liu6K2phjKhKyBzT65g3IH59xG2swW4DR9kZ1i~QEe~g__"
+                src="https://images.unsplash.com/photo-1536336076412-fd2a4de236f0?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                 alt=""
                 className="rounded-md"
               />
@@ -111,18 +111,15 @@ const About = () => {
             </div>
           </div>
           {/* Team members */}
-          <div className="max-w-full flex justify-between space-x-5 overflow-x-auto custom-scrollbar">
-            <div className="min-w-[300px] flex-shrink-0 h-[420px] flex flex-col justify-between hover:scale-90 tranform transition-transform duration-500 ease-in-out">
+          <div className="max-w-full flex justify-between space-x-5 overflow-x-auto custom-scrollbar mt-5">
+            <div className="grid grid-cols-4 gap-5">
               {/* image */}
-              <div className="w-full h-[70%] pt-5 bg-[#F5F5F5] rounded-lg">
+              <div className="w-full h-[70%] bg-[#F5F5F5] hover:scale-90 tranform transition-transform duration-500 ease-in-out">
                 <img
-                  src="https://s3-alpha-sig.figma.com/img/0881/49fd/5afc043392ee3cbb529f429b3e2098d3?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=e~kGS1VlgbHlM1i4XSfHXXbkZSfU6vaJzXwXwL-n27n6WS5nh8yaC90ZPMtuMEibV9ob37j4LgUgKPalk6TFgUEo8vOirBiEjGqQDFmTTY3bgTa5mw130eU4Qz2kCU8M6HFsD0CKk8H4cC5OUD7hxGkcG1EjlQUtKj5ENUxF8BISyhFfBd3Ikcfh8KFqD8Si-RnleP2mSTMrj-eobpN9h~H7t8KXSay-mF7A7q8hlqzEMJD49nkZAL6VbREsWOXsqPMlu7MXquQObb8b7gf0rLj1SY2a2GKj5Hs6AsKCIeCfr0cO0RdC1UWWVF8lrcYlooWadDm-ecYku8Q6~8AQ-g__"
+                  src="https://images.unsplash.com/photo-1491349174775-aaafddd81942?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   alt="team member"
-                  className="w-full h-full m-auto object-contain"
+                  className="w-full h-full mb-5 object-cover rounded-t-lg"
                 />
-              </div>
-              {/*  */}
-              <div className="flex flex-col justify-between gap-3">
                 <h1 className="font-medium text-3xl">Abdul Nasir Jamal</h1>
                 <p className="text-base font-normal">Founder & Chairman</p>
                 <div className="flex gap-2 items-center">
@@ -131,59 +128,41 @@ const About = () => {
                   <CiLinkedin />
                 </div>
               </div>
-            </div>
-            <div className="min-w-[300px] flex-shrink-0 h-[420px] flex flex-col justify-between hover:scale-90 tranform transition-transform duration-500 ease-in-out">
-              {/* image */}
-              <div className="w-full h-[70%] pt-5 bg-[#F5F5F5] rounded-lg">
+              <div className="w-full h-[70%] bg-[#F5F5F5] hover:scale-90 tranform transition-transform duration-500 ease-in-out">
                 <img
-                  src="https://s3-alpha-sig.figma.com/img/8438/eab9/a2fe88af0272adecd83422d0cb7e20d7?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=AagT9Md7lu2Deu3NPXXAaLTdxl9KQva8PvOWPhbvDyqKAaJTUekBRdMzmVzlXmwa46bZOXcK2VMrzE2yttlC70P4cks4E7cpOWcHPsk2Ql9n9Hy74mC-3BPmBphch2dprbTv6ulx~k5G1NmDuq6WK5rnuPKMpdShtgFRQu~H2egs15MQyID61D9b-YKJTVa4K81-L7rAUL9JChfzJI0RNKM9xdk9AbP78sJqXMoFhXescOUsiR8wtOCO~El6Ofi0glGcxsr2RxlwhsFO9cQ~mM08J-HTSKyi~qmsRue3DvkYvCcHqmXqvFuSh0AH~ouELKXVzjA1gKgMC0cSaba9tw__"
+                  src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   alt="team member"
-                  className="w-full h-full m-auto object-contain"
+                  className="w-full h-full mb-5 object-cover rounded-t-lg"
                 />
+                <h1 className="font-medium text-3xl">Isaac Abu</h1>
+                <p className="text-base font-normal">Founder & Chairman</p>
+                <div className="flex gap-2 items-center">
+                  <CiTwitter />
+                  <CiInstagram />
+                  <CiLinkedin />
+                </div>
               </div>
-              {/*  */}
-              <div className="flex flex-col justify-between gap-3">
+              <div className="w-full h-[70%] bg-[#F5F5F5] hover:scale-90 tranform transition-transform duration-500 ease-in-out">
+                <img
+                  src="https://plus.unsplash.com/premium_photo-1678197937465-bdbc4ed95815?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                  alt="team member"
+                  className="w-full h-full mb-5 object-cover rounded-t-lg"
+                />
+                <h1 className="font-medium text-3xl">Prince Kyeremateng</h1>
+                <p className="text-base font-normal">Founder & Chairman</p>
+                <div className="flex gap-2 items-center">
+                  <CiTwitter />
+                  <CiInstagram />
+                  <CiLinkedin />
+                </div>
+              </div>
+              <div className="w-full h-[70%] bg-[#F5F5F5] hover:scale-90 tranform transition-transform duration-500 ease-in-out">
+                <img
+                  src="https://images.unsplash.com/photo-1542206395-9feb3edaa68d?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                  alt="team member"
+                  className="w-full h-full mb-5 object-cover rounded-t-lg"
+                />
                 <h1 className="font-medium text-3xl">Harriet Kyeremateng</h1>
-                <p className="text-base font-normal">Managing Director</p>
-                <div className="flex gap-2 items-center">
-                  <CiTwitter />
-                  <CiInstagram />
-                  <CiLinkedin />
-                </div>
-              </div>
-            </div>
-            <div className="min-w-[300px] flex-shrink-0 h-[420px] flex flex-col justify-between hover:scale-90 tranform transition-transform duration-500 ease-in-out">
-              {/* image */}
-              <div className="w-full h-[70%] pt-5 bg-[#F5F5F5] rounded-lg">
-                <img
-                  src="https://s3-alpha-sig.figma.com/img/ede4/8f2b/5df8103b281240ce5bafe5dd7d215ab8?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=d0ZKk8tT3rAlquWSC-aBIf8pTWzEAywPLunkIgY2hMINmu~J2ZoUXMJMW-pqjD-rEjOY0E2hfWpsynyF1ZDm46V-CuVrYC00zuYX~P4Th3VDjfWgciwh53pZFVRKjjzs3Jcblmn59~oBJRdtg6Mumkgctdol20nHQYpsZZmsaMn3~gSilHQhXh8bKwJdOqexwLeH~w7AJ-myU4qjkSj3~qz3brjqTtFuOHhXFIzffZrM~2OXa9mOAgM8LNpRZ5zC51Y44BCaCnOriH8Pr0X1AfI4T6J7Ztg7T8UHFnrpFueZ7j5mM1NCFz6v2DIXdTVnYlE5maoCVVdLy~U1LfHkxQ__"
-                  alt="team member"
-                  className="w-full h-full m-auto object-contain"
-                />
-              </div>
-              {/*  */}
-              <div className="flex flex-col justify-between gap-3">
-                <h1 className="font-medium text-3xl">Isaac Childrex</h1>
-                <p className="text-base font-normal">Product Designer</p>
-                <div className="flex gap-2 items-center">
-                  <CiTwitter />
-                  <CiInstagram />
-                  <CiLinkedin />
-                </div>
-              </div>
-            </div>
-            <div className="min-w-[300px] flex-shrink-0 h-[420px] flex flex-col justify-between hover:scale-90 tranform transition-transform duration-500 ease-in-out">
-              {/* image */}
-              <div className="w-full h-[70%] pt-5 bg-[#F5F5F5] rounded-lg">
-                <img
-                  src="https://s3-alpha-sig.figma.com/img/ede4/8f2b/5df8103b281240ce5bafe5dd7d215ab8?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=d0ZKk8tT3rAlquWSC-aBIf8pTWzEAywPLunkIgY2hMINmu~J2ZoUXMJMW-pqjD-rEjOY0E2hfWpsynyF1ZDm46V-CuVrYC00zuYX~P4Th3VDjfWgciwh53pZFVRKjjzs3Jcblmn59~oBJRdtg6Mumkgctdol20nHQYpsZZmsaMn3~gSilHQhXh8bKwJdOqexwLeH~w7AJ-myU4qjkSj3~qz3brjqTtFuOHhXFIzffZrM~2OXa9mOAgM8LNpRZ5zC51Y44BCaCnOriH8Pr0X1AfI4T6J7Ztg7T8UHFnrpFueZ7j5mM1NCFz6v2DIXdTVnYlE5maoCVVdLy~U1LfHkxQ__"
-                  alt="team member"
-                  className="w-full h-full m-auto object-contain"
-                />
-              </div>
-              {/*  */}
-              <div className="flex flex-col justify-between gap-3">
-                <h1 className="font-medium text-3xl">Abdul Nasir Jamal</h1>
                 <p className="text-base font-normal">Founder & Chairman</p>
                 <div className="flex gap-2 items-center">
                   <CiTwitter />
@@ -191,6 +170,8 @@ const About = () => {
                   <CiLinkedin />
                 </div>
               </div>
+
+              {/*  */}
             </div>
           </div>
           <div className=" flex justify-evenly items-center">

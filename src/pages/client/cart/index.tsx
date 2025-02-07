@@ -16,24 +16,23 @@ const CartPage = () => {
       id: 1,
       name: "LCD Monitor",
       image:
-        "https://s3-alpha-sig.figma.com/img/5e63/4682/db5174aff99bb9337d2dc9598a0b44e4?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=RnZBP6XHKL1eWojlZdtQ34ovsdqdutd59ypgeygnMWW7ausWWKwH46NASbMA03eD1k3Wl-cj6P20Y76~2wxqwIyZVqrFjnNpCbdyxGGQ3j9LhkxMieqmWhHCSltl2K1nSeRSi-GUU12S7UCGS0A9DFvIUL5ARDcCiGkDwMmz8HPQ5K7oj6zG49Q46ukHtTdvoYG4Vw0GqXxKoPTLxk1n9sRLM-YVJ87fpFE7svXGpPptgn7mLF--Sn7E9I4F9ZrS6Da6d8c-oKXBTCPjrOtWJ5Iz5QTmIVjSXWtevkWRirfKtCkoGAuce53VqWTDAYwU-HFaIrab7Pue4aiS1KRnZQ__",
+        "https://plus.unsplash.com/premium_photo-1681816189679-fa02d1acd1de?q=80&w=1777&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       price: 100,
     },
     {
       id: 2,
       name: "H1 GamePad",
       image:
-        "https://s3-alpha-sig.figma.com/img/5d5c/2e52/50752d55f8b60f2aa2923183dadbc135?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=czfunfCbXPnzsf0N7ax9wZEEIArT-LrnrkTRpAfZfeMsnw6SGIR38TJfJpt7iq6QCDSH3PCph3ABqoKD3aIKXmk3IbyOyfhaG4KhYEpAOJpUEHZsIG9fp6WpOPHNJXgJYUPUsnX3M4K4F4-TJ2rTTYeCCiTB9IXuARkBk9HITOaf5K9yQD9Wj2Eqh~n4anc4jO7RwGa01307bybciV7jQZIjJdOBlAV7mmQ6aA9KTPVXGtH2uBOlgrYWlsYMOUAoL2NbxgJ2fEMB72wKWhG7YLC4coNmDBgLyFs7GS5-G51FiJt9C9dBvdVjSMC1b1bF28AE7ESynB1N5rKMR-wdZQ__",
+        "https://images.unsplash.com/photo-1606318801954-d46d46d3360a?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       price: 650,
     },
     {
       id: 3,
       name: "Hisense TV",
       image:
-        "https://s3-alpha-sig.figma.com/img/5e63/4682/db5174aff99bb9337d2dc9598a0b44e4?Expires=1738540800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=RnZBP6XHKL1eWojlZdtQ34ovsdqdutd59ypgeygnMWW7ausWWKwH46NASbMA03eD1k3Wl-cj6P20Y76~2wxqwIyZVqrFjnNpCbdyxGGQ3j9LhkxMieqmWhHCSltl2K1nSeRSi-GUU12S7UCGS0A9DFvIUL5ARDcCiGkDwMmz8HPQ5K7oj6zG49Q46ukHtTdvoYG4Vw0GqXxKoPTLxk1n9sRLM-YVJ87fpFE7svXGpPptgn7mLF--Sn7E9I4F9ZrS6Da6d8c-oKXBTCPjrOtWJ5Iz5QTmIVjSXWtevkWRirfKtCkoGAuce53VqWTDAYwU-HFaIrab7Pue4aiS1KRnZQ__",
+        "https://plus.unsplash.com/premium_photo-1682098177867-dfd0f0402428?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       price: 100,
     },
-  
   ];
 
   const [quantities, setQuantities] = useState<Record<number, number>>({});
@@ -86,9 +85,7 @@ const CartPage = () => {
                     <img
                       src={product.image}
                       alt=""
-                      width={"50px"}
-                      height={"39px"}
-                      className="object-contain"
+                      className="object-cover rounded-full w-10 h-10"
                     />
                     <p>{product.name}</p>
                   </div>

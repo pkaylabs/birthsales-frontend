@@ -34,7 +34,7 @@ const ServiceCard = ({
   return (
     <div
       onClick={() => handleServiceClick(id)}
-      className="w-[350px] flex flex-col justify-between mb-6 rounded-xl relative hover:scale-90 tranform transition-transform duration-500 ease-in-out shadow-lg"
+      className="w-[300px] flex flex-col justify-between mb-6 rounded-xl relative hover:scale-90 tranform transition-transform duration-500 ease-in-out shadow-lg"
     >
       <img
         src={img}

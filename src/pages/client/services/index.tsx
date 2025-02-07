@@ -9,7 +9,7 @@ const Services = () => {
           <p className="">Home</p> <span>/</span>{" "}
           <p className="text-black text-2xl">Services</p>
         </div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           <ServiceCard
             id={1}
             img={
