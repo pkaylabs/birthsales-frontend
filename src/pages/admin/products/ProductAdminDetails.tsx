@@ -89,10 +89,10 @@ const ProductAdminDetails = () => {
                   <strong className="text-xl">Sales:</strong>{" "}
                   <span className="text-base">{product.sales}</span>
                 </Typography>
-                <Typography variant="body1" gutterBottom>
+                {/* <Typography variant="body1" gutterBottom>
                   <strong className="text-xl">Revenue:</strong> $
                   <span className="text-base">{product.revenue}</span>
-                </Typography>
+                </Typography> */}
               </Grid2>
 
               {/* Additional Images Section */}

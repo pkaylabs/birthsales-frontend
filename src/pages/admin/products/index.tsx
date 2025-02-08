@@ -563,7 +563,7 @@ export default function ProductsPage() {
                   <TableCell>Quantity</TableCell>
                   <TableCell>Stock</TableCell>
                   <TableCell>Sales</TableCell>
-                  <TableCell>Revenue ($)</TableCell>
+                  {/* <TableCell>Revenue ($)</TableCell> */}
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -587,7 +587,7 @@ export default function ProductsPage() {
                     <TableCell>{product.quantity}</TableCell>
                     <TableCell>{product.stock}</TableCell>
                     <TableCell>{product.sales}</TableCell>
-                    <TableCell>{product.revenue}</TableCell>
+                    {/* <TableCell>{product.revenue}</TableCell> */}
                     <TableCell>
                       <Button
                         color="primary"

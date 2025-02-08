@@ -27,6 +27,7 @@ interface Order {
   orderId: string;
   customer: string;
   paymentMethod: string;
+  Amount: number;
   orderDate: string;
   deliveryDate: string;
 }
@@ -36,6 +37,7 @@ const initialOrders: Order[] = [
     orderId: "ORD001",
     customer: "John Doe",
     paymentMethod: "Credit Card",
+    Amount: 30,
     orderDate: "2025-02-01",
     deliveryDate: "2025-02-05",
   },
@@ -43,6 +45,7 @@ const initialOrders: Order[] = [
     orderId: "ORD002",
     customer: "Jane Smith",
     paymentMethod: "PayPal",
+    Amount: 20,
     orderDate: "2025-02-02",
     deliveryDate: "2025-02-06",
   },
@@ -55,6 +58,7 @@ export default function OrdersPage() {
     orderId: "",
     customer: "",
     paymentMethod: "",
+    Amount: 0,
     orderDate: new Date().toISOString().split("T")[0],
     deliveryDate: "",
   });
@@ -82,6 +86,7 @@ export default function OrdersPage() {
       orderId: "",
       customer: "",
       paymentMethod: "",
+      Amount: 0,
       orderDate: new Date().toISOString().split("T")[0],
       deliveryDate: "",
     });
@@ -149,6 +154,7 @@ export default function OrdersPage() {
               <TableCell>Order ID</TableCell>
               <TableCell>Customer</TableCell>
               <TableCell>Payment Method</TableCell>
+              <TableCell>Amount</TableCell>
               <TableCell>Order Date</TableCell>
               <TableCell>Delivery Date</TableCell>
               <TableCell>Actions</TableCell>
@@ -160,6 +166,7 @@ export default function OrdersPage() {
                 <TableCell>{order.orderId}</TableCell>
                 <TableCell>{order.customer}</TableCell>
                 <TableCell>{order.paymentMethod}</TableCell>
+                <TableCell>GHC{order.Amount}</TableCell>
                 <TableCell>{order.orderDate}</TableCell>
                 <TableCell>{order.deliveryDate}</TableCell>
                 <TableCell>

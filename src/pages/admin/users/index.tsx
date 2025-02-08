@@ -419,7 +419,7 @@ export default function Users() {
                   <TableCell>Name</TableCell>
                   <TableCell>Email</TableCell>
                   <TableCell>Phone</TableCell>
-                  <TableCell>Address</TableCell>
+                  {/* <TableCell>Address</TableCell> */}
                   <TableCell>Date Added</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
@@ -441,7 +441,7 @@ export default function Users() {
                     <TableCell>{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{user.phone}</TableCell>
-                    <TableCell>{user.address}</TableCell>
+                    {/* <TableCell>{user.address}</TableCell> */}
                     <TableCell>{user.dateAdded}</TableCell>
                     <TableCell>
                       <Button
