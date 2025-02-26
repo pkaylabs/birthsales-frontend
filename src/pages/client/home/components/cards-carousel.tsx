@@ -56,14 +56,18 @@ const CardCarousel: React.FC<CarouselProps> = ({
 
   return (
     <div className="select-none w-full">
-      <div className="flex items-center space-x-3">
-        <div className="w-5 h-10 bg-[#DB4444] rounded-md " />
-        <p className="font-semibold text-base text-[#DB4444] ">{type}</p>
+      <div className="flex items-center space-x-3 mobile:space-x-2">
+        <div className="w-5 h-10 bg-[#DB4444] rounded-md mobile:w-3 mobile:h-8" />
+        <p className="font-semibold text-base text-[#DB4444] mobile:text-[12px]">
+          {type}
+        </p>
       </div>
 
       <div className="w-full flex justify-between items-center mb-8">
-        <div className="flex items-end space-x-20">
-          <h2 className="font-semibold text-4xl text-balck ">{title}</h2>
+        <div className="flex items-end space-x-20 mobile:space-x-10 mobile:items-center">
+          <h2 className="font-semibold text-4xl text-balck mobile:text-xl">
+            {title}
+          </h2>
 
           {/* countdown */}
           {showCountdown && <Countdown endDateTime="2025-01-20T23:59:59" />}
@@ -71,7 +75,7 @@ const CardCarousel: React.FC<CarouselProps> = ({
 
         {/* Controls */}
         {showControls && (
-          <div className="flex space-x-2 mb-4">
+          <div className="flex space-x-2 mb-4 mobile:hidden">
             <button
               onClick={prevSlide}
               className="w-12 h-12 bg-gray-100 flex justify-center items-center text-black rounded-full hover:bg-gray-300"
@@ -89,7 +93,7 @@ const CardCarousel: React.FC<CarouselProps> = ({
 
         {/* View All Button */}
         {showViewAll && (
-          <button className="font-medium w-40 h-12 flex justify-center items-center bg-[#DB4444] rounded-md text-white text-base">
+          <button className="font-medium w-40 h-12 flex justify-center items-center bg-[#DB4444] rounded-md text-white text-base mobile:w-32 mobile:h-8 mobile:text-[12px]">
             View All
           </button>
         )}
@@ -98,7 +102,7 @@ const CardCarousel: React.FC<CarouselProps> = ({
       {/* Carousel Content */}
       <div className="w-full flex overflow-hidden" {...conditionalHandlers}>
         <div
-          className="w-full flex justify-between transition-transform duration-500 ease-in-out"
+          className="w-full flex justify-between transition-transform duration-500 ease-in-out mobile:flex-wrap mobile:justify-center mobile:gap-4"
           style={{
             transform: `translateX(-${
               ((startIndex % items.length) * 100) / itemsPerView
