@@ -1,44 +1,153 @@
 import React from "react";
+import { FiFacebook, FiTwitter, FiInstagram, FiLinkedin } from "react-icons/fi";
+import { Link } from "react-location";
 
 const Footer = () => {
   return (
-    <footer className="bg-black text-gray-400 py-12 w-full">
-      <div className="flex flex-col gap-10">
-        <div className="flex justify-around">
-          {/* exclusive part */}
-          <div className="flex flex-col justify-between">
-            <h1 className="font-bold text-2xl text-white">Exclusive</h1>
-            <p className="font-medium text-xl">Subscribe</p>
-            <p className="font-normal text-base">
-              Get 10% off your first order
-            </p>
+    <footer className="bg-gray-900 text-gray-300 py-8">
+      <div className="w-full max-w-[80rem] mx-auto px-4">
+        {/* Responsive grid: 1 column on mobile, 2 on tablet, 4 on desktop/large-screen */}
+        <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-4 large-screen:grid-cols-4 gap-8 ">
+          {/* Company Info */}
+          <div className="mobile:hidden">
+            <h3 className="text-white text-lg font-semibold mb-4">
+              BirthSales
+            </h3>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/about" className="hover:text-white transition">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link to="/services" className="hover:text-white transition">
+                  Services
+                </Link>
+              </li>
+              <li>
+                <Link to="/" className="hover:text-white transition">
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="hover:text-white transition">
+                  Contact Us
+                </Link>
+              </li>
+            </ul>
           </div>
-          {/* address part */}
-          <div className="flex flex-col justify-between">
-            <h1 className="font-medium text-xl text-white">Support</h1>
-            <p className="font-normal text-base">Accra, Ghana</p>
-            <p className="font-normal text-base">Email@gmail.com</p>
-            <p className="font-normal text-base">0044744444</p>
+
+          {/* Customer Service */}
+          <div>
+            <h3 className="text-white text-lg font-semibold mb-4">
+              Customer Service
+            </h3>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/" className="hover:text-white transition">
+                  Help Center
+                </Link>
+              </li>
+              <li>
+                <Link to="/" className="hover:text-white transition">
+                  Returns
+                </Link>
+              </li>
+              <li>
+                <Link to="/" className="hover:text-white transition">
+                  Shipping
+                </Link>
+              </li>
+              <li>
+                <Link to="/" className="hover:text-white transition">
+                  FAQ
+                </Link>
+              </li>
+            </ul>
           </div>
-          {/* Account  */}
-          <div className="flex flex-col justify-between">
-            <h1 className="font-medium text-xl text-white">Account</h1>
-            <p className="font-normal text-base">My Account</p>
-            <p className="font-normal text-base">Login / Register</p>
-            <p className="font-normal text-base">Cart</p>
-            <p className="font-normal text-base">WishList</p>
+
+          {/* Information */}
+          <div>
+            <h3 className="text-white text-lg font-semibold mb-4">
+              Information
+            </h3>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/" className="hover:text-white transition">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/" className="hover:text-white transition">
+                  Terms &amp; Conditions
+                </Link>
+              </li>
+              <li>
+                <Link to="/" className="hover:text-white transition">
+                  Sitemap
+                </Link>
+              </li>
+            </ul>
           </div>
-          {/* Quick Links */}
-          <div className="flex flex-col justify-between">
-            <h1 className="font-medium text-xl text-white">Quick Link</h1>
-            <p className="font-normal text-base">Privacy Policy</p>
-            <p className="font-normal text-base">Terms of Use</p>
-            <p className="font-normal text-base">Contact</p>
+
+          {/* Connect With Us */}
+          <div className="">
+            <h3 className="text-white text-lg font-semibold mb-4">
+              Connect With Us
+            </h3>
+            <div className="flex space-x-4">
+              <Link
+                to="https://facebook.com"
+                className="hover:text-white transition"
+              >
+                <FiFacebook size={20} />
+              </Link>
+              <Link
+                to="https://twitter.com"
+                className="hover:text-white transition"
+              >
+                <FiTwitter size={20} />
+              </Link>
+              <Link
+                to="https://instagram.com"
+                className="hover:text-white transition"
+              >
+                <FiInstagram size={20} />
+              </Link>
+              <Link
+                to="https://linkedin.com"
+                className="hover:text-white transition mobile:hidden"
+              >
+                <FiLinkedin size={20} />
+              </Link>
+            </div>
+            <div className="mt-4">
+              <h4 className="text-white font-semibold mb-2">
+                Subscribe to our Newsletter
+              </h4>
+              <form className="flex">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="w-full p-2 rounded-l-md focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  className="bg-[#DB4444] p-2 rounded-r-md hover:bg-red-600 transition"
+                >
+                  Subscribe
+                </button>
+              </form>
+            </div>
           </div>
         </div>
-        <div className="flex flex-col gap-2 items-center">
-          <div className="w-full border border-gray-700"/>
-          <div className="text-gray-500 font-normal text-base">Copyright pkay 2025. All right reserved</div>
+
+        {/* Copyright */}
+        <div className="mt-8 border-t border-gray-700 pt-4 text-center text-sm">
+          <p>
+            &copy; {new Date().getFullYear()} BirthSales site. All rights
+            reserved.
+          </p>
         </div>
       </div>
     </footer>

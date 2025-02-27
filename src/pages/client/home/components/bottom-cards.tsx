@@ -27,16 +27,16 @@ const BottomCards = () => {
       {elements.map((element, index) => (
         <div
           key={index}
-          className="flex flex-col space-y-3 items-center mobile:space-y-2 mobile:flex-col mobile:items-center mobile:justify-center"
+          className="flex flex-col space-y-3 items-center mobile:space-y-2 mobile:flex-col mobile:items-center mobile:justify-center "
         >
           <div className="w-20 h-20 flex justify-center items-center rounded-full border-[14px] border-gray-300 bg-black mb-4 mobile:w-12 mobile:h-12 mobile:border-8">
             <element.icon className="size-7 text-white mobile:size-4" />
           </div>
 
-          <h2 className="text-xl font-semibold mobile:text-[10px]">
+          <h2 className="text-lg font-semibold mobile:text-[10px] mobile:text-center">
             {element.title}
           </h2>
-          <p className="text-center text-sm ">{element.description}</p>
+          <p className="text-center text-sm mobile:hidden">{element.description}</p>
         </div>
       ))}
     </div>
