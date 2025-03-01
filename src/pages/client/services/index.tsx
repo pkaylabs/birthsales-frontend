@@ -2,7 +2,7 @@ import React from "react";
 import ServiceCard from "./components/ServiceCard";
 
 export interface Service {
-  id: number; 
+  id: number;
   img: string;
   title: string;
   description: string;
@@ -82,13 +82,13 @@ const Services = () => {
     <div className="max-w-[80rem] mx-auto p-4 slide-up">
       <div className="flex flex-col gap-5">
         {/* Breadcrumb */}
-        <div className="mt-6 flex flex-col mobile:items-start tablet:items-center tablet:flex-row space-x-0 tablet:space-x-3 text-gray-400">
-          <p className="text-base tablet:text-lg">Home</p>
-          <span className="text-base tablet:text-lg">/</span>
-          <p className="text-black text-2xl tablet:text-3xl">Services</p>
+        <div className="mt-6 flex flex-row items-center  space-x-2 text-gray-400">
+          <p className="text-base md:text-lg">Home</p>
+          <span className="text-base md:text-lg">/</span>
+          <p className="text-black text-2xl md:text-xl">Services</p>
         </div>
         {/* Service Cards Grid */}
-        <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-3 desktop-up:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {services.map((service: Service) => (
             <ServiceCard key={service.id} service={service} />
           ))}

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link, useMatch, useNavigate, useSearch } from "react-location";
 import { IoStar } from "react-icons/io5";
-import { MdOutlineFavoriteBorder } from "react-icons/md";
 import { TbTruckDelivery } from "react-icons/tb";
 import { GrPowerCycle } from "react-icons/gr";
 import { motion } from "framer-motion";
@@ -153,46 +152,7 @@ const ServiceDetails = () => {
       <section className="mt-20">
         <h1 className="font-semibold text-2xl mb-2">Related Services</h1>
         <div className="flex items-center gap-4">
-          <ServiceCard
-            id={8}
-            img={
-              "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            }
-            title="Home Rentals"
-            description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-            startPrice={100}
-            endPrice={600}
-          />
-          <ServiceCard
-            id={8}
-            img={
-              "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            }
-            title="Home Rentals"
-            description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-            startPrice={100}
-            endPrice={600}
-          />
-          <ServiceCard
-            id={8}
-            img={
-              "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            }
-            title="Home Rentals"
-            description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-            startPrice={100}
-            endPrice={600}
-          />
-          <ServiceCard
-            id={8}
-            img={
-              "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            }
-            title="Home Rentals"
-            description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-            startPrice={100}
-            endPrice={600}
-          />
+         
         </div>
       </section>
     </main>

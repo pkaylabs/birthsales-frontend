@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { FaShoppingCart, FaHeart, FaUser, FaBars, FaTimes } from "react-icons/fa";
+import {
+  FaShoppingCart,
+  FaHeart,
+  FaUser,
+  FaBars,
+  FaTimes,
+} from "react-icons/fa";
 import logo from "@/assets/images/logo.jpg";
 import { Link } from "react-location";
 
@@ -87,13 +93,22 @@ const Header: React.FC = () => {
           <Link to="/" className="text-gray-700 hover:text-red-500 text-lg">
             Home
           </Link>
-          <Link to="/services" className="text-gray-700 hover:text-red-500 text-lg">
+          <Link
+            to="/services"
+            className="text-gray-700 hover:text-red-500 text-lg"
+          >
             Services
           </Link>
-          <Link to="/about" className="text-gray-700 hover:text-red-500 text-lg">
+          <Link
+            to="/about"
+            className="text-gray-700 hover:text-red-500 text-lg"
+          >
             About
           </Link>
-          <Link to="/sign-up" className="text-gray-700 hover:text-red-500 text-lg">
+          <Link
+            to="/sign-up"
+            className="text-gray-700 hover:text-red-500 text-lg"
+          >
             Sign Up
           </Link>
         </nav>
@@ -103,7 +118,7 @@ const Header: React.FC = () => {
           </Link>
           <Link to="/cart" className="relative">
             <FaShoppingCart className="text-xl text-gray-700 hover:text-red-500" />
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white bg-red text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
               2
             </span>
           </Link>
@@ -117,4 +132,3 @@ const Header: React.FC = () => {
 };
 
 export default Header;
-

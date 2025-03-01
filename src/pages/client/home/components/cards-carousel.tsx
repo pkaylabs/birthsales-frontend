@@ -22,32 +22,32 @@ const CardCarousel: React.FC<CarouselProps> = ({
   items,
 }) => {
   const [itemsPerView, setItemsPerView] = useState(4); // Number of items visible at one time
-  
+
   const [startIndex, setStartIndex] = useState(0);
 
-    // Update itemsPerView based on current screen width using your custom breakpoints
-    useEffect(() => {
-      const handleResize = () => {
-        // Example breakpoints: adjust these values to match your Tailwind config
-        if (window.innerWidth < 635) {
-          // Mobile breakpoint
-          setItemsPerView(1);
-        } else if (window.innerWidth < 1200) {
-          // Tablets breakpoint
-          setItemsPerView(2);
-        } else {
-          // Desktop breakpoint
-          setItemsPerView(4);
-        }
-        // Reset the start index if necessary
-        setStartIndex(0);
-      };
-  
-      handleResize(); // initial check
-  
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }, []);
+  // Update itemsPerView based on current screen width using your custom breakpoints
+  useEffect(() => {
+    const handleResize = () => {
+      // Example breakpoints: adjust these values to match your Tailwind config
+      if (window.innerWidth < 635) {
+        // Mobile breakpoint
+        setItemsPerView(1);
+      } else if (window.innerWidth < 1200) {
+        // Tablets breakpoint
+        setItemsPerView(2);
+      } else {
+        // Desktop breakpoint
+        setItemsPerView(4);
+      }
+      // Reset the start index if necessary
+      setStartIndex(0);
+    };
+
+    handleResize(); // initial check
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Check if we've reached the last slide.
   const isLastSlide = startIndex >= items.length - itemsPerView;
@@ -80,15 +80,15 @@ const CardCarousel: React.FC<CarouselProps> = ({
   return (
     <div className="select-none w-full">
       <div className="flex items-center space-x-3 mobile:space-x-2 tablet:space-x-3">
-        <div className="w-5 h-10 bg-[#DB4444] rounded-md mobile:w-3 mobile:h-8 tablet:w-4 tablet:h-10" />
-        <p className="font-semibold text-base text-[#DB4444] mobile:text-[12px] tablet:text-sm">
+        <div className=" bg-[#DB4444] rounded-md w-3 h-8 md:w-5 md:h-10" />
+        <p className="font-semibold text-[#DB4444] text-base md:text-xl">
           {type}
         </p>
       </div>
 
       <div className="w-full flex justify-between items-center mb-8">
-        <div className="flex items-end space-x-20 mobile:space-x-10 tablet:space-x-16">
-          <h2 className="font-semibold text-4xl text-balck mobile:text-xl tablet:text-2xl">
+        <div className="flex items-end  space-x-10 md:space-x-16 lg:space-x-20">
+          <h2 className="font-semibold text-balck text-xl md:text-2xl lg:text-3xl xl:text-4xl">
             {title}
           </h2>
 
@@ -96,7 +96,7 @@ const CardCarousel: React.FC<CarouselProps> = ({
         </div>
 
         {showControls && (
-          <div className="flex space-x-2 mb-4 mobile:hidden tablet:flex">
+          <div className="space-x-2 mb-4 hidden md:flex lg:flex lg:space-x-2">
             <button
               onClick={prevSlide}
               disabled={isFirstSlide}
@@ -119,7 +119,7 @@ const CardCarousel: React.FC<CarouselProps> = ({
         )}
 
         {showViewAll && (
-          <button className="font-medium w-40 h-12 flex justify-center items-center bg-[#DB4444] rounded-md text-white text-base mobile:w-32 mobile:h-8 mobile:text-[12px] tablet:w-36 tablet:h-10">
+          <button className="font-medium lg:w-40 lg:h-12 lg:text-lg flex justify-center items-center bg-[#DB4444] rounded-md text-white text-base w-32 h-8 text-[12px] md:w-36 md:h-10">
             View All
           </button>
         )}
@@ -133,7 +133,11 @@ const CardCarousel: React.FC<CarouselProps> = ({
           }}
         >
           {items.map((item, index) => (
-            <div key={index} className="flex-shrink-0" style={{ width: `${100 / itemsPerView}%` }}>
+            <div
+              key={index}
+              className="flex-shrink-0"
+              style={{ width: `${100 / itemsPerView}%` }}
+            >
               {item()}
             </div>
           ))}
@@ -144,4 +148,3 @@ const CardCarousel: React.FC<CarouselProps> = ({
 };
 
 export default CardCarousel;
-

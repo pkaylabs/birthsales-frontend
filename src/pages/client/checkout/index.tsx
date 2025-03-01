@@ -37,19 +37,25 @@ const Checkout = () => {
   }, 0);
 
   return (
-    <div className="max-w-[75rem] mx-auto slide-up  mb-[10rem]">
-      {/* home / cart */}
-      <div className="mt-6 flex items-center space-x-3 text-gray-400">
-        <p>Account</p> <span>/</span> <p>My Account</p> <span>/</span>{" "}
-        <p>Product</p> <span>/</span> <p>Cart</p> <span>/</span>{" "}
-        <p className="text-black">Checkout</p>
+    <div className="max-w-[75rem]  slide-up  mb-[10rem] mx-5 md:mx-5 lg:mx-auto ">
+      {/* Breadcrum */}
+      <div className="mt-6 flex flex-row items-center  space-x-2 text-gray-400">
+        <p className="text-base md:text-lg">Account</p>
+        <span className="text-base md:text-lg">/</span>
+        <p className="text-[14px] md:text-lg">My Account</p>
+        <span className="text-base md:text-lg">/</span>
+        <p className="text-base md:text-lg">Product</p>
+        <span className="text-base md:text-lg">/</span>
+        <p className="text-base md:text-lg">Cart</p>
+        <span className="text-base md:text-lg">/</span>
+        <p className="text-black text-base md:text-lg">Checkout</p>
       </div>
       {/* Payment and ordering */}
-      <div className=" mt-[3rem] p-1 flex justify-between  gap-5 ">
+      <div className="mt-[3rem] p-1 flex flex-col justify-between  gap-5 md:flex-row ">
         {/* Payment method */}
         <div className=" flex-1">
           <div className="flex flex-col justify-between gap-10">
-            <h1 className="flex items-center text-2xl font-bold mb-1">
+            <h1 className="flex items-center text-base md:text-2xl font-bold mb-1">
               PAYMENT METHOD
             </h1>
             {/* Radio buttons */}
@@ -60,10 +66,10 @@ const Checkout = () => {
                   name="paymentMethod"
                   id="delivery"
                   value="onDelivery"
-                  className="scale-150 accent-black"
+                  className="scale-100 md:scale-150 accent-black"
                   onChange={(e) => setPaymentMethod(e.target.value)}
                 />
-                <label htmlFor="delivery" className="text-lg">
+                <label htmlFor="delivery" className="text-[14px] md:text-lg">
                   Pay on Delivery
                 </label>
                 <br />
@@ -74,10 +80,10 @@ const Checkout = () => {
                   name="paymentMethod"
                   id="delivery"
                   value="mobileMoney"
-                  className="scale-150 accent-black"
+                  className="scale-100 md:scale-150 accent-black"
                   onChange={(e) => setPaymentMethod(e.target.value)}
                 />
-                <label htmlFor="delivery" className="text-lg">
+                <label htmlFor="delivery" className="text-sm md:text-lg">
                   Pay with Mobile Money
                 </label>
                 <br />
@@ -85,14 +91,16 @@ const Checkout = () => {
             </div>
             {paymentMethod === "mobileMoney" && (
               <div className="flex flex-col gap-2">
-                <h1 className="font-bold mb-2">ADD PAYMENT DETAILS</h1>
+                <h1 className="text-base font-bold mb-2">
+                  ADD PAYMENT DETAILS
+                </h1>
                 <div className="">
                   <select
                     name="network"
                     id="network"
                     value={network}
                     onChange={(e) => setNetwork(e.target.value)}
-                    className="border border-gray-300 rounded-md mr-4  p-2 bg-[#F5F5F5] w-1/2"
+                    className="w-full text-sm border border-gray-300 rounded-md mr-4  p-2 bg-[#F5F5F5]  md:text-base lg:w-1/2"
                   >
                     <option value="" disabled>
                       -- Select Network --
@@ -106,7 +114,7 @@ const Checkout = () => {
                   <input
                     type="tel"
                     placeholder="Enter Phone Number"
-                    className=" border border-gray-300  rounded-md mr-4 p-2 bg-[#F5F5F5] w-1/2"
+                    className="w-full text-sm border border-gray-300  rounded-md mr-4 p-2 bg-[#F5F5F5]  md:text-base lg:w-1/2"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                   />
@@ -117,7 +125,7 @@ const Checkout = () => {
         </div>
         {/* ordering */}
 
-        <div className="rounded p-5 flex flex-col justify-between gap-5 mt-[3rem] flex-1 ">
+        <div className="rounded  md:p-5 flex flex-col justify-between gap-5 mt-[3rem] flex-1 ">
           <div className="flex flex-col justify-between gap-2  overflow-y-auto flex-shrink-0 max-h-[150px] pr-2">
             {products.map((product) => {
               return (
@@ -126,28 +134,28 @@ const Checkout = () => {
                     <img
                       src={product.image}
                       alt=""
-                      className="object-cover w-10 h-10 rounded-full"
+                      className="hidden md:flex lg:flex object-cover w-10 h-10 rounded-full"
                     />
-                    <p>{product.name}</p>
+                    <p className="">{product.name}</p>
                   </div>
-                  <p>${product.price}</p>
+                  <p className="">${product.price}</p>
                 </div>
               );
             })}
           </div>
           {/* subtotal */}
           <div className="flex flex-col justify-between gap-3">
-            <div className="flex justify-between">
+            <div className="flex justify-between text-[12px] md:text-base">
               <p>Subtotal:</p>
               <p>${subTotal}</p>
             </div>
             <div className=" border border-gray-300" />
-            <div className="flex justify-between">
+            <div className="flex justify-between text-[12px] md:text-base">
               <p>Shipping:</p>
               <p>Free</p>
             </div>
             <div className=" border border-gray-300" />
-            <div className="flex justify-between">
+            <div className="flex justify-between text-[12px] md:text-base">
               <p>GrandTotal:</p>
               <p className="font-bold pulse mx-2">${subTotal}</p>
             </div>
@@ -155,7 +163,10 @@ const Checkout = () => {
           <div className="flex items-center justify-center">
             <button
               onClick={() => navigate({ to: CONFIRM_ORDER })}
-              className="w-full h-[48px] rounded  bg-[#DB4444] text-white shadow-md hover:shadow-gray-400"
+              className=" w-32 h-8 text-[12px]
+                       md:w-48 md:h-10
+                       lg:w-64 lg:h-12
+                       xl:w-72 xl:h-14 xl:text-lg rounded-md  bg-[#DB4444] text-white shadow-md hover:shadow-gray-400"
             >
               Place Order
             </button>
