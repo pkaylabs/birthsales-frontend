@@ -15,7 +15,7 @@ const About = () => {
     <div className="max-w-[80rem] mx-5 md:mx-5 lg:mx-auto slide-up">
       {/* Breadcrum */}
       <div className="mt-6 flex flex-row items-center  space-x-2 text-gray-400">
-        <p className="text-base md:text-lg">Home</p>
+        <p className="text-base md:text-lg ">Home</p>
         <span className="text-base md:text-lg">/</span>
         <p className="text-black text-2xl md:text-xl">About</p>
       </div>
@@ -176,7 +176,7 @@ const About = () => {
             {/*  */}
           </div>
           {/* Bottom Cards */}
-          <BottomCards />     
+          <BottomCards />
         </div>
       </div>
     </div>

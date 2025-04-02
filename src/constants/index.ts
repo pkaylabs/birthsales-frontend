@@ -4,6 +4,7 @@ export const ACCOUNT = "/account";
 export const ABOUT = "/about";
 export const PRODUCT_DETAILS = "/product-details";
 export const SIGN_UP = "/sign-up";
+export const VENDOR_SIGN_UP = "/vendor-sign-up";
 export const LOGIN = "/login";
 export const WISH_LIST = "/wish-list";
 export const ADMIN_HOME = "/admin";
@@ -18,4 +19,5 @@ export const ADMIN_CARTS = "/admin-carts";
 export const ADMIN_ADS = "/admin-ads";
 export const USERS = "/users";
 export const CATEGORIES = "/categories";
+
 

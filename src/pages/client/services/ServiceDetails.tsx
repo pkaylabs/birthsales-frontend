@@ -15,9 +15,10 @@ const ServiceDetails = () => {
 
   const search = useSearch<any>();
 
-  const [numberOfItems, setNumberOfItems] = useState(1);
 
-  const [selectedImage, setSelectedImage] = useState<string>(search.img);
+  const [selectedImage, setSelectedImage] = useState<string>(
+    search.service.img
+  );
 
   const handleImageClick = (imageSrc: string) => {
     setSelectedImage(imageSrc);
@@ -26,32 +27,40 @@ const ServiceDetails = () => {
   const images = [
     {
       id: 1,
-      src: search.img,
+      src: search.service.img,
     },
     {
       id: 2,
-      src: search.img,
+      src: search.service.img,
     },
     {
       id: 3,
-      src: search.img,
+      src: search.service.img,
     },
     {
       id: 4,
-      src: search.img,
+      src: search.service.img,
     },
   ];
 
   return (
-    <main className="w-full max-w-[80rem] mx-auto">
-      <div className="mt-6 flex items-center space-x-3 text-gray-400">
+    <main className="max-w-[80rem] mx-5 md:mx-5 lg:mx-auto slide-up">
+      {/* <div className="mt-6 flex items-center space-x-3 text-gray-400">
         <p className="">Home</p> <span>/</span> <p className="">Service</p>{" "}
         <span>/</span> <p className="text-black">Service Detail</p>
+      </div> */}
+      {/* Breadcrum */}
+      <div className="mt-6 flex flex-row items-center  space-x-2 text-gray-400">
+        <p className="text-base md:text-lg">Home</p>
+        <span className="text-base md:text-lg">/</span>
+        <p className="text-base md:text-lg">Service</p>
+        <span className="text-base md:text-lg">/</span>
+        <p className="text-black text-2xl md:text-xl">Service Detail</p>
       </div>
 
-      <div className="w-full h-[600px] mt-8 flex gap-8">
+      <div className="w-full md:h-[600px] mt-8 flex gap-8 md:flex-row flex-col">
         {/* Side Images */}
-        <div className="w-[170px] flex flex-col justify-between gap-4">
+        <div className="md:w-[170px] md:flex md:flex-col w-full grid grid-cols-2  justify-between gap-4">
           {images.map((image, index) => (
             <motion.div
               key={index}
@@ -72,7 +81,7 @@ const ServiceDetails = () => {
 
         {/* Main Image */}
         <motion.div
-          className="w-[500px] bg-[#F5F5F5] rounded flex justify-center items-center"
+          className="md:w-[500px] w-full bg-[#F5F5F5] rounded flex justify-center items-center"
           key={selectedImage}
           initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
           animate={{ opacity: 1, scale: 1, rotate: 0 }}
@@ -85,9 +94,11 @@ const ServiceDetails = () => {
             className="w-full h-full object-cover"
           />
         </motion.div>
-        <div className="flex-1 pl-14 flex flex-col justify-between">
+        <div className="md:flex-1 pl-14 flex flex-col w-full justify-between">
           <div className="pb-10 border-b border-black ">
-            <h2 className="font-semibold text-2xl mb-2">{search.title}</h2>
+            <h2 className="font-semibold md:text-2xl text-lg mb-2">
+              {search.service.title}
+            </h2>
             <div className="flex items-center space-x-3 my-2">
               <div className="flex items-center space-x-1.5">
                 {[1, 2, 3, 4, 5].map((_, index) => (
@@ -105,9 +116,11 @@ const ServiceDetails = () => {
               </p>
             </div>
             <h4 className="text-2xl mb-4">
-              ${search.startPrice} - ${search.endPrice}
+              ${search.service.startPrice} - ${search.service.endPrice}
             </h4>
-            <p className="text-sm max-w-[373px]">{search.description}</p>
+            <p className="text-sm max-w-[373px]">
+              {search.service.description}
+            </p>
           </div>
           <div className="">
             <div className="flex justify-between items-center gap-6">
@@ -151,9 +164,7 @@ const ServiceDetails = () => {
 
       <section className="mt-20">
         <h1 className="font-semibold text-2xl mb-2">Related Services</h1>
-        <div className="flex items-center gap-4">
-         
-        </div>
+        <div className="flex items-center gap-4"></div>
       </section>
     </main>
   );
