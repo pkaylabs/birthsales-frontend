@@ -67,13 +67,13 @@ const ProductDetails = () => {
         <span>/</span> <p className="text-black">Product Name</p>
       </div>
 
-      <div className="w-full h-[600px] mt-8 flex gap-8">
+      <div className="w-full md:h-[600px] mt-8 flex md:flex-row flex-col gap-8 items-center md:items-stretch">
         {/* Side Images */}
-        <div className="w-[170px] flex flex-col justify-between gap-4">
+        <div className="md:w-[170px] md:flex md:flex-col w-full  hidden  justify-between gap-4">
           {images.map((image, index) => (
             <motion.div
               key={index}
-              className="w-full h-[170px] bg-[#F5F5F5] rounded flex justify-center items-center cursor-pointer"
+              className="w-full h-full bg-[#F5F5F5] rounded flex justify-center items-center cursor-pointer"
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.9, rotate: -3 }}
               transition={{ type: "spring", stiffness: 300 }}
@@ -82,7 +82,7 @@ const ProductDetails = () => {
               <img
                 src={image.src}
                 alt={`product-${index}`}
-                className="w-32 h-28 object-contain"
+                className="w-full h-full object-cover"
               />
             </motion.div>
           ))}
@@ -90,7 +90,7 @@ const ProductDetails = () => {
 
         {/* Main Image */}
         <motion.div
-          className="w-[500px] bg-[#F5F5F5] rounded flex justify-center items-center"
+          className="md:w-[500px] w-[270px] bg-[#F5F5F5] rounded flex justify-center items-center"
           key={selectedImage}
           initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
           animate={{ opacity: 1, scale: 1, rotate: 0 }}
@@ -100,12 +100,12 @@ const ProductDetails = () => {
           <img
             src={selectedImage}
             alt="main-product"
-            className="w-[446px] h-[315px] object-contain"
+            className="md:w-[446px] md:h-[315px] md:object-contain w-[250px]"
           />
         </motion.div>
-        <div className="flex-1 pl-14 flex flex-col justify-between">
+        <div className="flex-1 px-14 flex flex-col justify-between ">
           <div className="pb-6 border-b border-black ">
-            <h2 className="font-semibold text-2xl mb-2">
+            <h2 className="font-semibold md:text-2xl text-lg mb-2">
               Havic HV G-92 Gamepad
             </h2>
             <div className="flex items-center space-x-3 my-2">
@@ -113,7 +113,7 @@ const ProductDetails = () => {
                 {[1, 2, 3, 4, 5].map((_, index) => (
                   <IoStar
                     key={index}
-                    className={`size-5  ${
+                    className={`md:size-5 size-3  ${
                       index === 4 ? "text-gray-400 " : "text-[#FFAD33]"
                     }`}
                     aria-hidden="true"
@@ -126,7 +126,7 @@ const ProductDetails = () => {
               <span className="text-gray-400">|</span>
               <p className="font-medium text-base text-[#00FF66] ">In Stock</p>
             </div>
-            <h4 className="text-2xl mb-4">$192.00</h4>
+            <h4 className="md:text-2xl text-xl mb-4">$192.00</h4>
             <p className="text-sm max-w-[373px]">
               PlayStation 5 Controller Skin High quality vinyl with air channel
               adhesive for easy bubble free install & mess free removal Pressure
@@ -135,15 +135,15 @@ const ProductDetails = () => {
           </div>
           <div className="">
             <div className="flex items-center gap-4 mb-5">
-              <p className="text-xl">Color:</p>
+              <p className="md:text-xl text-lg">Color:</p>
               <ColorSelector options={colors} onSelect={setSelectedColor} />
             </div>
             <div className="flex items-center gap-4 mb-5">
-              <p className="text-xl">Size:</p>
+              <p className="md:text-xl text-lg">Size:</p>
               <SizePicker options={sizes} onSelect={setSelectedSize} />
             </div>
-            <div className="flex justify-between items-center gap-6">
-              <div className="flex-1 flex items-center select-none">
+            <div className="flex md:flex-row justify-between items-center flex-col gap-6">
+              <div className="flex-1 flex items-center select-none w-full">
                 <div
                   onClick={() =>
                     numberOfItems > 1 && setNumberOfItems(numberOfItems - 1)
@@ -152,7 +152,7 @@ const ProductDetails = () => {
                 >
                   -
                 </div>
-                <div className="flex-1 h-11 flex justify-center items-center border-y border-black text-xl">
+                <div className="flex-1 h-11 flex justify-center items-center border-y border-black md:text-xl text-lg">
                   {numberOfItems}
                 </div>
                 <div
@@ -162,12 +162,12 @@ const ProductDetails = () => {
                   +
                 </div>
               </div>
-              <div className="flex-1">
+              <div className="flex-1 w-full">
                 <button className="w-full h-11 flex justify-center items-center bg-[#DB4444] text-white rounded-md">
                   Buy Now
                 </button>
               </div>
-              <div className="w-10 h-11 flex items-center justify-center border border-black rounded cursor-pointer">
+              <div className="w-10 h-11 md:flex items-center justify-center border border-black rounded cursor-pointer hidden">
                 <MdOutlineFavoriteBorder
                   className="size-6"
                   aria-hidden="true"
@@ -175,11 +175,11 @@ const ProductDetails = () => {
               </div>
             </div>
           </div>
-          <div className="border border-[#1C1B1F] rounded ">
+          <div className="border border-[#1C1B1F] rounded md:mt-0 mt-5">
             <div className="flex items-center gap-5 border-b border-[#1C1B1F] py-5 px-4">
               <TbTruckDelivery className="size-10 text-black" />
               <div className="">
-                <h2 className=" font-medium text-base">
+                <h2 className=" font-medium md:text-base text-sm">
                   FREE AND FAST DELIVERY
                 </h2>
                 <p className="text-sm underline">
@@ -190,7 +190,7 @@ const ProductDetails = () => {
             <div className="flex items-center gap-5 py-5 px-4">
               <GrPowerCycle className="size-10 text-black" />
               <div className="">
-                <h2 className=" font-medium text-base">Return Delivery</h2>
+                <h2 className=" font-medium md:text-base text-sm">Return Delivery</h2>
                 <p className="text-sm ">
                   Free 30 Days Delivery Returns.{" "}
                   <Link to={"#"} className="underline">
@@ -203,14 +203,14 @@ const ProductDetails = () => {
         </div>
       </div>
 
-      <section className="mt-20">
+      {/* <section className="mt-20">
         <CardCarousel
           type="Related Item"
           itemsPerView={4}
           title=""
           items={productCards}
         />
-      </section>
+      </section> */}
     </main>
   );
 };

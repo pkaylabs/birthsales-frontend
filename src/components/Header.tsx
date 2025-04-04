@@ -60,13 +60,6 @@ const Header: React.FC = () => {
               Sign Up
             </Link>
             <Link
-              to="/vendor-sign-up"
-              onClick={() => setMenuOpen(false)}
-              className="text-xl text-gray-700 hover:text-red-500"
-            >
-              Vendor
-            </Link>
-            <Link
               to="/cart"
               onClick={() => setMenuOpen(false)}
               className="text-xl text-gray-700 hover:text-red-500"
@@ -117,12 +110,6 @@ const Header: React.FC = () => {
             className="text-gray-700 hover:text-red-500 text-lg"
           >
             Sign Up
-          </Link>
-          <Link
-            to="/vendor-sign-up"
-            className="text-gray-700 hover:text-red-500 text-lg"
-          >
-            Vendor
           </Link>
         </nav>
         <div className="flex items-center space-x-6">

@@ -1,4 +1,5 @@
 export const HOME = "/";
+export const CLIENT_HOME = "/client/home";
 export const CONTACT = "/contact";
 export const ACCOUNT = "/account";
 export const ABOUT = "/about";

@@ -2,10 +2,11 @@ import React from "react";
 import { FcGoogle } from "react-icons/fc";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { Link } from "react-location";
-import { LOGIN } from "@/constants";
+import { Link, useNavigate } from "react-location";
+import { CLIENT_HOME, LOGIN } from "@/constants";
 
 const SignUp = () => {
+  const navigate = useNavigate();
   const { values, handleBlur, handleChange, errors, touched, handleSubmit } =
     useFormik({
       initialValues: {
@@ -29,6 +30,7 @@ const SignUp = () => {
 
       onSubmit: (e, action) => {
         action.resetForm();
+        navigate({to: CLIENT_HOME, replace: true});
       },
     });
 

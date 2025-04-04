@@ -55,12 +55,12 @@ const ServiceDetails = () => {
         <span className="text-base md:text-lg">/</span>
         <p className="text-base md:text-lg">Service</p>
         <span className="text-base md:text-lg">/</span>
-        <p className="text-black text-2xl md:text-xl">Service Detail</p>
+        <p className="text-black text-xl md:text-xl">Service Detail</p>
       </div>
 
       <div className="w-full md:h-[600px] mt-8 flex gap-8 md:flex-row flex-col">
         {/* Side Images */}
-        <div className="md:w-[170px] md:flex md:flex-col w-full grid grid-cols-2  justify-between gap-4">
+        <div className="md:w-[170px] md:flex md:flex-col w-full  hidden  justify-between gap-4">
           {images.map((image, index) => (
             <motion.div
               key={index}
@@ -94,7 +94,7 @@ const ServiceDetails = () => {
             className="w-full h-full object-cover"
           />
         </motion.div>
-        <div className="md:flex-1 pl-14 flex flex-col w-full justify-between">
+        <div className="md:flex-1 px-14 flex flex-col w-full justify-between">
           <div className="pb-10 border-b border-black ">
             <h2 className="font-semibold md:text-2xl text-lg mb-2">
               {search.service.title}
@@ -115,7 +115,7 @@ const ServiceDetails = () => {
                 (150 Reviews)
               </p>
             </div>
-            <h4 className="text-2xl mb-4">
+            <h4 className="md:text-2xl text-xl mb-4">
               ${search.service.startPrice} - ${search.service.endPrice}
             </h4>
             <p className="text-sm max-w-[373px]">
@@ -134,7 +134,7 @@ const ServiceDetails = () => {
               </div>
             </div>
           </div>
-          <div className="border border-[#1C1B1F] rounded ">
+          <div className="border border-[#1C1B1F] rounded md:mt-0 mt-5">
             <div className="flex items-center gap-5 border-b border-[#1C1B1F] py-5 px-4">
               <TbTruckDelivery className="size-10 text-black" />
               <div className="">

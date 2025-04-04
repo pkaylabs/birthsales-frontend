@@ -39,6 +39,12 @@ const navigation = [
     icon: ShoppingBagIcon,
     current: false,
   },
+  {
+    name: "Category",
+    href: "/categories",
+    icon: TagIcon,
+    current: false,
+  },
   { name: "Users", href: "/users", icon: UserGroupIcon, current: false },
   {
     name: "Services",
@@ -58,12 +64,7 @@ const navigation = [
     icon: ShoppingCartIcon,
     current: false,
   },
-  {
-    name: "Category",
-    href: "/categories",
-    icon: TagIcon,
-    current: false,
-  },
+
   { name: "Ads", href: "/admin-ads", icon: MegaphoneIcon, current: false },
 ];
 

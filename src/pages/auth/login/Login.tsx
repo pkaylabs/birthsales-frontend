@@ -1,21 +1,19 @@
 import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { useNavigate } from "react-location";
+import { CLIENT_HOME } from "@/constants";
 
 const Login = () => {
+  const navigate = useNavigate()
   const { values, handleBlur, handleChange, errors, touched, handleSubmit } =
     useFormik({
       initialValues: {
-        name: "",
         email: "",
         password: "",
       },
 
       validationSchema: Yup.object().shape({
-        name: Yup.string()
-          .min(2, "Too Short!")
-          .max(50, "Too Long!")
-          .required("Name is required"),
         email: Yup.string()
           .email("Please enter a valid email")
           .required("Email is required"),
@@ -25,7 +23,9 @@ const Login = () => {
       }),
 
       onSubmit: (e, action) => {
+        console.log('something')
         action.resetForm();
+         navigate({ to: CLIENT_HOME, replace: true });
       },
     });
 
