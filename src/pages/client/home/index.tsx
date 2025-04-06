@@ -85,17 +85,17 @@ const Home = () => {
   return (
     <main className="w-full max-w-[80rem] mx-auto px-4 large-screen:px-8">
       {/* HEADER SECTION */}
-      <header className="flex mobile:flex-col desktop-up:flex-row gap-4 py-4">
+      <header className="flex mobile:flex-col desktop-up:flex-row">
         {/* Off-canvas Sidebar Toggle – Visible on screens below desktop-up */}
-        <div className="desktop-up:hidden">
+        {/* <div className="desktop-up:hidden">
           <ResponsiveAside items={sidebarLinks} />
-        </div>
+        </div> */}
         {/* Inline Sidebar – Visible on desktop-up (>=1201px) */}
-        <aside className="hidden desktop-up:block w-1/5 pr-4 border-r border-black">
+        {/* <aside className="hidden desktop-up:block w-1/5 pr-4 border-r border-black">
           <Dropdown items={sidebarLinks} />
-        </aside>
+        </aside> */}
         {/* Main Carousel – full width on mobile; 4/5 width on desktop-up */}
-        <div className="w-full desktop-up:w-4/5">
+        <div className="w-full desktop-up:w-full">
           <Carousel items={images} autoPlay={true} />
         </div>
       </header>

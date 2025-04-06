@@ -7,7 +7,7 @@ export default function AppLayout() {
   return (
     <div className="font-poppins flex flex-col min-h-screen">
       <Header />
-      <div className="py-[4rem]">
+      <div className="py-[3rem]">
         <Outlet />
       </div>
       <Footer />
