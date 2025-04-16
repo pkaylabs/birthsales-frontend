@@ -75,20 +75,22 @@ const Countdown: React.FC<CountdownProps> = ({ endDateTime, showInCat }) => {
     <>
       {showInCat ? (
         <div className="">
-          <div className="flex items-center font-mono space-x-4">
+          <div className="flex items-center font-mono space-x-4 mobile:hidden">
             {timerObjArr.map((timerObj, index) => (
               <div
                 key={index}
                 className="bg-white w-16 h-16 rounded-full flex flex-col justify-center items-center"
               >
-                <h3 className="font-semibold text-base leading-4">{timerObj.value}</h3>
+                <h3 className="font-semibold text-base leading-4">
+                  {timerObj.value}
+                </h3>
                 <p className="text-[11px] font-poppins">{timerObj.label}</p>
               </div>
             ))}
           </div>
         </div>
       ) : (
-        <div className="flex items-center font-mono space-x-2">
+        <div className="flex items-center font-mono space-x-2 mobile:hidden">
           {timerObjArr.map((timerObj, index) => (
             <>
               <div key={index} className="">

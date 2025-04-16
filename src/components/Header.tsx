@@ -1,217 +1,134 @@
-import React, {  } from "react";
+import React, { useState } from "react";
 import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  IconButton,
-  Box,
-  Badge,
-
-} from "@mui/material";
-import { FaCircleUser } from "react-icons/fa6";
-import { RiUser3Line } from "react-icons/ri";
-import { FiShoppingBag } from "react-icons/fi";
-import { MdOutlineCancel } from "react-icons/md";
-import { IoIosStarOutline } from "react-icons/io";
-import { BiLogOut } from "react-icons/bi";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import { Link } from "react-location";
+  FaShoppingCart,
+  FaHeart,
+  FaUser,
+  FaBars,
+  FaTimes,
+} from "react-icons/fa";
 import logo from "@/assets/images/logo.jpg";
-import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { Link } from "react-location";
 
-const Navbar: React.FC = () => {
-  // const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
-
-
-  // const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-  //   setAnchorElUser(event.currentTarget);
-  // };
-
- 
-  // const handleCloseUserMenu = () => {
-  //   setAnchorElUser(null);
-  // };
-
-  const dropdownTabs = [
-    {
-      title: "Manage My Account",
-      link: "/account",
-      icon: RiUser3Line,
-    },
-    {
-      title: "My Order",
-      link: "#",
-      icon: FiShoppingBag,
-    },
-    {
-      title: "My Cancellations",
-      link: "#",
-      icon: MdOutlineCancel,
-    },
-    {
-      title: "My Reviews",
-      link: "#",
-      icon: IoIosStarOutline,
-    },
-    {
-      title: "Logout",
-      link: "#",
-      icon: BiLogOut,
-    },
-  ];
-
- 
+const Header: React.FC = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <AppBar position="fixed">
-      <Toolbar
-        sx={{
-          display: "flex",
-          justifyContent: "space-around",
-          alignItems: "center",
-          width: "100%",
-          backgroundColor: "white",
-          color: "black",
-          fontFamily: "Poppins",
-        }}
-      >
-        {/* Logo */}
-        <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}>
+    <header className="bg-white shadow-md relative">
+      {/* Mobile & Tablet Header: visible only on screens below 1201px */}
+      <div className="block desktop-up:hidden">
+        <div className="flex items-center justify-between py-4 px-6">
           <img
             src={logo}
-            alt="picture"
-            className="h-8 w-auto cursor-pointer rounded-md mr-5 flex items-center"
+            alt="Logo"
+            className="h-8 w-auto cursor-pointer rounded-md"
           />
-          <Typography
-            variant="h6"
-            component={Link}
-            to="/"
-            sx={{
-              textDecoration: "none",
-              color: "inherit",
-              fontFamily: "Poppins",
-            }}
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="text-gray-700 text-2xl focus:outline-none"
           >
-            BirthSales
-          </Typography>
-        </Box>
+            {menuOpen ? <FaTimes /> : <FaBars />}
+          </button>
+        </div>
+        {menuOpen && (
+          <nav className="flex flex-col items-center space-y-4 py-4 border-t border-gray-200">
+            <Link
+              to="/"
+              onClick={() => setMenuOpen(false)}
+              className="text-xl text-gray-700 hover:text-red-500"
+            >
+              Home
+            </Link>
+            <Link
+              to="/services"
+              onClick={() => setMenuOpen(false)}
+              className="text-xl text-gray-700 hover:text-red-500"
+            >
+              Services
+            </Link>
+            <Link
+              to="/about"
+              onClick={() => setMenuOpen(false)}
+              className="text-xl text-gray-700 hover:text-red-500"
+            >
+              About
+            </Link>
+            <Link
+              to="/sign-up"
+              onClick={() => setMenuOpen(false)}
+              className="text-xl text-gray-700 hover:text-red-500"
+            >
+              Sign Up
+            </Link>
+            <Link
+              to="/cart"
+              onClick={() => setMenuOpen(false)}
+              className="text-xl text-gray-700 hover:text-red-500"
+            >
+              Cart
+            </Link>
+            <Link
+              to="/wish-list"
+              onClick={() => setMenuOpen(false)}
+              className="text-xl text-gray-700 hover:text-red-500"
+            >
+              Wishlist
+            </Link>
+          </nav>
+        )}
+      </div>
 
-        {/* Navigation Links */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Button
-            color="inherit"
-            component={Link}
-            to="/"
-            sx={{ fontFamily: "Poppins" }}
-          >
+      {/* Desktop & Larger Header: visible only on screens 1201px and up */}
+      <div className="hidden desktop-up:flex items-center justify-between py-4 px-6">
+        <div className="flex items-center">
+          <img
+            src={logo}
+            alt="Logo"
+            className="h-8 w-auto cursor-pointer rounded-md mr-3"
+          />
+          <Link to="/" className="text-2xl font-bold text-gray-800">
+            BirthSales
+          </Link>
+        </div>
+        <nav className="flex items-center space-x-6">
+          <Link to="/" className="text-gray-700 hover:text-red-500 text-lg">
             Home
-          </Button>
-          <Button
-            color="inherit"
-            component={Link}
+          </Link>
+          <Link
             to="/services"
-            sx={{ fontFamily: "Poppins" }}
+            className="text-gray-700 hover:text-red-500 text-lg"
           >
             Services
-          </Button>
-          <Button
-            color="inherit"
-            component={Link}
+          </Link>
+          <Link
             to="/about"
-            sx={{ fontFamily: "Poppins" }}
+            className="text-gray-700 hover:text-red-500 text-lg"
           >
             About
-          </Button>
-          <Button
-            color="inherit"
-            component={Link}
+          </Link>
+          <Link
             to="/sign-up"
-            sx={{ fontFamily: "Poppins" }}
+            className="text-gray-700 hover:text-red-500 text-lg"
           >
-            Signup
-          </Button>
-        </Box>
-
-        {/* Cart & Wishlist */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <IconButton color="inherit" component={Link} to="/cart">
-            <Badge badgeContent={2} color="secondary">
-              <ShoppingCartIcon />
-            </Badge>
-          </IconButton>
-          <IconButton color="inherit" component={Link} to="/wish-list">
-            <Badge badgeContent={5} color="secondary">
-              <FavoriteIcon />
-            </Badge>
-          </IconButton>
-          <Menu as="div" className="relative inline-block text-left">
-            <div>
-              <MenuButton className="flex items-center rounded-full bg-gray-100 text-gray-400 hover:text-gray-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 focus:outline-hidden">
-                <span className="sr-only">Open options</span>
-                <FaCircleUser
-                  aria-hidden="true"
-                  className="size-8 text-black/20 "
-                />
-              </MenuButton>
-            </div>
-
-            <MenuItems
-              transition
-              className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-black/30 ring-1 shadow-lg ring-black/5 backdrop-blur-md transition focus:outline-hidden data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
-            >
-              <div className="py-1">
-                {dropdownTabs.map((tab, index) => (
-                  <MenuItem key={index}>
-                    <Link
-                      to={tab.link}
-                      className="flex items-center space-x-2.5 px-4 py-2 text-sm text-white data-focus:bg-gray-100 data-focus:text-gray-900 data-focus:outline-hidden hover:bg-black/10"
-                    >
-                      <tab.icon className="size-6" />
-                      <span className=" text-sm ">{tab.title}</span>
-                    </Link>
-                  </MenuItem>
-                ))}
-              </div>
-            </MenuItems>
-          </Menu>
-        </Box>
-      </Toolbar>
-    </AppBar>
+            Sign Up
+          </Link>
+        </nav>
+        <div className="flex items-center space-x-6">
+          <Link to="/wish-list">
+            <FaHeart className="text-xl text-gray-700 hover:text-red-500" />
+          </Link>
+          <Link to="/cart" className="relative">
+            <FaShoppingCart className="text-xl text-gray-700 hover:text-red-500" />
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white bg-red text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+              2
+            </span>
+          </Link>
+          <Link to="/account">
+            <FaUser className="text-xl text-gray-700 hover:text-red-500" />
+          </Link>
+        </div>
+      </div>
+    </header>
   );
 };
 
-export default Navbar;
-
-
-{/* <Tooltip title="Open settings">
-<IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-  <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
-</IconButton>
-</Tooltip>
-<Menu
-sx={{ mt: "45px" }}
-id="menu-appbar"
-anchorEl={anchorElUser}
-anchorOrigin={{
-  vertical: "top",
-  horizontal: "right",
-}}
-keepMounted
-transformOrigin={{
-  vertical: "top",
-  horizontal: "right",
-}}
-open={Boolean(anchorElUser)}
-onClose={handleCloseUserMenu}
->
-{dropdownTabs.map((tab) => (
-  <MenuItem key={tab.title} onClick={handleCloseUserMenu}>
-    <ListItemIcon>
-      <tab.icon style={{ fontSize: "1.2rem", color: "white" }} />
-    </ListItemIcon>
-    <ListItemText primary={tab.title} />
-  </MenuItem>
-))}
-</Menu> */}
+export default Header;

@@ -1,11 +1,11 @@
-import React, { JSX, ReactHTMLElement, useState } from "react";
+// export default CardCarousel;
+import React, { JSX, useEffect, useState } from "react";
 import { useSwipeable } from "react-swipeable";
 import { GoArrowLeft, GoArrowRight } from "react-icons/go";
 import Countdown from "./countdown";
 
 interface CarouselProps {
   type?: string;
-  itemsPerView: number;
   title?: string;
   showCountdown?: boolean;
   showControls?: boolean;
@@ -15,39 +15,62 @@ interface CarouselProps {
 
 const CardCarousel: React.FC<CarouselProps> = ({
   type,
-  itemsPerView,
   title,
   showControls,
   showCountdown,
   showViewAll,
   items,
 }) => {
+  const [itemsPerView, setItemsPerView] = useState(4); // Number of items visible at one time
+
   const [startIndex, setStartIndex] = useState(0);
-  //   const itemsPerView = itemsPerView;
+
+  // Update itemsPerView based on current screen width using your custom breakpoints
+  useEffect(() => {
+    const handleResize = () => {
+      // Example breakpoints: adjust these values to match your Tailwind config
+      if (window.innerWidth < 635) {
+        // Mobile breakpoint
+        setItemsPerView(1);
+      } else if (window.innerWidth < 1200) {
+        // Tablets breakpoint
+        setItemsPerView(2);
+      } else {
+        // Desktop breakpoint
+        setItemsPerView(4);
+      }
+      // Reset the start index if necessary
+      setStartIndex(0);
+    };
+
+    handleResize(); // initial check
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Check if we've reached the last slide.
+  const isLastSlide = startIndex >= items.length - itemsPerView;
+  const isFirstSlide = startIndex === 0;
 
   const nextSlide = () => {
-    setStartIndex((prevIndex) =>
-      prevIndex + itemsPerView >= items.length ? 0 : prevIndex + 1
-    );
+    // Only update if we haven't reached the last slide
+    if (!isLastSlide) {
+      setStartIndex((prevIndex) => prevIndex + 1);
+    }
   };
 
   const prevSlide = () => {
-    setStartIndex((prevIndex) =>
-      prevIndex === 0 ? items.length - itemsPerView : prevIndex - 1
-    );
-  };
-
-  const getVisibleItems = () => {
-    const visibleItems = [];
-    for (let i = 0; i < itemsPerView; i++) {
-      visibleItems.push(items[(startIndex + i) % items.length]);
+    // Only update if we aren't on the first slide
+    if (!isFirstSlide) {
+      setStartIndex((prevIndex) => prevIndex - 1);
     }
-    return visibleItems;
   };
 
+  // Render all items in a flex container so that sliding shows the extra product
   const handlers = useSwipeable({
-    onSwipedLeft: () => nextSlide(),
-    onSwipedRight: () => prevSlide(),
+    onSwipedLeft: nextSlide,
+    onSwipedRight: prevSlide,
     preventScrollOnSwipe: true,
     trackMouse: true,
   });
@@ -56,57 +79,67 @@ const CardCarousel: React.FC<CarouselProps> = ({
 
   return (
     <div className="select-none w-full">
-      <div className="flex items-center space-x-3">
-        <div className="w-5 h-10 bg-[#DB4444] rounded-md " />
-        <p className="font-semibold text-base text-[#DB4444] ">{type}</p>
+      <div className="flex items-center space-x-3 mobile:space-x-2 tablet:space-x-3">
+        <div className=" bg-[#DB4444] rounded-md w-3 h-8 md:w-5 md:h-10" />
+        <p className="font-semibold text-[#DB4444] text-base md:text-xl">
+          {type}
+        </p>
       </div>
 
       <div className="w-full flex justify-between items-center mb-8">
-        <div className="flex items-end space-x-20">
-          <h2 className="font-semibold text-4xl text-balck ">{title}</h2>
+        <div className="flex items-end  space-x-10 md:space-x-16 lg:space-x-20">
+          <h2 className="font-semibold text-balck text-xl md:text-2xl lg:text-3xl xl:text-4xl">
+            {title}
+          </h2>
 
-          {/* countdown */}
           {showCountdown && <Countdown endDateTime="2025-01-20T23:59:59" />}
         </div>
 
-        {/* Controls */}
         {showControls && (
-          <div className="flex space-x-2 mb-4">
+          <div className="space-x-2 mb-4 hidden md:flex lg:flex lg:space-x-2">
             <button
               onClick={prevSlide}
-              className="w-12 h-12 bg-gray-100 flex justify-center items-center text-black rounded-full hover:bg-gray-300"
+              disabled={isFirstSlide}
+              className={`w-12 h-12 bg-gray-100 flex justify-center items-center text-black rounded-full hover:bg-gray-300 ${
+                isFirstSlide && "opacity-50 cursor-not-allowed"
+              }`}
             >
-              <GoArrowLeft className="size-5 " aria-hidden="true" />
+              <GoArrowLeft aria-hidden="true" />
             </button>
             <button
               onClick={nextSlide}
-              className="w-12 h-12 bg-gray-100 flex justify-center items-center text-black rounded-full hover:bg-gray-300"
+              disabled={isLastSlide}
+              className={`w-12 h-12 bg-gray-100 flex justify-center items-center text-black rounded-full hover:bg-gray-300 ${
+                isLastSlide && "opacity-50 cursor-not-allowed"
+              }`}
             >
-              <GoArrowRight className="size-5 " aria-hidden="true" />
+              <GoArrowRight aria-hidden="true" />
             </button>
           </div>
         )}
 
-        {/* View All Button */}
         {showViewAll && (
-          <button className="font-medium w-40 h-12 flex justify-center items-center bg-[#DB4444] rounded-md text-white text-base">
+          <button className="font-medium lg:w-40 lg:h-12 lg:text-lg flex justify-center items-center bg-[#DB4444] rounded-md text-white text-base w-32 h-8 text-[12px] md:w-36 md:h-10">
             View All
           </button>
         )}
       </div>
 
-      {/* Carousel Content */}
-      <div className="w-full flex overflow-hidden" {...conditionalHandlers}>
+      <div className="w-full overflow-hidden" {...conditionalHandlers}>
         <div
-          className="w-full flex justify-between transition-transform duration-500 ease-in-out"
+          className="flex transition-transform duration-500 ease-in-out"
           style={{
-            transform: `translateX(-${
-              ((startIndex % items.length) * 100) / itemsPerView
-            }%)`,
+            transform: `translateX(-${(startIndex * 100) / itemsPerView}%)`,
           }}
         >
-          {getVisibleItems().map((item, index) => (
-            <>{item()}</>
+          {items.map((item, index) => (
+            <div
+              key={index}
+              className="flex-shrink-0"
+              style={{ width: `${100 / itemsPerView}%` }}
+            >
+              {item()}
+            </div>
           ))}
         </div>
       </div>

@@ -35,6 +35,7 @@ export default {
         tablet: { max: "1200px" },
         desktop: { max: "1280px" },
         "large-screen": { max: "1536px" },
+        "desktop-up": "1201px",
       },
       fontFamily: {
         Merriweather: ["Merriweather", "serif"],

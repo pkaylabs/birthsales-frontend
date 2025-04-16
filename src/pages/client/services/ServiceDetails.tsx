@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link, useMatch, useNavigate, useSearch } from "react-location";
 import { IoStar } from "react-icons/io5";
-import { MdOutlineFavoriteBorder } from "react-icons/md";
 import { TbTruckDelivery } from "react-icons/tb";
 import { GrPowerCycle } from "react-icons/gr";
 import { motion } from "framer-motion";
@@ -16,9 +15,10 @@ const ServiceDetails = () => {
 
   const search = useSearch<any>();
 
-  const [numberOfItems, setNumberOfItems] = useState(1);
 
-  const [selectedImage, setSelectedImage] = useState<string>(search.img);
+  const [selectedImage, setSelectedImage] = useState<string>(
+    search.service.img
+  );
 
   const handleImageClick = (imageSrc: string) => {
     setSelectedImage(imageSrc);
@@ -27,32 +27,40 @@ const ServiceDetails = () => {
   const images = [
     {
       id: 1,
-      src: search.img,
+      src: search.service.img,
     },
     {
       id: 2,
-      src: search.img,
+      src: search.service.img,
     },
     {
       id: 3,
-      src: search.img,
+      src: search.service.img,
     },
     {
       id: 4,
-      src: search.img,
+      src: search.service.img,
     },
   ];
 
   return (
-    <main className="w-full max-w-[80rem] mx-auto">
-      <div className="mt-6 flex items-center space-x-3 text-gray-400">
+    <main className="max-w-[80rem] mx-5 md:mx-5 lg:mx-auto slide-up">
+      {/* <div className="mt-6 flex items-center space-x-3 text-gray-400">
         <p className="">Home</p> <span>/</span> <p className="">Service</p>{" "}
         <span>/</span> <p className="text-black">Service Detail</p>
+      </div> */}
+      {/* Breadcrum */}
+      <div className="mt-6 flex flex-row items-center  space-x-2 text-gray-400">
+        <p className="text-base md:text-lg">Home</p>
+        <span className="text-base md:text-lg">/</span>
+        <p className="text-base md:text-lg">Service</p>
+        <span className="text-base md:text-lg">/</span>
+        <p className="text-black text-xl md:text-xl">Service Detail</p>
       </div>
 
-      <div className="w-full h-[600px] mt-8 flex gap-8">
+      <div className="w-full md:h-[600px] mt-8 flex gap-8 md:flex-row flex-col">
         {/* Side Images */}
-        <div className="w-[170px] flex flex-col justify-between gap-4">
+        <div className="md:w-[170px] md:flex md:flex-col w-full  hidden  justify-between gap-4">
           {images.map((image, index) => (
             <motion.div
               key={index}
@@ -73,7 +81,7 @@ const ServiceDetails = () => {
 
         {/* Main Image */}
         <motion.div
-          className="w-[500px] bg-[#F5F5F5] rounded flex justify-center items-center"
+          className="md:w-[500px] w-full bg-[#F5F5F5] rounded flex justify-center items-center"
           key={selectedImage}
           initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
           animate={{ opacity: 1, scale: 1, rotate: 0 }}
@@ -86,9 +94,11 @@ const ServiceDetails = () => {
             className="w-full h-full object-cover"
           />
         </motion.div>
-        <div className="flex-1 pl-14 flex flex-col justify-between">
+        <div className="md:flex-1 px-14 flex flex-col w-full justify-between">
           <div className="pb-10 border-b border-black ">
-            <h2 className="font-semibold text-2xl mb-2">{search.title}</h2>
+            <h2 className="font-semibold md:text-2xl text-lg mb-2">
+              {search.service.title}
+            </h2>
             <div className="flex items-center space-x-3 my-2">
               <div className="flex items-center space-x-1.5">
                 {[1, 2, 3, 4, 5].map((_, index) => (
@@ -105,10 +115,12 @@ const ServiceDetails = () => {
                 (150 Reviews)
               </p>
             </div>
-            <h4 className="text-2xl mb-4">
-              ${search.startPrice} - ${search.endPrice}
+            <h4 className="md:text-2xl text-xl mb-4">
+              ${search.service.startPrice} - ${search.service.endPrice}
             </h4>
-            <p className="text-sm max-w-[373px]">{search.description}</p>
+            <p className="text-sm max-w-[373px]">
+              {search.service.description}
+            </p>
           </div>
           <div className="">
             <div className="flex justify-between items-center gap-6">
@@ -122,7 +134,7 @@ const ServiceDetails = () => {
               </div>
             </div>
           </div>
-          <div className="border border-[#1C1B1F] rounded ">
+          <div className="border border-[#1C1B1F] rounded md:mt-0 mt-5">
             <div className="flex items-center gap-5 border-b border-[#1C1B1F] py-5 px-4">
               <TbTruckDelivery className="size-10 text-black" />
               <div className="">
@@ -152,48 +164,7 @@ const ServiceDetails = () => {
 
       <section className="mt-20">
         <h1 className="font-semibold text-2xl mb-2">Related Services</h1>
-        <div className="flex items-center gap-4">
-          <ServiceCard
-            id={8}
-            img={
-              "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            }
-            title="Home Rentals"
-            description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-            startPrice={100}
-            endPrice={600}
-          />
-          <ServiceCard
-            id={8}
-            img={
-              "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            }
-            title="Home Rentals"
-            description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-            startPrice={100}
-            endPrice={600}
-          />
-          <ServiceCard
-            id={8}
-            img={
-              "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            }
-            title="Home Rentals"
-            description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-            startPrice={100}
-            endPrice={600}
-          />
-          <ServiceCard
-            id={8}
-            img={
-              "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            }
-            title="Home Rentals"
-            description="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-            startPrice={100}
-            endPrice={600}
-          />
-        </div>
+        <div className="flex items-center gap-4"></div>
       </section>
     </main>
   );

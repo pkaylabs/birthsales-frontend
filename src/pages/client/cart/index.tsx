@@ -56,16 +56,18 @@ const CartPage = () => {
   }, 0);
 
   return (
-    <div className="max-w-[80rem] mx-auto slide-up">
-      {/* home / cart */}
-      <div className="mt-6 flex items-center space-x-3 text-gray-400">
-        <p>Home</p> <span>/</span> <p className="text-black">Cart</p>
+    <div className="max-w-[80rem] mx-5 md:mx-5 lg:mx-auto slide-up">
+      {/* Breadcrum */}
+      <div className="mt-6 flex flex-row items-center  space-x-2 text-gray-400">
+        <p className="text-base md:text-lg">Home</p>
+        <span className="text-base md:text-lg">/</span>
+        <p className="text-black text-2xl md:text-xl">Cart</p>
       </div>
       {/* cart table */}
-      <div className="w-full mt-[1rem] ">
+      <div className="w-full mt-[1rem]">
         {/* table */}
         <table className="w-full border-spacing-y-8 border-separate table-fixed">
-          <tr className="rounded-md shadow-md  text-lg">
+          <tr className="rounded-md shadow-md text-base  md:text-lg">
             <th className="p-6 font-medium  text-start">Product</th>
             <th className="p-6 font-medium text-start">Price</th>
             <th className="p-6 font-medium text-start">Quantity</th>
@@ -78,14 +80,14 @@ const CartPage = () => {
             return (
               <tr
                 key={product.id}
-                className="rounded-md shadow-md font-normal text-base "
+                className="rounded-md shadow-md font-normal text-[12px] md:text-base"
               >
                 <td className="p-6  text-start">
-                  <div className="flex items-center justify-start gap-2 ">
+                  <div className="flex items-center justify-start gap-2">
                     <img
                       src={product.image}
                       alt=""
-                      className="object-cover rounded-full w-10 h-10"
+                      className="hidden object-cover rounded-full w-10 h-10 md:block"
                     />
                     <p>{product.name}</p>
                   </div>
@@ -105,40 +107,57 @@ const CartPage = () => {
             );
           })}
         </table>
-        <div className=" flex justify-between">
-          <button className="w-[200px] h-[48px] rounded border border-gray-400 hover:bg-black hover:text-white">
+        <div className="flex justify-between gap-2">
+          <button
+            className=" w-32 h-8 text-[12px]
+                       md:w-48 md:h-10
+                       lg:w-64 lg:h-12
+                       xl:w-72 xl:h-14 xl:text-lg rounded-md border border-gray-400 hover:bg-black hover:text-white"
+          >
             Return To Shop
           </button>
-          <button className="w-[200px] h-[48px] rounded border border-gray-400 hover:bg-black hover:text-white">
+          <button
+            className=" w-32 h-8 text-[12px]
+                       md:w-48 md:h-10
+                       lg:w-64 lg:h-12
+                       xl:w-72 xl:h-14 xl:text-lg rounded-md
+                        border border-gray-400 hover:bg-black hover:text-white"
+          >
             Update Cart
           </button>
         </div>
-        <div className="flex justify-between mt-[5rem]">
+        <div className="flex flex-col gap-5 justify-between md:flex-row lg:flex-row mt-[5rem]">
           <div className="flex  gap-3">
             <input
               type="text"
-              className="rounded-md text-base border border-gray-500 w-[250px] px-5 h-[48px] outline-none"
+              className="rounded-md text-[12px] border border-gray-500 w-32 px-5 h-8 outline-none md:w-48 md:h-10 lg:w-64 lg:h-12 xl:text-lg xl:h-14 xl:w-72"
               placeholder="Coupon Code"
             />
-            <button className="w-[200px] h-[48px] rounded border bg-[#DB4444] text-white hover:opacity-75">
+            <button
+              className="  border bg-[#DB4444]  hover:opacity-75  text-white rounded-md
+                       w-32 h-8 text-[12px]
+                       md:w-48 md:h-10
+                       lg:w-64 lg:h-12
+                       xl:w-72 xl:h-14 xl:text-lg"
+            >
               Apply Coupon
             </button>
           </div>
-          <div className="w-[470px] border-[1.5px] border-gray-600 rounded p-5 flex flex-col justify-between gap-5">
-            <h1 className="font-medium text-xl">Cart Total</h1>
+          <div className="w-full md:w-[470px] border-[1.5px] border-gray-600 rounded p-5 flex flex-col justify-between gap-5">
+            <h1 className="font-medium text-base md:text-xl">Cart Total</h1>
             {/* subtotal */}
             <div className="flex flex-col justify-between gap-3">
-              <div className="flex justify-between">
+              <div className="flex justify-between text-[12px] md:text-base">
                 <p>Subtotal:</p>
                 <p>${subTotal.toFixed(2)}</p>
               </div>
               <div className=" border border-gray-300" />
-              <div className="flex justify-between">
+              <div className="flex justify-between text-[12px] md:text-base">
                 <p>Shipping:</p>
                 <p>Free</p>
               </div>
               <div className=" border border-gray-300" />
-              <div className="flex justify-between">
+              <div className="flex justify-between text-[12px] md:text-base">
                 <p>GrandTotal:</p>
                 <p className="font-bold  pulse mx-2">
                   ${subTotal + shippingFee}
@@ -150,7 +169,10 @@ const CartPage = () => {
                 onClick={() =>
                   navigate({ to: CHECKOUT, search: { total: subTotal } })
                 }
-                className="w-[200px] hover:opacity-75 h-[48px] rounded border bg-[#DB4444] text-white"
+                className=" w-32 h-8 text-[12px]
+                       md:w-48 md:h-10
+                       lg:w-64 lg:h-12
+                       xl:w-72 xl:h-14 xl:text-lg hover:opacity-75  rounded border bg-[#DB4444] text-white"
               >
                 Proceed to checkout
               </button>
