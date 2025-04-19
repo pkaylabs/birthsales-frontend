@@ -47,7 +47,7 @@ const Ads = () => {
   ]);
 
   const [newAd, setNewAd] = useState({ name: "", budget: "" });
-  const [totalBudget, setTotalBudget] = useState(0)
+  const [totalBudget, setTotalBudget] = useState(0);
 
   const chartData = [
     { month: "Jan", clicks: 500 },
@@ -58,7 +58,10 @@ const Ads = () => {
   ];
 
   useEffect(() => {
-    const budgetSum = ads.reduce((sum, ad) => sum + parseFloat(ad.budget), 0);
+    const budgetSum = ads.reduce(
+      (sum, ad) => sum + parseFloat(ad.budget.toString()),
+      0
+    );
     setTotalBudget(budgetSum);
   }, [ads]);
 
@@ -120,7 +123,7 @@ const Ads = () => {
                       id: ads.length + 1,
                       status: "Active",
                       clicks: 0,
-                      budget: parseFloat(newAd.budget) || 0
+                      budget: parseFloat(newAd.budget) || 0,
                     },
                   ]);
                   setOpen(false);

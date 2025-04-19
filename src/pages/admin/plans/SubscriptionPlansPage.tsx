@@ -19,6 +19,7 @@ import {
   IconButton,
   CircularProgress,
 } from "@mui/material";
+import { SelectChangeEvent } from "@mui/material/Select";
 import { Add, Edit, Delete } from "@mui/icons-material";
 // import {
 //   useGetPlansQuery,
@@ -35,6 +36,10 @@ interface Plan {
   interval: string;
   description: string;
 }
+
+type ChangeEventType =
+  | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  | SelectChangeEvent<string>;
 
 export default function SubscriptionPlansPage() {
   // Data fetching
@@ -97,7 +102,7 @@ export default function SubscriptionPlansPage() {
 
   const close = () => setDialogOpen(false);
 
-  const onChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const onChange = (e: ChangeEventType) => {
     const { name, value } = e.target;
     setForm((f) => ({
       ...f,
@@ -105,7 +110,7 @@ export default function SubscriptionPlansPage() {
     }));
   };
 
-  const onIntervalChange = (e: ChangeEvent<{ value: unknown }>) => {
+  const onIntervalChange = (e: ChangeEventType) => {
     setForm((f) => ({
       ...f,
       interval: e.target.value as "month" | "year",
@@ -163,7 +168,9 @@ export default function SubscriptionPlansPage() {
                   <IconButton
                     // onClick={() => deletePlan(plan.id)}
                     // disabled={deleting}
-                    onClick={() => {alert("Delete plan")}} // Placeholder for delete action
+                    onClick={() => {
+                      alert("Delete plan");
+                    }} // Placeholder for delete action
                   >
                     <Delete />
                   </IconButton>
@@ -222,7 +229,7 @@ export default function SubscriptionPlansPage() {
             <Button
               type="submit"
               variant="contained"
-            //   disabled={adding || updating}
+              //   disabled={adding || updating}
             >
               {editingPlan ? "Save Changes" : "Create Plan"}
             </Button>
