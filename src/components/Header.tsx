@@ -8,6 +8,7 @@ import {
 } from "react-icons/fa";
 import logo from "@/assets/images/logo.jpg";
 import { Link } from "react-location";
+import { SIGN_UP_ROLE } from "@/constants";
 
 const Header: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -53,7 +54,7 @@ const Header: React.FC = () => {
               About
             </Link>
             <Link
-              to="/sign-up"
+              to={SIGN_UP_ROLE}
               onClick={() => setMenuOpen(false)}
               className="text-xl text-gray-700 hover:text-red-500"
             >
@@ -106,7 +107,7 @@ const Header: React.FC = () => {
             About
           </Link>
           <Link
-            to="/sign-up"
+            to={SIGN_UP_ROLE}
             className="text-gray-700 hover:text-red-500 text-lg"
           >
             Sign Up

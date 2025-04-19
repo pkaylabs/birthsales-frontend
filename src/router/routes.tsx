@@ -30,7 +30,8 @@ import {
   USERS,
   CATEGORIES,
   VENDOR_SIGN_UP,
-  CLIENT_HOME,
+  SIGN_UP_ROLE,
+  ADMIN_PLANS,
 } from "@/constants";
 import AdminHomePage from "@/pages/admin/home";
 
@@ -56,6 +57,7 @@ import ServicesPage from "@/pages/admin/services";
 import AdminServiceDetails from "@/pages/admin/services/AdminServiceDetails";
 import VendorAccount from "@/pages/auth/vendor/VendorAccount";
 import RoleSelection from "@/pages/RoleSelection";
+import SubscriptionPlansPage from "@/pages/admin/plans/SubscriptionPlansPage";
 
 
 export type RouteProps = Omit<Route, "children"> & {
@@ -67,14 +69,14 @@ export type RouteProps = Omit<Route, "children"> & {
 
 const routes: RouteProps[] = [
   {
-    path: HOME,
+    path: SIGN_UP_ROLE,
     element: <RoleSelection />,
     meta: {
       layout: "Auth",
     },
   },
   {
-    path: CLIENT_HOME,
+    path: HOME,
     element: <Home />,
     meta: {
       layout: "App",
@@ -159,6 +161,13 @@ const routes: RouteProps[] = [
   {
     path: ADMIN_ADS,
     element: <Ads />,
+    meta: {
+      layout: "Admin",
+    },
+  },
+  {
+    path: ADMIN_PLANS,
+    element: <SubscriptionPlansPage />,
     meta: {
       layout: "Admin",
     },

@@ -2,7 +2,7 @@ import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-location";
-import { CLIENT_HOME } from "@/constants";
+import { HOME } from "@/constants";
 
 const Login = () => {
   const navigate = useNavigate()
@@ -25,7 +25,7 @@ const Login = () => {
       onSubmit: (e, action) => {
         console.log('something')
         action.resetForm();
-         navigate({ to: CLIENT_HOME, replace: true });
+         navigate({ to: HOME, replace: true });
       },
     });
 

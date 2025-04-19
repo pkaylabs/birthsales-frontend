@@ -13,6 +13,7 @@ export interface Product {
   stock?: number;
   sales?: number;
   revenue?: number;
+  status?: 'pending' | 'approved';
 }
 
 // This is your static products array.
@@ -33,6 +34,7 @@ const products: Product[] = [
     stock: 50,
     sales: 120,
     revenue: 60000,
+    status: "pending",
   },
   {
     id: 2,
@@ -50,6 +52,7 @@ const products: Product[] = [
     stock: 30,
     sales: 200,
     revenue: 80000,
+    status: "approved",
   },
 ];
 
