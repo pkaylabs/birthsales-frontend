@@ -175,7 +175,7 @@ export default function Users() {
 
           {/* Add New User Dialog */}
           <Dialog open={open} onClose={() => setOpen(false)}>
-            <DialogTitle>Add New Product</DialogTitle>
+            <DialogTitle>Add New User</DialogTitle>
             <DialogContent>
               <TextField
                 fullWidth

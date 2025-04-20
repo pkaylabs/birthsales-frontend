@@ -5,19 +5,64 @@ import {
   Button,
   Card,
   CardContent,
+  CircularProgress,
   Grow,
+  Stack,
   Typography,
 } from "@mui/material";
 import Grid2 from "@mui/material/Grid2";
+import { useState } from "react";
+
+// interface Product {
+//   id: number;
+//   name: string;
+//   image?: string;
+//   additionalImages?: string[];
+//   category: string;
+//   price: string | number;
+//   dateAdded: string;
+//   quantity: string | number;
+//   stock?: number;
+//   sales?: number;
+//   revenue?: number;
+//   status?: "pending" | "approved";
+// }
 
 const ProductAdminDetails = () => {
+  const [role, setRole] = useState("admin");
+  const [isApproving, setIsApproving] = useState(false) // Mock role, replace with actual role from Redux or context
   const navigate = useNavigate();
   const { params } = useMatch();
   const productId = Number(params.id);
+  // const { data: products = [] } = useGetProductsQuery();
   const products = useProducts();
 
   // Finding the product
   const product: Product | undefined = products.find((p) => p.id === productId);
+
+  // RTK Query mutation for approving
+  // const [approveProduct, { isLoading: isApproving, isSuccess }] =
+  // useApproveProductMutation();
+  const approveProduct = async (productId: number) => {
+    console.log("Approving product with ID:", productId);
+    // Simulate an API call
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    // After the API call, you can update the product status in your state or refetch the products
+    setIsApproving(false);
+  }
+
+  // Get current user role from Redux
+  // const role = useSelector((state: RootState) => state.auth.user?.role);
+
+  // After a successful approve, refetch products or navigate
+  //  useEffect(() => {
+  //   if (isSuccess) {
+  //     // Option A: Navigate back to list
+  //     navigate({ to: "/products" });
+  //     // Option B: Or just update local product.status
+  //     // setLocalStatus("approved");
+  //   }
+  // }, [isSuccess, navigate]);
 
   if (!product)
     return (
@@ -41,9 +86,32 @@ const ProductAdminDetails = () => {
       <Grow in timeout={1000}>
         <Card sx={{ paddingLeft: "10px" }}>
           <CardContent>
-            <Typography variant="h4" gutterBottom>
-              {product.name}
-            </Typography>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Typography variant="h4" gutterBottom>
+                {product.name}
+              </Typography>
+              {/* Approval Button */}
+              {role === "admin" && product.status === "pending" && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  // onClick={() => approveProduct({ id: product.id })}
+                  onClick={() => approveProduct(123)}
+                  disabled={isApproving}
+                >
+                  {isApproving ? <CircularProgress size={20} /> : "Approve"}
+                </Button>
+              )}
+              {role === "admin" && product.status === "approved" && (
+                <Button variant="outlined" disabled>
+                  Approved
+                </Button>
+              )}
+            </Stack>
             <Grid2 container spacing={4} sx={{ width: "100%" }}>
               {/* Left Column: Main Image */}
               <Grid2 size={{ xs: 12, md: 6 }} sx={{ backgroundColor: "" }}>
@@ -64,7 +132,15 @@ const ProductAdminDetails = () => {
               </Grid2>
 
               {/* Right Column: Product Details */}
-              <Grid2 size={{ xs: 12, md: 6 }} sx={{border: "", padding: "5px", borderRadius: "", backgroundColor: ""}}>
+              <Grid2
+                size={{ xs: 12, md: 6 }}
+                sx={{
+                  border: "",
+                  padding: "5px",
+                  borderRadius: "",
+                  backgroundColor: "",
+                }}
+              >
                 <Typography variant="body1" gutterBottom>
                   <strong className="text-xl">Category:</strong>{" "}
                   <span className="text-base">{product.category}</span>

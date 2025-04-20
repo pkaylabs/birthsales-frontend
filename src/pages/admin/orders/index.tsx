@@ -22,6 +22,7 @@ import {
   InputLabel,
   Grid,
 } from "@mui/material";
+import { SelectChangeEvent } from "@mui/material/Select";
 
 interface Order {
   orderId: string;
@@ -31,6 +32,10 @@ interface Order {
   orderDate: string;
   deliveryDate: string;
 }
+
+type ChangeEventType =
+  | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  | SelectChangeEvent<string>;
 
 const initialOrders: Order[] = [
   {
@@ -64,9 +69,7 @@ export default function OrdersPage() {
   });
   const [open, setOpen] = useState(false);
 
-  const handleChange = (
-    e: React.ChangeEvent<{ name?: string; value: unknown }>
-  ) => {
+  const handleChange = (e: ChangeEventType) => {
     const { name, value } = e.target;
     if (name) {
       setNewOrder((prevState) => ({ ...prevState, [name]: value }));
