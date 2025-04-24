@@ -11,7 +11,7 @@ const Footer = () => {
           {/* Company Info */}
           <div>
             <h3 className="text-white text-lg font-semibold mb-4">
-              BirthSales
+              BirthNon
             </h3>
             <ul className="space-y-2">
               <li>
@@ -147,7 +147,7 @@ const Footer = () => {
           {/* Company Info */}
           <div>
             <h3 className="text-white text-lg font-semibold mb-4">
-              BirthSales
+              BirthNon
             </h3>
             <ul className="space-y-2">
               <li>
@@ -281,7 +281,7 @@ const Footer = () => {
         {/* Copyright */}
         <div className="mt-8 border-t border-gray-700 pt-4 text-center text-sm">
           <p>
-            &copy; {new Date().getFullYear()} BirthSales site. All rights
+            &copy; {new Date().getFullYear()} BirthNon site. All rights
             reserved.
           </p>
         </div>

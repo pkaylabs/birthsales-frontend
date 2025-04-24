@@ -87,7 +87,7 @@ const Header: React.FC = () => {
             className="h-8 w-auto cursor-pointer rounded-md mr-3"
           />
           <Link to="/" className="text-2xl font-bold text-gray-800">
-            BirthSales
+            BirthNon
           </Link>
         </div>
         <nav className="flex items-center space-x-6">
