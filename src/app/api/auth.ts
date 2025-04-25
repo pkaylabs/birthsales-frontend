@@ -9,8 +9,9 @@ export const api = createApi({
     baseUrl: "http://134.209.225.71/api-v1/", // Replace with your API base URL
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth.token;
+      console.log('prepareHeaders token:', token);
       if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
+        headers.set("Authorization", `Token ${token}`);
       }
       return headers;
     },

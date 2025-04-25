@@ -2,23 +2,23 @@ import { api } from "@/app/api/auth";
 import type { Business } from "@/redux/type";
 
 interface CreateBusinessDto {
-  user: number;
+
   vendor_name: string;
   vendor_email: string;
   vendor_address: string;
   vendor_phone: string;
 }
 interface SubscribeDto {
-  plan_id: string;
+  package: string;
 }
 
 export const businessApi = api.injectEndpoints({
   endpoints: (builder) => ({
     createBusiness: builder.mutation<Business, CreateBusinessDto>({
-      query: (biz) => ({ url: "vendors/", method: "POST", body: biz }),
+      query: (biz) => ({ url: "vendorprofile/", method: "POST", body: biz }),
     }),
     subscribePlan: builder.mutation<{ message: string }, SubscribeDto>({
-      query: (sub) => ({ url: "vendor/subscribe", method: "POST", body: sub }),
+      query: (sub) => ({ url: "subscriptions/", method: "POST", body: sub }),
     }),
   }),
 });

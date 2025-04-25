@@ -48,10 +48,19 @@ const VendorAccount: React.FC = () => {
   const [subscribePlan, { isLoading: subLoading, error: subError }] =
     useSubscribePlanMutation();
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  // const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  //   const { name, value } = e.target;
+  //   if (step === 1) setAccountData((prev) => ({ ...prev, [name]: value }));
+  //   if (step === 2) setVendorData((prev) => ({ ...prev, [name]: value }));
+  // };
+  const handleAccountChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (step === 1) setAccountData((prev) => ({ ...prev, [name]: value }));
-    if (step === 2) setVendorData((prev) => ({ ...prev, [name]: value }));
+    setAccountData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleVendorChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setVendorData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleAccountSubmit = async () => {
@@ -72,11 +81,11 @@ const VendorAccount: React.FC = () => {
   };
 
   const handleBusinessSubmit = async () => {
-    if (!userId) return;
+    if(!token) return;
+    console.log('About to create business; token=', token);
     try {
       // map vendorData to CreateBusinessDto
       await createBusiness({
-        user: userId,
         vendor_name: vendorData.vendor_name,
         vendor_email: vendorData.vendor_email,
         vendor_address: vendorData.vendor_address,
@@ -91,7 +100,7 @@ const VendorAccount: React.FC = () => {
   const handlePlanSubscribe = async () => {
     if (selectedPlan) {
       try {
-        await subscribePlan({ plan_id: selectedPlan.id }).unwrap();
+        await subscribePlan({ package: selectedPlan.id }).unwrap();
         setStep(5);
       } catch {
         console.log("something");
@@ -114,7 +123,7 @@ const VendorAccount: React.FC = () => {
                   name={f}
                   type={f === "password" ? "password" : "text"}
                   value={(accountData as any)[f]}
-                  onChange={handleChange}
+                  onChange={handleAccountChange}
                   className="w-full p-2 border rounded"
                 />
               </div>
@@ -139,14 +148,14 @@ const VendorAccount: React.FC = () => {
         {step === 2 && (
           <div>
             <h2 className="text-xl font-semibold mb-4">Vendor Profile Setup</h2>
-            {["businessName", "contactEmail", "phone", "address"].map((f) => (
+            {["vendor_name", "vendor_email", "vendor_phone", "vendor_address"].map((f) => (
               <div key={f} className="mb-3">
                 <label className="block mb-1">{f}</label>
                 <input
                   name={f}
                   type="text"
                   value={(vendorData as any)[f]}
-                  onChange={handleChange}
+                  onChange={handleVendorChange}
                   className="w-full p-2 border rounded"
                 />
               </div>
@@ -165,7 +174,7 @@ const VendorAccount: React.FC = () => {
               </button>
               <button
                 onClick={handleBusinessSubmit}
-                disabled={bizLoading}
+                disabled={bizLoading || !token}
                 className="bg-blue-600 text-white p-2 rounded"
               >
                 {bizLoading ? "Saving..." : "Next"}
@@ -188,8 +197,8 @@ const VendorAccount: React.FC = () => {
                     className="border p-4 mb-2 flex justify-between"
                   >
                     <div>
-                      <strong>{plan.name}</strong> — GHC{plan.price}/
-                      {plan.interval}
+                      <strong>{plan.package_name}</strong> — GHC{plan.package_price}/
+                      {'Monthly'}
                     </div>
                     <button
                       onClick={() => setSelectedPlan(plan)}

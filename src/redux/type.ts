@@ -28,10 +28,11 @@ export interface User {
   
   export interface Plan {
     id: string;
-    name: string;
-    price: string;
-    interval: string;
-    description: string;
+    package_name: string;
+    package_description: string;  
+    package_price: string;
+    created_at: string;
+    updated_at: string;
   }
   
   export interface Product {
