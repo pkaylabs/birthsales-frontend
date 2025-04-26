@@ -3,9 +3,12 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-location";
 import { HOME } from "@/constants";
+import { ADMIN_HOME } from "@/constants";
+import { useLoginMutation } from "@/redux/features/auth/authApiSlice";
 
 const Login = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [login, { isLoading, error }] = useLoginMutation();
   const { values, handleBlur, handleChange, errors, touched, handleSubmit } =
     useFormik({
       initialValues: {
@@ -22,15 +25,20 @@ const Login = () => {
           .required("Password is required"),
       }),
 
-      onSubmit: (e, action) => {
-        console.log('something')
-        action.resetForm();
-         navigate({ to: HOME, replace: true });
+      onSubmit: async (values) => {
+        try {
+          const result = await login(values).unwrap();
+          const type = result.user.user_type;
+          if (type === "DELIVERY") navigate({ to: HOME, replace: true });
+          else navigate({ to: ADMIN_HOME, replace: true });
+        } catch {
+          // error shown below
+        }
       },
     });
 
   return (
-    <div className="mt-[5rem] w-full slide-up">
+    <div className="mt-[3rem] w-full slide-up">
       <div className="flex  mb-20">
         {/* Image */}
         <div className="hidden lg:flex flex-[2]">
@@ -41,7 +49,7 @@ const Login = () => {
           />
         </div>
         {/* form */}
-        <div className=" flex flex-col justify-center  flex-1 px-5 py-5 md:px-32 md:py-20">
+        <div className=" flex flex-col justify-center  flex-1 px-5 py-5 md:px-32 ">
           <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
             <div className="flex flex-col gap-2 items-center">
               <h1 className="font-medium text-xl leading-7 md:text-4xl">
@@ -83,11 +91,20 @@ const Login = () => {
               <div className="w-full flex justify-between items-center">
                 <button
                   type="submit"
+                  disabled={isLoading}
                   className="bg-[#DB4444] py-2 px-5 w-36 rounded-md text-white text-center"
                 >
-                  Login
+                  {isLoading ? "Loggin in..." : "Login"}
                 </button>
-                <p className="text-[#DB4444] cursor-pointer">Forget Password?</p>
+
+                {error && (
+                  <div className="text-red-600">
+                    {(error as any).data?.detail || "Login failed"}
+                  </div>
+                )}
+                <p className="text-[#DB4444] cursor-pointer">
+                  Forget Password?
+                </p>
               </div>
             </div>
           </form>

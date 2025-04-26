@@ -4,15 +4,23 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Link, useNavigate } from "react-location";
 import { HOME, LOGIN } from "@/constants";
+import {
+  useRegisterMutation,
+  type AuthCredentials,
+} from "@/redux/features/auth/authApiSlice";
 
 const SignUp = () => {
   const navigate = useNavigate();
+  const [register, { isLoading, error }] = useRegisterMutation();
   const { values, handleBlur, handleChange, errors, touched, handleSubmit } =
-    useFormik({
+    useFormik<AuthCredentials>({
       initialValues: {
         name: "",
         email: "",
         password: "",
+        phone: "",
+        address: "",
+        user_type: "DELIVERY",
       },
 
       validationSchema: Yup.object().shape({
@@ -26,16 +34,28 @@ const SignUp = () => {
         password: Yup.string()
           .min(8, "Password must be 8 characters or more")
           .required("Password is required"),
+        phone: Yup.string()
+          .min(10, "Phone number must be at least 10 digits")
+          .required("Phone number is required"),
+        address: Yup.string()
+          .min(5, "Address must be at least 5 characters")
+          .required("Address is required"),
       }),
 
-      onSubmit: (e, action) => {
-        action.resetForm();
-        navigate({to: HOME, replace: true});
+      onSubmit: async (values, { resetForm }) => {
+        try {
+          await register(values).unwrap();
+          resetForm();
+          navigate({ to: HOME, replace: true });
+          // navigate or show success
+        } catch {
+          // error displayed below
+        }
       },
     });
 
   return (
-    <div className="mt-[5rem] w-full slide-up">
+    <div className="mt-[3rem] w-full slide-up">
       <div className="flex mb-20">
         {/* Image */}
         <div className="hidden flex-[2] lg:flex">
@@ -46,7 +66,7 @@ const SignUp = () => {
           />
         </div>
         {/* form */}
-        <div className=" flex flex-col px-5 py-5  flex-1 md:py-20 md:px-32">
+        <div className=" flex flex-col px-5 py-5  flex-1  md:px-32">
           <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
             <div className="flex flex-col gap-2 items-center">
               <h1 className="font-medium text-xl leading-7 md:text-4xl">
@@ -86,6 +106,34 @@ const SignUp = () => {
                 ""
               )}
               <input
+                name="phone"
+                id="phone"
+                value={values.phone}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className="p-2 border-b border-gray-500 w-full outline-none"
+                placeholder="Phone Number"
+              />
+              {errors.phone && touched.phone ? (
+                <p className="text-rose-400">{errors.phone}</p>
+              ) : (
+                ""
+              )}
+              <input
+                name="address"
+                id="address"
+                value={values.address}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className="p-2 border-b border-gray-500 w-full outline-none"
+                placeholder="Address"
+              />
+              {errors.address && touched.address ? (
+                <p className="text-rose-400">{errors.address}</p>
+              ) : (
+                ""
+              )}
+              <input
                 type="password"
                 name="password"
                 id="password"
@@ -101,12 +149,17 @@ const SignUp = () => {
                 ""
               )}
               <button
+                disabled={isLoading}
                 type="submit"
                 className="bg-[#DB4444] p-2 rounded-md w-full text-white text-center"
               >
-                Create Account
+                {isLoading ? "Loading..." : "Create Account"}
               </button>
-
+              {error && (
+                <div className="text-red-600">
+                  {(error as any).data?.detail || "Registration failed"}
+                </div>
+              )}
               <button className="flex items-center justify-center gap-2 rounded-md p-2 border border-gray-500 w-full">
                 <FcGoogle className="text-lg items-center" />
                 <span>Sign up with Google</span>

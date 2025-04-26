@@ -6,20 +6,20 @@ interface AuthResponse {
   token: string;
   user: User;
 }
-interface AuthCredentials {
+export interface AuthCredentials {
   email: string;
   password: string;
   name?: string;
   phone?: string;
   address?: string;
-  user_type: "VENDOR" | "ADMIN" | "DELIVERY" | "CLIENT";
+  user_type: "VENDOR" | "ADMIN" | "DELIVERY";
 }
 
 export const authApiSlice = api.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<
       AuthResponse,
-      Omit<AuthCredentials, "name" | "phone" | "address">
+      Omit<AuthCredentials, "name" | "phone" | "address" | "user_type">
     >({
       query: (credentials) => ({
         url: "login/",
