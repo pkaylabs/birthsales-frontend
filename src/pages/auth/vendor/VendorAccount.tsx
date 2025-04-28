@@ -197,7 +197,7 @@ const VendorAccount: React.FC = () => {
                     className="border p-4 mb-2 flex justify-between"
                   >
                     <div>
-                      <strong>{plan.package_name}</strong> — GHC{plan.package_price}/
+                      <strong>{plan.name}</strong> — GHC{plan.price}/
                       {'Monthly'}
                     </div>
                     <button

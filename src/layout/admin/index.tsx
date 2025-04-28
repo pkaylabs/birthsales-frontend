@@ -30,8 +30,53 @@ import {
 import { classNames } from "@/utils";
 import { Link, Outlet, useNavigate } from "react-location";
 import { ADMIN_HOME } from "@/constants";
+import { useAppSelector } from "@/redux";
+import { RootState } from "@/app/store";
 
-const navigation = [
+// const navigation = [
+//   { name: "Dashboard", href: ADMIN_HOME, icon: HomeIcon, current: false },
+//   {
+//     name: "Products",
+//     href: "/products",
+//     icon: ShoppingBagIcon,
+//     current: false,
+//   },
+//   {
+//     name: "Category",
+//     href: "/categories",
+//     icon: TagIcon,
+//     current: false,
+//   },
+//   { name: "Users", href: "/users", icon: UserGroupIcon, current: false },
+//   {
+//     name: "Services",
+//     href: "/admin-services",
+//     icon: UserGroupIcon,
+//     current: false,
+//   },
+//   {
+//     name: "Orders",
+//     href: "/admin-orders",
+//     icon: ShoppingBagIcon,
+//     current: false,
+//   },
+//   {
+//     name: "Carts",
+//     href: "/admin-carts",
+//     icon: ShoppingCartIcon,
+//     current: false,
+//   },
+//   {
+//     name: "Subscriptions",
+//     href: "/admin-plans",
+//     icon: TagIcon,
+//     current: false,
+//   },
+
+//   { name: "Ads", href: "/admin-ads", icon: MegaphoneIcon, current: false },
+// ];
+
+const baseNavigation = [
   { name: "Dashboard", href: ADMIN_HOME, icon: HomeIcon, current: false },
   {
     name: "Products",
@@ -39,13 +84,8 @@ const navigation = [
     icon: ShoppingBagIcon,
     current: false,
   },
-  {
-    name: "Category",
-    href: "/categories",
-    icon: TagIcon,
-    current: false,
-  },
-  { name: "Users", href: "/users", icon: UserGroupIcon, current: false },
+  { name: "Category", href: "/categories", icon: TagIcon, current: false },
+
   {
     name: "Services",
     href: "/admin-services",
@@ -64,13 +104,6 @@ const navigation = [
     icon: ShoppingCartIcon,
     current: false,
   },
-  {
-    name: "Subscriptions",
-    href: "/admin-plans",
-    icon: TagIcon,
-    current: false,
-  },
-
   { name: "Ads", href: "/admin-ads", icon: MegaphoneIcon, current: false },
 ];
 
@@ -80,8 +113,31 @@ const userNavigation = [
 ];
 
 export default function AdminLayout() {
+  const userType = useAppSelector(
+    (state: RootState) => state.auth.user?.user_type
+  );
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+
+  // Build navigation, adding Subscriptions only for admins
+  const navigation = baseNavigation.concat(
+    userType === "ADMIN"
+      ? [
+          {
+            name: "Subscriptions",
+            href: "/admin-plans",
+            icon: TagIcon,
+            current: false,
+          },
+          {
+            name: "Users",
+            href: "/users",
+            icon: UserGroupIcon,
+            current: false,
+          },
+        ]
+      : []
+  );
 
   return (
     <>

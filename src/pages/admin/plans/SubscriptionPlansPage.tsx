@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent } from "react";
+import React, { useState, FormEvent } from "react";
 import {
   Box,
   Button,
@@ -18,61 +18,47 @@ import {
   TableBody,
   IconButton,
   CircularProgress,
+  Typography,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material/Select";
 import { Add, Edit, Delete } from "@mui/icons-material";
-// import {
-//   useGetPlansQuery,
-//   useAddPlanMutation,
-//   useUpdatePlanMutation,
-//   useDeletePlanMutation,
-//   Plan,
-// } from "../services/api";
 
-interface Plan {
-  id: string;
-  name: string;
-  price: string;
-  interval: string;
-  description: string;
-}
+import {
+  useGetPlansQuery,
+  useAddPlanMutation,
+  useUpdatePlanMutation,
+  useDeletePlanMutation,
+} from "@/redux/features/plans/plansApi";
+
+import type { Plan } from "@/redux/type";
 
 type ChangeEventType =
   | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   | SelectChangeEvent<string>;
 
 export default function SubscriptionPlansPage() {
-  // Data fetching
-  //   const { data: plans = [], isLoading } = useGetPlansQuery();
-  //   const [addPlan, { isLoading: adding }] = useAddPlanMutation();
-  //   const [updatePlan, { isLoading: updating }] = useUpdatePlanMutation();
-  //   const [deletePlan, { isLoading: deleting }] = useDeletePlanMutation();
+  const {
+    data: plans = [],
+    isLoading: isFetching,
+    isError,
+  } = useGetPlansQuery();
+  const [addPlan, { isLoading: isAdding }] = useAddPlanMutation();
+  const [updatePlan, { isLoading: isUpdating }] = useUpdatePlanMutation();
+  const [deletePlan, { isLoading: isDeleting }] = useDeletePlanMutation();
 
-  // Dialog state
-  const [isLoading, setIsLoading] = useState(false);
-  const [plans, setPlans] = useState<Plan[]>([
-    {
-      id: "1",
-      name: "Basic",
-      price: "10",
-      interval: "monthly",
-      description: "Details here",
-    },
-    {
-      id: "2",
-      name: "Pro",
-      price: "20",
-      interval: "monthly",
-      description: "Details here",
-    },
-    {
-      id: "3",
-      name: "Premium",
-      price: "30",
-      interval: "monthly",
-      description: "Details here",
-    },
-  ]);
+  // Delete confirmation dialog state
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [planToDelete, setPlanToDelete] = useState<Plan | null>(null);
+
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastSeverity, setToastSeverity] = useState<"success" | "error">(
+    "success"
+  );
+
+  // Dialog state and form state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [form, setForm] = useState<Omit<Plan, "id">>({
@@ -106,26 +92,61 @@ export default function SubscriptionPlansPage() {
     const { name, value } = e.target;
     setForm((f) => ({
       ...f,
-      [name]: name === "price" ? parseFloat(value) : value,
+      [name]: value,
     }));
   };
 
   const onIntervalChange = (e: ChangeEventType) => {
     setForm((f) => ({
       ...f,
-      interval: e.target.value as "month" | "year",
+      interval: e.target.value,
     }));
   };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // if (editingPlan) {
-    //   await updatePlan({ id: editingPlan.id, ...form }).unwrap();
-    // } else {
-    //   await addPlan(form).unwrap();
-    // }
-    close();
+    try {
+      if (editingPlan) {
+        await updatePlan({ id: editingPlan.id, ...form }).unwrap();
+        setToastMessage("Plan updated successfully!");
+      } else {
+        await addPlan(form).unwrap();
+        setToastMessage("Plan added successfully!");
+      }
+      setToastSeverity("success");
+      setToastOpen(true);
+      close();
+    } catch (error) {
+      setToastMessage("Operation Failed.");
+      setToastSeverity("error");
+      setToastOpen(true);
+      console.error("Submission error", error);
+    }
   };
+
+  const requestDelete = (plan: Plan) => {
+    setPlanToDelete(plan);
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!planToDelete) return;
+    try {
+      await deletePlan(planToDelete.id).unwrap();
+      setToastMessage("Plan deleted successfully");
+      setToastSeverity("success");
+    } catch (error) {
+      setToastMessage("Deletion failed");
+      setToastSeverity("error");
+      console.error("Delete error", error);
+    } finally {
+      setToastOpen(true);
+      setConfirmOpen(false);
+      setPlanToDelete(null);
+    }
+  };
+
+  const loadingOverlay = isFetching || isAdding || isUpdating || isDeleting;
 
   return (
     <Box p={4}>
@@ -141,8 +162,12 @@ export default function SubscriptionPlansPage() {
         </Button>
       </Box>
 
-      {isLoading ? (
-        <CircularProgress />
+      {isError && <Typography color="error">Error loading plans</Typography>}
+
+      {loadingOverlay ? (
+        <Box display="flex" justifyContent="center" mt={4}>
+          <CircularProgress />
+        </Box>
       ) : (
         <Table>
           <TableHead>
@@ -165,13 +190,7 @@ export default function SubscriptionPlansPage() {
                   <IconButton onClick={() => openEdit(plan)}>
                     <Edit />
                   </IconButton>
-                  <IconButton
-                    // onClick={() => deletePlan(plan.id)}
-                    // disabled={deleting}
-                    onClick={() => {
-                      alert("Delete plan");
-                    }} // Placeholder for delete action
-                  >
+                  <IconButton onClick={() => requestDelete(plan)}>
                     <Delete />
                   </IconButton>
                 </TableCell>
@@ -182,60 +201,92 @@ export default function SubscriptionPlansPage() {
       )}
 
       {/* Add/Edit Dialog */}
-      <Dialog open={dialogOpen} onClose={close}>
+      <Dialog open={dialogOpen} onClose={close} fullWidth maxWidth="sm">
         <DialogTitle>{editingPlan ? "Edit Plan" : "Add Plan"}</DialogTitle>
         <form onSubmit={onSubmit}>
-          <DialogContent className="space-y-4">
-            <TextField
-              name="name"
-              label="Plan Name"
-              value={form.name}
-              onChange={onChange}
-              fullWidth
-              required
-            />
-            <TextField
-              name="price"
-              label="Price"
-              type="number"
-              value={form.price}
-              onChange={onChange}
-              fullWidth
-              required
-            />
-            <FormControl fullWidth>
-              <InputLabel>Interval</InputLabel>
-              <Select
-                value={form.interval}
-                onChange={onIntervalChange}
-                label="Interval"
-              >
-                <MenuItem value="month">Month</MenuItem>
-                <MenuItem value="year">Year</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              name="description"
-              label="Description"
-              value={form.description}
-              onChange={onChange}
-              fullWidth
-              multiline
-              rows={3}
-            />
+          <DialogContent dividers>
+            <Box display={"flex"} flexDirection={"column"} gap={2}>
+              <TextField
+                name="name"
+                label="Plan Name"
+                value={form.name}
+                onChange={onChange}
+                fullWidth
+                required
+              />
+              <TextField
+                name="price"
+                label="Price"
+                type="number"
+                value={form.price}
+                onChange={onChange}
+                fullWidth
+                required
+              />
+              <FormControl fullWidth>
+                <InputLabel>Interval</InputLabel>
+                <Select
+                  value={form.interval}
+                  onChange={onIntervalChange}
+                  label="Interval"
+                >
+                  <MenuItem value="month">Month</MenuItem>
+                  <MenuItem value="year">Year</MenuItem>
+                </Select>
+              </FormControl>
+              <TextField
+                name="description"
+                label="Description"
+                value={form.description}
+                onChange={onChange}
+                fullWidth
+                multiline
+                rows={3}
+              />
+            </Box>
           </DialogContent>
           <DialogActions>
             <Button onClick={close}>Cancel</Button>
-            <Button
-              type="submit"
-              variant="contained"
-              //   disabled={adding || updating}
-            >
+            <Button type="submit" variant="contained">
               {editingPlan ? "Save Changes" : "Create Plan"}
             </Button>
           </DialogActions>
         </form>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete the plan "{planToDelete?.name}"?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
+          <Button
+            onClick={confirmDelete}
+            variant="contained"
+            color="error"
+            disabled={isDeleting}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={3000}
+        onClose={() => setToastOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setToastOpen(false)}
+          severity={toastSeverity}
+          sx={{ width: "100%" }}
+        >
+          {toastMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

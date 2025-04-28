@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -16,132 +16,101 @@ import {
   TextField,
   TablePagination,
   CircularProgress,
+  Box,
 } from "@mui/material";
 
 import { useNavigate } from "react-location";
 import ShimmerTable from "../components/Shimmer";
-import { useUsers } from "../utils/UsersContext";
-import { User } from "../utils/UsersContext";
+import {
+  useAddUserMutation,
+  useDeleteUserMutation,
+  useGetUsersQuery,
+  useUpdateUserMutation,
+} from "@/redux/features/users/usersApi";
+import { User, UserForm } from "@/redux/type";
 
 export default function Users() {
-  const [loading, setLoading] = useState(true);
-  const globalUsers = useUsers();
-  const [users, setusers] = useState<User[]>(globalUsers);
+  const navigate = useNavigate();
+  const { data: users = [], isLoading, isError } = useGetUsersQuery();
+  const [addUser] = useAddUserMutation();
+  const [updateUser] = useUpdateUserMutation();
+  const [deleteUser] = useDeleteUserMutation();
+
+  const [page, setPage] = useState<number>(0);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(5);
 
   // New state for search/filter
   const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState<number>(0);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(5);
-  const navigate = useNavigate();
-
-  // State for adding a new user
-  const [newUser, setNewUser] = useState<User>({
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [mainImageUploading, setMainImageUploading] = useState(false);
+  const [editImageUploading, setEditImageUploading] = useState(false);
+  const [current, setCurrent] = useState<UserForm>({
     id: 0,
-    username: "",
     name: "",
     email: "",
     phone: "",
     address: "",
+    avatar: null,
+    user_type: "",
     password: "",
-    image: "",
-    dateAdded: "",
   });
-  const [open, setOpen] = useState(false);
 
-  // State for editing an existing user
-  const [editOpen, setEditOpen] = useState(false);
-  const [editUser, setEdituser] = useState<User | null>(null);
-
-  // Upload status states for adding user
-  const [mainImageUploading, setMainImageUploading] = useState(false);
-
-  // Upload status states for editing user
-  const [editMainImageUploading, setEditMainImageUploading] = useState(false);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setLoading(false);
-    }, 1500);
-  }, []);
-
-  // --- Handlers for "Add New User" dialog ---
-  const handleMainImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      setMainImageUploading(true);
-      setTimeout(() => {
-        setNewUser((prev) => ({
-          ...prev,
-          image: URL.createObjectURL(file),
-        }));
-        setMainImageUploading(false);
-      }, 1000);
-    }
-  };
-
-  // Handle pagination change
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event: unknown) => {
-    setRowsPerPage(rowsPerPage);
-    setPage(0);
-  };
-
-  const handleSave = () => {
-    setusers([
-      ...users,
-      {
-        ...newUser,
-        id: users.length + 1,
-      },
-    ]);
-    setOpen(false);
-    // Optionally, reset newuser state here.
-  };
-
-  // --- Handlers for the "Edit User" dialog ---
-  const handleEditMainImageChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files && e.target.files[0];
-    if (file && editUser) {
-      setEditMainImageUploading(true);
-      setTimeout(() => {
-        setEdituser({ ...editUser, image: URL.createObjectURL(file) });
-        setEditMainImageUploading(false);
-      }, 1000);
-    }
-  };
-
-  const handleEditSave = () => {
-    if (!editUser) return;
-    setusers(
-      users.map((user) => (user.id === editUser.id ? { ...editUser } : user))
-    );
-    setEditOpen(false);
-    setEdituser(null);
-  };
-
-  // Delete handler remains the same.
-  const handleDelete = (id: number) => {
-    setusers(users.filter((user) => user.id !== id));
-  };
-
-  // Filter users based on search term (searches in name and email)
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.username.toLowerCase().includes(searchTerm.toLowerCase())
+  const filtered = users.filter(
+    (u) =>
+      u.name.toLowerCase().includes(searchTerm) ||
+      u.email.toLowerCase().includes(searchTerm)
   );
 
-  // Determine users to display based on current page and rows per page
-  const paginatedUsers = filteredUsers.slice(
+  const paginated = filtered.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
+
+  const handleSave = async () => {
+    if (editOpen) {
+      await updateUser(current).unwrap();
+    } else {
+      await addUser(current).unwrap();
+    }
+    setDialogOpen(false);
+    setEditOpen(false);
+    setMainImageUploading(false);
+    setEditImageUploading(false);
+  };
+
+  const handleEdit = (user: User) => {
+    setCurrent({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      address: user.address,
+      avatar: user.avatar,
+      user_type: user.userType,
+    });
+    setEditOpen(true);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    await deleteUser(id).unwrap();
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    const setUploading = editOpen
+      ? setEditImageUploading
+      : setMainImageUploading;
+    setUploading(true);
+    reader.onloadend = () => {
+      setCurrent((prev) => ({ ...prev, avatar: reader.result as string }));
+      setUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -167,294 +136,156 @@ export default function Users() {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => setOpen(true)}
+              onClick={() => {
+                setCurrent({
+                  id: 0,
+                  name: "",
+                  email: "",
+                  phone: "",
+                  address: "",
+                  avatar: null,
+                  user_type: "",
+                  password: "",
+                });
+                setDialogOpen(true);
+                setEditOpen(false);
+              }}
             >
               Add New User
             </Button>
           </div>
 
           {/* Add New User Dialog */}
-          <Dialog open={open} onClose={() => setOpen(false)}>
-            <DialogTitle>Add New User</DialogTitle>
+          <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+            <DialogTitle>{editOpen ? "Edit User" : "Add New User"}</DialogTitle>
             <DialogContent>
-              <TextField
-                fullWidth
-                margin="dense"
-                label="User Name"
-                variant="outlined"
-                onChange={(e) =>
-                  setNewUser({ ...newUser, username: e.target.value })
-                }
-              />
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Name"
-                variant="outlined"
-                type="text"
-                onChange={(e) =>
-                  setNewUser({ ...newUser, name: e.target.value })
-                }
-              />
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Email"
-                variant="outlined"
-                type="email"
-                onChange={(e) =>
-                  setNewUser({ ...newUser, email: e.target.value })
-                }
-              />
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Phone"
-                variant="outlined"
-                type="text"
-                onChange={(e) =>
-                  setNewUser({ ...newUser, phone: e.target.value })
-                }
-              />
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Password"
-                variant="outlined"
-                type="password"
-                onChange={(e) =>
-                  setNewUser({ ...newUser, password: e.target.value })
-                }
-              />
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Address"
-                variant="outlined"
-                type="address"
-                onChange={(e) =>
-                  setNewUser({ ...newUser, address: e.target.value })
-                }
-              />
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Date"
-                variant="outlined"
-                type="date"
-                onChange={(e) =>
-                  setNewUser({ ...newUser, dateAdded: e.target.value })
-                }
-              />
-              <div
-                style={{
-                  marginTop: 16,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 16,
-                }}
-              >
-                <Button variant="contained" component="label">
-                  Upload Main Image
-                  <input
-                    hidden
-                    type="file"
-                    accept="image/*"
-                    onChange={handleMainImageChange}
-                  />
-                </Button>
-                {mainImageUploading ? (
-                  <CircularProgress size={24} />
-                ) : newUser.image ? (
-                  <img
-                    src={newUser.image}
-                    alt="Uploaded"
-                    width="50"
-                    height="50"
-                  />
-                ) : null}
-              </div>
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ mt: 2, display: "block" }}
-                onClick={handleSave}
-              >
-                Save
-              </Button>
-            </DialogContent>
-          </Dialog>
+              <Box display="flex" flexDirection="column" gap={2}>
+                <TextField
+                  fullWidth
+                  margin="dense"
+                  label="Name"
+                  value={current.name}
+                  onChange={(e) =>
+                    setCurrent({ ...current, name: e.target.value })
+                  }
+                />
+                <TextField
+                  fullWidth
+                  margin="dense"
+                  label="Email"
+                  value={current.email}
+                  onChange={(e) =>
+                    setCurrent({ ...current, email: e.target.value })
+                  }
+                />
+                <TextField
+                  fullWidth
+                  margin="dense"
+                  label="Phone"
+                  value={current.phone}
+                  onChange={(e) =>
+                    setCurrent({ ...current, phone: e.target.value })
+                  }
+                />
+                <TextField
+                  fullWidth
+                  margin="dense"
+                  label="Address"
+                  value={current.address}
+                  onChange={(e) =>
+                    setCurrent({ ...current, address: e.target.value })
+                  }
+                />
 
-          {/* Edit Product Dialog */}
-          <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogContent>
-              {editUser && (
-                <>
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="User Name"
-                    variant="outlined"
-                    value={editUser.username}
-                    onChange={(e) =>
-                      setEdituser({ ...editUser, username: e.target.value })
-                    }
-                  />
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Name"
-                    variant="outlined"
-                    value={editUser.name}
-                    type="text"
-                    onChange={(e) =>
-                      setEdituser({ ...editUser, name: e.target.value })
-                    }
-                  />
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Email"
-                    variant="outlined"
-                    value={editUser.email}
-                    type="email"
-                    onChange={(e) =>
-                      setEdituser({ ...editUser, email: e.target.value })
-                    }
-                  />
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Phone"
-                    variant="outlined"
-                    value={editUser.phone}
-                    type="text"
-                    onChange={(e) =>
-                      setEdituser({ ...editUser, phone: e.target.value })
-                    }
-                  />
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Password"
-                    variant="outlined"
-                    value={editUser.password}
-                    type="password"
-                    onChange={(e) =>
-                      setEdituser({ ...editUser, password: e.target.value })
-                    }
-                  />
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Address"
-                    variant="outlined"
-                    value={editUser.address}
-                    type="address"
-                    onChange={(e) =>
-                      setEdituser({ ...editUser, address: e.target.value })
-                    }
-                  />
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Date"
-                    variant="outlined"
-                    value={editUser.dateAdded}
-                    type="date"
-                    onChange={(e) =>
-                      setEdituser({ ...editUser, dateAdded: e.target.value })
-                    }
-                  />
-                  <div
-                    style={{
-                      marginTop: 16,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 16,
-                    }}
-                  >
-                    <Button variant="contained" component="label">
-                      Upload Main Image
-                      <input
-                        hidden
-                        type="file"
-                        accept="image/*"
-                        onChange={handleEditMainImageChange}
-                      />
-                    </Button>
-                    {editMainImageUploading ? (
-                      <CircularProgress size={24} />
-                    ) : editUser.image ? (
-                      <img
-                        src={editUser.image}
-                        alt="Uploaded"
-                        width="50"
-                        height="50"
-                      />
-                    ) : null}
-                  </div>
+                {/* Avatar upload */}
+                <Box display="flex" alignItems="center" gap={2}>
                   <Button
                     variant="contained"
-                    color="primary"
-                    sx={{ mt: 2, display: "block" }}
-                    onClick={handleEditSave}
+                    component="label"
+                    disabled={
+                      editOpen ? editImageUploading : mainImageUploading
+                    }
                   >
-                    Save Changes
+                    {editOpen
+                      ? editImageUploading
+                        ? "Uploading..."
+                        : "Change Avatar"
+                      : mainImageUploading
+                      ? "Uploading..."
+                      : "Upload Avatar"}
+                    <input
+                      hidden
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                    />
                   </Button>
-                </>
-              )}
+                  {(editOpen ? current.avatar : current.avatar) &&
+                    !(editOpen ? editImageUploading : mainImageUploading) && (
+                      <img
+                        src={current.avatar as string}
+                        alt="Avatar"
+                        className="w-12 h-12 object-cover rounded-full"
+                      />
+                    )}
+                  {(editOpen ? editImageUploading : mainImageUploading) && (
+                    <CircularProgress size={24} />
+                  )}
+                </Box>
+
+                <Button variant="contained" sx={{ mt: 2 }} onClick={handleSave}>
+                  {editOpen ? "Save Changes" : "Save"}
+                </Button>
+              </Box>
             </DialogContent>
           </Dialog>
         </div>
         <TableContainer component={Paper}>
-          {loading ? (
+          {isLoading ? (
             <ShimmerTable />
+          ) : isError ? (
+            <div>Error loading</div>
           ) : (
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Username</TableCell>
+                  <TableCell>Avatar</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Email</TableCell>
                   <TableCell>Phone</TableCell>
-                  {/* <TableCell>Address</TableCell> */}
                   <TableCell>Date Added</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedUsers.map((user) => (
+                {paginated.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell
                       style={{ display: "flex", alignItems: "center" }}
                     >
-                      <img
-                        src={user.image}
-                        alt={user.name}
-                        style={{ marginRight: 10 }}
-                        className="w-[3rem] h-[3rem] object-cover rounded-full"
-                      />
-                      {user.username}
+                      {user.avatar && (
+                        <img
+                          src={user.avatar}
+                          alt={user.name}
+                          style={{ marginRight: 10 }}
+                          className="w-[3rem] h-[3rem] object-cover rounded-full"
+                        />
+                      )}
                     </TableCell>
                     <TableCell>{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{user.phone}</TableCell>
-                    {/* <TableCell>{user.address}</TableCell> */}
+
                     <TableCell>{user.dateAdded}</TableCell>
                     <TableCell>
                       <Button
-                        color="primary"
                         onClick={() => navigate({ to: `/users/${user.id}` })}
                       >
                         View
                       </Button>
                       <Button
-                        color="secondary"
                         onClick={() => {
-                          setEdituser(user);
-                          setEditOpen(true);
+                          handleEdit(user);
                         }}
                       >
                         Edit
@@ -475,11 +306,14 @@ export default function Users() {
         {/* Pagination */}
         <TablePagination
           component="div"
-          count={filteredUsers.length}
+          count={filtered.length}
           page={page}
-          onPageChange={handleChangePage}
+          onPageChange={(_, p) => setPage(p)}
           rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
         />
       </div>
     </div>
