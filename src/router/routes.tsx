@@ -32,6 +32,7 @@ import {
   VENDOR_SIGN_UP,
   SIGN_UP_ROLE,
   ADMIN_PLANS,
+  VENDORS,
 } from "@/constants";
 import AdminHomePage from "@/pages/admin/home";
 
@@ -47,9 +48,9 @@ import Carts from "@/pages/admin/carts";
 import Ads from "@/pages/admin/ads";
 import Users from "@/pages/admin/users";
 import UserDetails from "@/pages/admin/users/UserDetails";
-import {
-  userInputs,
-} from "@/pages/admin/utils/formSource";
+// import {
+//   userInputs,
+// } from "@/pages/admin/utils/formSource";
 import ProductAdminDetails from "@/pages/admin/products/ProductAdminDetails";
 import ProductsPage from "@/pages/admin/products";
 import Category from "@/pages/admin/category";
@@ -58,6 +59,7 @@ import AdminServiceDetails from "@/pages/admin/services/AdminServiceDetails";
 import VendorAccount from "@/pages/auth/vendor/VendorAccount";
 import RoleSelection from "@/pages/RoleSelection";
 import SubscriptionPlansPage from "@/pages/admin/plans/SubscriptionPlansPage";
+import VendorsPage from "@/pages/admin/vendor/VendorsPage";
 
 
 export type RouteProps = Omit<Route, "children"> & {
@@ -200,6 +202,29 @@ const routes: RouteProps[] = [
           layout: "Admin",
         },
       },
+    ],
+  },
+  {
+    path: VENDORS,
+    element: <Outlet />,
+    meta: {
+      layout: "Admin",
+    },
+    children: [
+      {
+        path: "/",
+        element: <VendorsPage />,
+        meta: {
+          layout: "Admin",
+        },
+      },
+      // {
+      //   path: "/:id",
+      //   element: <UserDetails />,
+      //   meta: {
+      //     layout: "Admin",
+      //   },
+      // },
     ],
   },
   {

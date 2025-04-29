@@ -21,5 +21,6 @@ export const ADMIN_ADS = "/admin-ads";
 export const ADMIN_PLANS = '/admin-plans'
 export const USERS = "/users";
 export const CATEGORIES = "/categories";
+export const VENDORS = "/vendors";
 
 

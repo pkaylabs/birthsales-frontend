@@ -7,7 +7,7 @@ export interface User {
     address: string;
     avatar: string | null;
     deleted?: boolean;
-    userType:  'VENDOR' | 'ADMIN' | 'DELIVERY';
+    user_type:  'VENDOR' | 'ADMIN' | 'DELIVERY';
     isActive: boolean;
     is_staff?: boolean;
     is_superuser?: boolean;
@@ -19,14 +19,15 @@ export interface User {
   }
 
   export interface UserForm {
-    id?: number;
+    id: number;
     email: string;
     phone: string;
     name: string;
     address: string;
-    avatar?: string | null;
     user_type: string;  // for backend on create/update
     password?: string;
+    avatarFile: File | null; // for frontend to upload image
+    avatarPreview: string | null; // for frontend to show preview of image
   }
   
 
@@ -39,14 +40,7 @@ export interface User {
     created_at: string;
   }
   
-  // export interface Plan {
-  //   id: string;
-  //   package_name: string;
-  //   package_description: string;  
-  //   package_price: string;
-  //   created_at: string;
-  //   updated_at: string;
-  // }
+
 
   export interface Plan {
   id: string;
@@ -75,7 +69,24 @@ export interface User {
     price: number | string;
     image?: string;
     bookings?: number;
-    provider: string;
+    provider: number;
     category: string;
+  }
+
+  export interface Vendor {
+    id: number;
+    user: number;
+    name: string;
+    email: string;
+    address: string;
+    phone: string;
+  }
+
+  export interface VendorForm {
+    user: number;
+    vendor_name: string;
+    vendor_email: string;
+    vendor_address: string;
+    vendor_phone: string;
   }
   

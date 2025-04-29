@@ -25,7 +25,7 @@ export const usersApi = api.injectEndpoints({
           name: u.name,
           address: u.address || "",
           avatar: u.avatar || "",
-          userType: u.user_type,
+          user_type: u.user_type,
           isActive: u.is_active,
           dateAdded: u.created_at,
         })),

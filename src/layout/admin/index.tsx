@@ -135,6 +135,12 @@ export default function AdminLayout() {
             icon: UserGroupIcon,
             current: false,
           },
+          {
+            name: "Vendors",
+            href: "/vendors",
+            icon: UserGroupIcon,
+            current: false,
+          },
         ]
       : []
   );
