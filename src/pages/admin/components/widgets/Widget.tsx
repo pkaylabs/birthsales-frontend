@@ -4,19 +4,27 @@ import {
   UserGroupIcon,
   WalletIcon,
 } from "@heroicons/react/24/outline";
+import { JSX } from "react";
 import { useNavigate } from "react-location";
 
 interface WidgetProp {
-  type: string;
+  type: "users" | "products" | "orders" | "balance";
   path: string;
+  count?: number;
+  amount?: number;
 }
 
-const Widget = ({ type, path }: WidgetProp) => {
+const Widget = ({ type, path, count = 0, amount = 0 }: WidgetProp) => {
   const navigate = useNavigate();
-  const amount = 100;
   const diff = 20;
 
-  let data;
+  let data: {
+    title: string;
+    isMoney: boolean;
+    link: string;
+    icon: JSX.Element;
+    value: number;
+  };
   switch (type) {
     case "users":
       data = {
@@ -26,6 +34,7 @@ const Widget = ({ type, path }: WidgetProp) => {
         icon: (
           <UserGroupIcon className="w-8 bg-rose-100 p-1 rounded-md self-end" />
         ),
+        value: count,
       };
       break;
     case "products":
@@ -36,6 +45,7 @@ const Widget = ({ type, path }: WidgetProp) => {
         icon: (
           <ShoppingBagIcon className="w-8 bg-rose-100 p-1 rounded-md self-end" />
         ),
+        value: count,
       };
       break;
     case "orders":
@@ -46,6 +56,7 @@ const Widget = ({ type, path }: WidgetProp) => {
         icon: (
           <ShoppingBagIcon className="w-8 bg-rose-100 p-1 rounded-md self-end" />
         ),
+        value: count,
       };
       break;
     case "balance":
@@ -56,10 +67,11 @@ const Widget = ({ type, path }: WidgetProp) => {
         icon: (
           <WalletIcon className="w-8 bg-rose-100 p-1 rounded-md self-end" />
         ),
+        value: amount,
       };
       break;
     default:
-      break;
+      throw new Error("Invalid widget type");
   }
 
   return (
@@ -68,9 +80,12 @@ const Widget = ({ type, path }: WidgetProp) => {
       <div className="flex flex-col justify-between">
         <span className="font-bold text-sm text-gray-400">{data?.title}</span>
         <span className="text-3xl font-light">
-          {data?.isMoney && "$"} {amount}
+          {data?.isMoney && "$"} {data.value}
         </span>
-        <span className="text-xs border-b border-gray-400 w-max cursor-pointer" onClick={() => navigate({to: path})}>
+        <span
+          className="text-xs border-b border-gray-400 w-max cursor-pointer"
+          onClick={() => navigate({ to: path })}
+        >
           {data?.link}
         </span>
       </div>

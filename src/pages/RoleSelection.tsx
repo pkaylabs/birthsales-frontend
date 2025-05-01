@@ -20,7 +20,7 @@ const RoleSelection: React.FC = () => {
           to={SIGN_UP}
           className="bg-green-600 text-white p-4 rounded hover:bg-green-700"
         >
-          I am a Client
+          I am a Customer
         </Link>
       </div>
       <div className="mt-6">
@@ -30,7 +30,7 @@ const RoleSelection: React.FC = () => {
             to={LOGIN}
             className="text-blue-600 underline hover:text-blue-800"
           >
-            Client Sign In
+             Sign In
           </Link>
           {/* <Link
             to="/vendor/dashboard"

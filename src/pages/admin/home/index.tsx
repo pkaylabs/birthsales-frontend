@@ -3,20 +3,36 @@ import Chart from "../components/chart/Chart";
 import FeaturedChart from "../components/featuredChart/FeaturedChart";
 import Tables from "../components/table/Table";
 import Widget from "../components/widgets/Widget";
+import { useGetDashboardQuery } from "@/redux/features/dashboard/dashboardApiSlice";
+import { Box, CircularProgress } from "@mui/material";
 
 const AdminHomePage = () => {
+  const { data, isLoading, isError } = useGetDashboardQuery();
+
+  if (isLoading) {
+    return (
+      <Box className="p-8 flex justify-center">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isError || !data) {
+    return <Box className="p-8 text-red-500">Error loading dashboard.</Box>;
+  }
+
   return (
     <div className="">
       {/* widgets */}
       <div className="flex gap-5">
-        <Widget type="users" path={USERS} />
-        <Widget type="products" path={ADMIN_PRODUCT} />
-        <Widget type="orders" path={ADMIN_ORDERS} />
-        <Widget type="balance" path="" />
+        <Widget type="users" count={data.users} path={USERS} />
+        <Widget type="products" count={data.products} path={ADMIN_PRODUCT} />
+        <Widget type="orders" count={data.orders} path={ADMIN_ORDERS} />
+        <Widget type="balance" amount={data.balance} path="" />
       </div>
       {/* Charts */}
       <div className="flex gap-5 py-2 ">
-        <FeaturedChart />
+        <FeaturedChart salesToday={data.sales_today}/>
         <Chart aspect={2 / 1} title="Last 6 months (Revenue)" />
       </div>
       {/* list of transactions */}
@@ -24,7 +40,7 @@ const AdminHomePage = () => {
         <div className="font-medium mb-4 text-gray-400">
           Latest Transactions
         </div>
-        <Tables />
+        <Tables rows={data.latest_transactions}/>
       </div>
     </div>
   );

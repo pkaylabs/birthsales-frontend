@@ -102,7 +102,7 @@ export default function Users() {
       email: user.email,
       phone: user.phone,
       address: user.address,
-      user_type: user.userType,
+      user_type: user.user_type,
       password: "",
       avatarFile: null,
       avatarPreview: user.avatar || null,
@@ -381,7 +381,7 @@ export default function Users() {
                       <TableCell>{user.name}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.phone}</TableCell>
-                      <TableCell>{user.userType}</TableCell>
+                      <TableCell>{user.user_type}</TableCell>
                       <TableCell>
                         <Button
                           onClick={() => navigate({ to: `/users/${user.id}` })}
@@ -428,7 +428,7 @@ export default function Users() {
         open={toastOpen}
         autoHideDuration={3000}
         onClose={() => setToastOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
           onClose={() => setToastOpen(false)}

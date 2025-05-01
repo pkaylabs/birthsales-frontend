@@ -33,6 +33,8 @@ import {
   SIGN_UP_ROLE,
   ADMIN_PLANS,
   VENDORS,
+  BOOKINGS,
+  PROFILE,
 } from "@/constants";
 import AdminHomePage from "@/pages/admin/home";
 
@@ -60,6 +62,8 @@ import VendorAccount from "@/pages/auth/vendor/VendorAccount";
 import RoleSelection from "@/pages/RoleSelection";
 import SubscriptionPlansPage from "@/pages/admin/plans/SubscriptionPlansPage";
 import VendorsPage from "@/pages/admin/vendor/VendorsPage";
+import Bookings from "@/pages/admin/bookings/Bookings";
+import VendorProfile from "@/pages/admin/vendorProfile/VendorProfile";
 
 
 export type RouteProps = Omit<Route, "children"> & {
@@ -154,8 +158,31 @@ const routes: RouteProps[] = [
     ],
   },
   {
+    path: BOOKINGS,
+    element: <Outlet />,
+    meta: {
+      layout: "Admin",
+    },
+    children: [
+      {
+        path: "/",
+        element: <Bookings />,
+        meta: {
+          layout: "Admin",
+        },
+      },
+    ],
+  },
+  {
     path: ADMIN_CARTS,
     element: <Carts />,
+    meta: {
+      layout: "Admin",
+    },
+  },
+  {
+    path: PROFILE,
+    element: <VendorProfile />,
     meta: {
       layout: "Admin",
     },

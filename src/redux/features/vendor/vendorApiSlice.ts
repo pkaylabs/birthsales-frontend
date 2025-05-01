@@ -1,5 +1,5 @@
 import { api } from "@/app/api/auth";
-import type { Vendor, VendorForm } from "@/redux/type";
+import type { User, Vendor, VendorForm } from "@/redux/type";
 
 interface VendorDTO {
   id: number;
@@ -8,6 +8,20 @@ interface VendorDTO {
   vendor_email: string;
   vendor_address: string;
   vendor_phone: string;
+}
+
+export interface VendorProfile {
+  vendor_id: string;
+  vendor_name: string;
+  vendor_phone: string;
+  vendor_email: string;
+  vendor_address: string;
+  user: number | null;
+}
+
+export interface UserProfileResponse {
+  user: User;
+  vendor: VendorProfile;
 }
 
 export const vendorsApi = api.injectEndpoints({
@@ -77,6 +91,21 @@ export const vendorsApi = api.injectEndpoints({
         { type: "Vendor", id: "LIST" },
       ],
     }),
+    getVendorProfile: builder.query<UserProfileResponse, void>({
+      query: () => ({ url: "vendorprofile/", method: "GET" }),
+      transformResponse: (response: UserProfileResponse) => response,
+      providesTags: (result) =>
+        result
+          ? [{ type: "Vendor" as const, id: result.vendor.vendor_id }]
+          : [],
+    }),
+    updateVendorProfile: builder.mutation<
+      UserProfileResponse,
+      Partial<VendorProfile>
+    >({
+      query: (patch) => ({ url: "profile/", method: "PUT", body: patch }),
+      invalidatesTags: [{ type: "Vendor", id: "PROFILE" }],
+    }),
   }),
   overrideExisting: false,
 });
@@ -86,4 +115,6 @@ export const {
   useAddVendorMutation,
   useUpdateVendorMutation,
   useDeleteVendorMutation,
+  useGetVendorProfileQuery,
+  useUpdateVendorProfileMutation,
 } = vendorsApi;

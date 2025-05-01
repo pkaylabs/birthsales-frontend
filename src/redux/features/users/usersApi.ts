@@ -13,6 +13,18 @@ interface UserDTO {
   created_at: string;
 }
 
+export interface UserProfileResponse {
+  user: User;
+  vendor: {
+    vendor_id: string;
+    vendor_name: string;
+    vendor_phone: string;
+    vendor_email: string;
+    vendor_address: string;
+    user: number | null;
+  };
+}
+
 export const usersApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getUsers: builder.query<User[], void>({
@@ -63,7 +75,7 @@ export const usersApi = api.injectEndpoints({
       query: (id) => ({
         url: `users/`,
         method: "DELETE",
-        body: { user_id: Number(id) },
+        body: { user: Number(id) },
       }),
       invalidatesTags: (result, error, id) => [
         { type: "User", id },

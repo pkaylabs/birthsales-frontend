@@ -20,6 +20,7 @@ import {
   UserGroupIcon,
   HomeIcon,
   MegaphoneIcon,
+  CalendarDaysIcon,
   XMarkIcon,
   TagIcon,
 } from "@heroicons/react/24/outline";
@@ -29,9 +30,10 @@ import {
 } from "@heroicons/react/20/solid";
 import { classNames } from "@/utils";
 import { Link, Outlet, useNavigate } from "react-location";
-import { ADMIN_HOME } from "@/constants";
-import { useAppSelector } from "@/redux";
+import { ADMIN_HOME, LOGIN, PROFILE } from "@/constants";
+import { useAppDispatch, useAppSelector } from "@/redux";
 import { RootState } from "@/app/store";
+import { logout } from "@/redux/features/auth/authSlice";
 
 // const navigation = [
 //   { name: "Dashboard", href: ADMIN_HOME, icon: HomeIcon, current: false },
@@ -99,6 +101,12 @@ const baseNavigation = [
     current: false,
   },
   {
+    name: "Bookings",
+    href: "/bookings",
+    icon: CalendarDaysIcon,
+    current: false,
+  },
+  {
     name: "Carts",
     href: "/admin-carts",
     icon: ShoppingCartIcon,
@@ -107,43 +115,44 @@ const baseNavigation = [
   { name: "Ads", href: "/admin-ads", icon: MegaphoneIcon, current: false },
 ];
 
-const userNavigation = [
-  { name: "Your profile", href: "#" },
-  { name: "Sign out", href: "#" },
-];
-
 export default function AdminLayout() {
-  const userType = useAppSelector(
-    (state: RootState) => state.auth.user?.user_type
-  );
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const user = useAppSelector((state: RootState) => state.auth.user);
+  const userType = user?.user_type;
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Build navigation, adding Subscriptions only for admins
-  const navigation = baseNavigation.concat(
-    userType === "ADMIN"
-      ? [
-          {
-            name: "Subscriptions",
-            href: "/admin-plans",
-            icon: TagIcon,
-            current: false,
-          },
-          {
-            name: "Users",
-            href: "/users",
-            icon: UserGroupIcon,
-            current: false,
-          },
-          {
-            name: "Vendors",
-            href: "/vendors",
-            icon: UserGroupIcon,
-            current: false,
-          },
-        ]
-      : []
-  );
+  const navigation = [...baseNavigation];
+
+  if (userType === "ADMIN") {
+    navigation.push(
+      {
+        name: "Subscriptions",
+        href: "/admin-plans",
+        icon: TagIcon,
+        current: false,
+      },
+      { name: "Users", href: "/users", icon: UserGroupIcon, current: false },
+      { name: "Vendors", href: "/vendors", icon: UserGroupIcon, current: false }
+    );
+  }
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate({ to: LOGIN });
+  };
+
+  const userNavigation = [
+    {
+      name: "Your profile",
+
+      onClick: () => {
+        navigate({ to: "/profile" });
+      },
+    },
+    { name: "Sign out", onClick: handleLogout },
+  ];
 
   return (
     <>
@@ -344,7 +353,10 @@ export default function AdminLayout() {
                     <span className="sr-only">Open user menu</span>
                     <img
                       alt=""
-                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                      src={
+                        user?.avatar ||
+                        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                      }
                       className="size-8 rounded-full bg-gray-50"
                     />
                     <span className="hidden lg:flex lg:items-center">
@@ -352,7 +364,7 @@ export default function AdminLayout() {
                         aria-hidden="true"
                         className="ml-4 text-sm/6 font-semibold text-gray-900"
                       >
-                        Tom Cook
+                        {user?.name || "User Name"}
                       </span>
                       <ChevronDownIcon
                         aria-hidden="true"
@@ -366,12 +378,12 @@ export default function AdminLayout() {
                   >
                     {userNavigation.map((item) => (
                       <MenuItem key={item.name}>
-                        <a
-                          href={item.href}
+                        <button
+                          onClick={item.onClick}
                           className="block px-3 py-1 text-sm/6 text-gray-900 data-focus:bg-gray-50 data-focus:outline-hidden"
                         >
                           {item.name}
-                        </a>
+                        </button>
                       </MenuItem>
                     ))}
                   </MenuItems>

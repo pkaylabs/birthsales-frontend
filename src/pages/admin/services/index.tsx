@@ -416,7 +416,7 @@ export default function ServicesPage() {
                     >
                       Edit
                     </Button>
-                    <Button color="error" onClick={() => handleDelete(s.id)}>
+                    <Button color="error" onClick={() => handleDelete(Number(s.id))}>
                       Delete
                     </Button>
                   </TableCell>

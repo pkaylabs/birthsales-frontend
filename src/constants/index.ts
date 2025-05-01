@@ -22,5 +22,8 @@ export const ADMIN_PLANS = '/admin-plans'
 export const USERS = "/users";
 export const CATEGORIES = "/categories";
 export const VENDORS = "/vendors";
+export const BOOKINGS = "/bookings";
+export const PROFILE = "/profile";
+export const BACKEND_BASE_URL = "https://api.birthnon.com/api-v1/"; 
 
 

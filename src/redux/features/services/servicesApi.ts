@@ -2,6 +2,7 @@ import { api } from "@/app/api/auth";
 import type { Service } from "@/redux/type";
 
 export interface ServiceDto {
+  id?: number | string;
   name: string;
   description: string;
   price: number | string;
@@ -18,7 +19,7 @@ export const serviceApi = api.injectEndpoints({
       providesTags: (result = []) =>
         result
           .map(({ id }) => ({ type: "Service" as const, id }))
-          .concat([{ type: "Service", id: "LIST" }]),
+          .concat([{ type: "Service", id: 'LIST' }]),
     }),
     getService: builder.query<Service, number>({
       query: (id) => `services/${id}/`,
