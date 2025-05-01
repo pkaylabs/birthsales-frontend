@@ -10,9 +10,7 @@ const Footer = () => {
         <div className="block desktop-up:hidden space-y-8">
           {/* Company Info */}
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
-              BirthNon
-            </h3>
+            <h3 className="text-white text-lg font-semibold mb-4">BirthNon</h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/about" className="hover:text-white transition">
@@ -96,30 +94,38 @@ const Footer = () => {
               Connect With Us
             </h3>
             <div className="flex space-x-4 mb-4">
-              <Link
-                to="https://facebook.com"
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hover:text-white transition"
               >
                 <FiFacebook size={20} />
-              </Link>
-              <Link
-                to="https://twitter.com"
+              </a>
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hover:text-white transition"
               >
                 <FiTwitter size={20} />
-              </Link>
-              <Link
-                to="https://instagram.com"
+              </a>
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hover:text-white transition"
               >
                 <FiInstagram size={20} />
-              </Link>
-              <Link
-                to="https://linkedin.com"
+              </a>
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hover:text-white transition"
               >
                 <FiLinkedin size={20} />
-              </Link>
+              </a>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-2">
@@ -146,9 +152,7 @@ const Footer = () => {
         <div className="hidden desktop-up:flex items-start justify-between gap-8">
           {/* Company Info */}
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
-              BirthNon
-            </h3>
+            <h3 className="text-white text-lg font-semibold mb-4">BirthNon</h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/about" className="hover:text-white transition">
@@ -232,30 +236,38 @@ const Footer = () => {
               Connect With Us
             </h3>
             <div className="flex space-x-4 mb-4">
-              <Link
-                to="https://facebook.com"
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hover:text-white transition"
               >
                 <FiFacebook size={20} />
-              </Link>
-              <Link
-                to="https://twitter.com"
+              </a>
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hover:text-white transition"
               >
                 <FiTwitter size={20} />
-              </Link>
-              <Link
-                to="https://instagram.com"
+              </a>
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hover:text-white transition"
               >
                 <FiInstagram size={20} />
-              </Link>
-              <Link
-                to="https://linkedin.com"
+              </a>
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hover:text-white transition"
               >
                 <FiLinkedin size={20} />
-              </Link>
+              </a>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-2">
