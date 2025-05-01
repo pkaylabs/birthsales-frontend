@@ -1,125 +1,173 @@
 import React from "react";
-import { FcGoogle } from "react-icons/fc";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Link, useNavigate } from "react-location";
-import { HOME, LOGIN } from "@/constants";
+import { HOME, LOGIN, LOGIN_BG } from "@/constants";
+import { useRegisterMutation, type AuthCredentials } from "@/redux/features/auth/authApiSlice";
+import { CircularProgress } from "@mui/material";
 
 const SignUp = () => {
   const navigate = useNavigate();
-  const { values, handleBlur, handleChange, errors, touched, handleSubmit } =
-    useFormik({
-      initialValues: {
-        name: "",
-        email: "",
-        password: "",
-      },
+  const [register, { isLoading, error }] = useRegisterMutation();
 
-      validationSchema: Yup.object().shape({
-        name: Yup.string()
-          .min(2, "Too Short!")
-          .max(50, "Too Long!")
-          .required("Name is required"),
-        email: Yup.string()
-          .email("Please enter a valid email")
-          .required("Email is required"),
-        password: Yup.string()
-          .min(8, "Password must be 8 characters or more")
-          .required("Password is required"),
-      }),
-
-      onSubmit: (e, action) => {
-        action.resetForm();
-        navigate({to: HOME, replace: true});
-      },
-    });
+  const formik = useFormik<AuthCredentials>({
+    initialValues: {
+      name: "",
+      email: "",
+      password: "",
+      phone: "",
+      address: "",
+      user_type: "DELIVERY",
+    },
+    validationSchema: Yup.object({
+      name: Yup.string().min(2).max(50).required("Name is required"),
+      email: Yup.string().email("Enter a valid email").required("Email is required"),
+      password: Yup.string().min(8).required("Password is required"),
+      phone: Yup.string().min(10).required("Phone is required"),
+      address: Yup.string().min(5).required("Address is required"),
+    }),
+    onSubmit: async (vals) => {
+      try {
+        await register(vals).unwrap();
+        navigate({ to: HOME, replace: true });
+      } catch {
+        // error for display
+      }
+    },
+  });
 
   return (
-    <div className="mt-[5rem] w-full slide-up">
-      <div className="flex mb-20">
-        {/* Image */}
-        <div className="hidden flex-[2] lg:flex">
-          <img
-            alt="sign up image"
-            src="https://plus.unsplash.com/premium_photo-1728224403721-a4affa8e30ff?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            className="object-contain w-full"
-          />
-        </div>
-        {/* form */}
-        <div className=" flex flex-col px-5 py-5  flex-1 md:py-20 md:px-32">
-          <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
-            <div className="flex flex-col gap-2 items-center">
-              <h1 className="font-medium text-xl leading-7 md:text-4xl">
-                Create an account
-              </h1>
-              <p className="font-normal text-base">Enter your details below</p>
-            </div>
-            <div className="flex flex-col gap-5">
-              <input
-                type="text"
-                name="name"
-                id="name"
-                value={values.name}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className="p-2 border-b border-gray-500 w-full outline-none"
-                placeholder="Name"
-              />
-              {errors.name && touched.name ? (
-                <p className="text-rose-400">{errors.name}</p>
-              ) : (
-                ""
-              )}
-              <input
-                type="email"
-                name="email"
-                id="email"
-                value={values.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className="p-2 border-b border-gray-500 w-full outline-none"
-                placeholder="Email"
-              />
-              {errors.email && touched.email ? (
-                <p className="text-rose-400">{errors.email}</p>
-              ) : (
-                ""
-              )}
-              <input
-                type="password"
-                name="password"
-                id="password"
-                value={values.password}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className="p-2 border-b border-gray-500 w-full outline-none"
-                placeholder="Password"
-              />
-              {errors.password && touched.password ? (
-                <p className="text-rose-400">{errors.password}</p>
-              ) : (
-                ""
-              )}
-              <button
-                type="submit"
-                className="bg-[#DB4444] p-2 rounded-md w-full text-white text-center"
-              >
-                Create Account
-              </button>
+    <div
+      className="min-h-screen flex items-center justify-center bg-gray-50 animate-fade-in"
+      style={{ backgroundImage: `url(${LOGIN_BG})`, backgroundSize: 'cover' }}
+    >
+      <div className="relative bg-white/90 backdrop-blur-lg rounded-xl shadow-lg max-w-md w-full p-8">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/60 flex items-center justify-center rounded-xl">
+            <CircularProgress />
+          </div>
+        )}
+        <h2 className="text-3xl font-semibold text-gray-800 mb-6 text-center">
+          Create an Account
+        </h2>
+        <form onSubmit={formik.handleSubmit} className="space-y-5">
+          {/** Name */}
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              disabled={isLoading}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.name}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400"
+              placeholder="Your full name"
+            />
+            {formik.touched.name && formik.errors.name && (
+              <p className="mt-1 text-xs text-rose-500">{formik.errors.name}</p>
+            )}
+          </div>
 
-              <button className="flex items-center justify-center gap-2 rounded-md p-2 border border-gray-500 w-full">
-                <FcGoogle className="text-lg items-center" />
-                <span>Sign up with Google</span>
-              </button>
+          {/** Email */}
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              disabled={isLoading}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.email}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400"
+              placeholder="you@example.com"
+            />
+            {formik.touched.email && formik.errors.email && (
+              <p className="mt-1 text-xs text-rose-500">{formik.errors.email}</p>
+            )}
+          </div>
+
+          {/** Phone */}
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+            <input
+              id="phone"
+              name="phone"
+              type="text"
+              disabled={isLoading}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.phone}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400"
+              placeholder="123-456-7890"
+            />
+            {formik.touched.phone && formik.errors.phone && (
+              <p className="mt-1 text-xs text-rose-500">{formik.errors.phone}</p>
+            )}
+          </div>
+
+          {/** Address */}
+          <div>
+            <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+            <input
+              id="address"
+              name="address"
+              type="text"
+              disabled={isLoading}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.address}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400"
+              placeholder="Your address"
+            />
+            {formik.touched.address && formik.errors.address && (
+              <p className="mt-1 text-xs text-rose-500">{formik.errors.address}</p>
+            )}
+          </div>
+
+          {/** Password */}
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              disabled={isLoading}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.password}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400"
+              placeholder="••••••••"
+            />
+            {formik.touched.password && formik.errors.password && (
+              <p className="mt-1 text-xs text-rose-500">{formik.errors.password}</p>
+            )}
+          </div>
+
+          {/** Submit */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white font-medium py-2 rounded-lg transition-colors"
+          >
+            {isLoading ? <CircularProgress size={24} color="inherit" /> : "Sign Up"}
+          </button>
+
+          {error && (
+            <div className="text-center text-sm text-rose-600">
+              {(error as any).data?.detail || "Registration failed"}
             </div>
-          </form>
-          <p className="mt-5 flex items-center justify-center">
-            Already have an account?
-            <Link to={LOGIN} className="ml-1 active:text-rose-300">
+          )}
+
+          <div className="text-center text-sm">
+            Already have an account?{' '}
+            <Link to={LOGIN} className="text-rose-500 hover:underline">
               Log in
             </Link>
-          </p>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   );

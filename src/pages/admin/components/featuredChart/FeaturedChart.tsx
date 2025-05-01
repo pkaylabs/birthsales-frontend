@@ -1,9 +1,12 @@
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
-import {CircularProgressbar} from 'react-circular-progressbar'
+import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 
+interface FeaturedChartProps {
+  salesToday: number;
+}
 
-const FeaturedChart = () => {
+const FeaturedChart = ({ salesToday }: FeaturedChartProps) => {
   return (
     <div className="flex flex-col flex-[2] shadow-lg p-3 ">
       {/* Top */}
@@ -14,10 +17,10 @@ const FeaturedChart = () => {
       {/* Bottom */}
       <div className="p-5 mt-10 flex flex-col items-center justify-center gap-4">
         <div className="w-24 h-24">
-          <CircularProgressbar value={70} text="70%" strokeWidth={4}/>
+          <CircularProgressbar value={70} text="70%" strokeWidth={4} />
         </div>
         <p className="font-medium text-gray-400">Total Sales made today</p>
-        <p className="text-3xl">$1400</p>
+        <p className="text-3xl">${salesToday}</p>
       </div>
     </div>
   );

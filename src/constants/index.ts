@@ -18,8 +18,12 @@ export const ADMIN_SERVICES = "/admin-services";
 export const ADMIN_ORDERS = "/admin-orders";
 export const ADMIN_CARTS = "/admin-carts";
 export const ADMIN_ADS = "/admin-ads";
-export const ADMIN_PLANS = '/admin-plans'
+export const ADMIN_PLANS = "/admin-plans";
 export const USERS = "/users";
 export const CATEGORIES = "/categories";
-
-
+export const VENDORS = "/vendors";
+export const BOOKINGS = "/bookings";
+export const PROFILE = "/profile";
+export const BACKEND_BASE_URL = "https://api.birthnon.com/api-v1/";
+export const LOGIN_BG =
+  "https://plus.unsplash.com/premium_photo-1728224403721-a4affa8e30ff?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";

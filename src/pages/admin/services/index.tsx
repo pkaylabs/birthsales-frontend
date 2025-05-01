@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+// src/pages/ServicesPage.tsx
+import React, {  useMemo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -14,501 +15,493 @@ import {
   DialogTitle,
   DialogContent,
   TextField,
-  CircularProgress,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
+  Box,
+  Snackbar,
+  Alert,
+  LinearProgress,
+  CircularProgress,
+  Skeleton,
 } from "@mui/material";
 import { useNavigate } from "react-location";
-import { useServices } from "../utils/ServiceContext";
-import ShimmerTable from "../components/Shimmer";
-
-interface Service {
-  id?: number;
-  name: string;
-  description: string;
-  price: number | string;
-  image?: string;
-  bookings?: number;
-  provider: string;
-  category: string;
-}
+import {
+  useGetServicesQuery,
+  useAddServiceMutation,
+  // useUpdateServiceMutation,
+  useDeleteServiceMutation,
+  ServiceDto,
+} from "@/redux/features/services/servicesApi";
+import { useGetVendorsQuery } from "@/redux/features/vendor/vendorApiSlice";
+import { useAppSelector } from "@/redux";
+import { RootState } from "@/app/store";
+import { ServiceForm } from "@/redux/type";
 
 export default function ServicesPage() {
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const globalServices = useServices();
+  const {
+    data: services = [],
+    isLoading,
+    // isFetching,
+    // refetch,
+  } = useGetServicesQuery();
+  const [addService, { isLoading: isAdding }] = useAddServiceMutation();
+  // const [updateService] = useUpdateServiceMutation();
+  const [deleteService, { isLoading: isDeleting }] = useDeleteServiceMutation();
 
-  // Available categories consistent with the product page
-  const availableCategories = [
-    { id: 1, name: "Electronics" },
-    { id: 2, name: "Clothing" },
-    { id: 3, name: "Accessories" },
-    { id: 4, name: "Beauty" },
-    { id: 5, name: "Wellness" },
-  ];
-  // Available categories consistent with the product page
-  const availableServiceProviders = [
-    { id: 1, name: "Jamal" },
-    { id: 2, name: "Prince" },
-    { id: 3, name: "Isaac" },
-  ];
+  // vendors list for admin
+  const { data: allVendors = [] } = useGetVendorsQuery();
 
-  // Sample data for services
-  const [services, setServices] = useState<Service[]>(globalServices);
+  // auth user
+  const user = useAppSelector((state: RootState) => state.auth.user);
+  const userType = user?.user_type;
 
-  // State for adding a new service
-  const [newService, setNewService] = useState<Service>({
+  // compute available providers
+  const availableVendors = useMemo(() => {
+    if (userType === "ADMIN") {
+      return allVendors;
+    } else if (userType === "VENDOR") {
+      return allVendors.filter((v) => v.user === user?.id);
+    }
+    return [];
+  }, [userType, allVendors, user]);
+
+  console.log("availableVendors", availableVendors);
+
+  // Filter services accordingly
+  const visibleServices = useMemo(() => {
+    if (userType === "ADMIN") return services;
+    // vendor user sees only own services
+    return services.filter((s) =>
+      availableVendors.some((v) => v.vendor_id === s.vendor.vendor_id)
+    );
+  }, [services, availableVendors, userType]);
+
+  // Local state for dialogs & form
+  const [openAdd, setOpenAdd] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [openEdit, setOpenEdit] = useState(false);
+  // const [editService, setEditService] = useState<ServiceDto | null>(null);
+  const [form, setForm] = useState<ServiceForm>({
     name: "",
     description: "",
-    price: "",
-    image: "",
-    bookings: 0,
-    provider: "",
-    category: "", // Will be selected from dropdown
+    price: 0,
+    // category: "",
+    vendor_id: "",
+    imageFile: undefined,
   });
-  const [openAdd, setOpenAdd] = useState(false);
-
-  // State for editing a service
-  const [openEdit, setOpenEdit] = useState(false);
-  const [editService, setEditService] = useState<Service | null>(null);
-
   const [searchTerm, setSearchTerm] = useState("");
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastSeverity, setToastSeverity] = useState<"success" | "error">(
+    "success"
+  );
+  // const availableCategories = [
+  //   "Electronics",
+  //   "Clothing",
+  //   "Accessories",
+  //   "Beauty",
+  //   "Wellness",
+  // ];
 
-  // Upload state for adding service image
-  const [serviceImageUploading, setServiceImageUploading] = useState(false);
-  // Upload state for editing service image
-  const [editServiceImageUploading, setEditServiceImageUploading] =
-    useState(false);
+  // sync initial provider selection when availableProviders load
+  // useEffect(() => {
+  //   if (!editService) {
+  //     setForm((f) => ({ ...f, vendor_id: availableVendors[0]?.id |}));
+  //   }
+  // }, [availableVendors, editService]);
 
-  // Handler for adding a new service image
-  const handleServiceImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files && e.target.files[0];
-    if (file) {
-      setServiceImageUploading(true);
-      setTimeout(() => {
-        setNewService((prev) => ({
-          ...prev,
-          image: URL.createObjectURL(file),
-        }));
-        setServiceImageUploading(false);
-      }, 1000);
-    }
-  };
-
-  // Handler for editing a service image
-  const handleEditServiceImageChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files && e.target.files[0];
-    if (file && editService) {
-      setEditServiceImageUploading(true);
-      setTimeout(() => {
-        setEditService({ ...editService, image: URL.createObjectURL(file) });
-        setEditServiceImageUploading(false);
-      }, 1000);
-    }
-  };
-
-  const handleAddService = () => {
-    const price = parseFloat(newService.price.toString()) || 0;
-    setServices([
-      ...services,
-      { ...newService, id: services.length + 1, price },
-    ]);
-    setOpenAdd(false);
-  };
-
-  const handleEditServiceSave = () => {
-    if (!editService) return;
-    const price = parseFloat(editService.price.toString()) || 0;
-
-    setServices(
-      services.map((s) =>
-        s.id === editService.id ? { ...editService, price } : s
-      )
-    );
-    setOpenEdit(false);
-    setEditService(null);
-  };
-
-  const handleDeleteService = (id: number | undefined) => {
-    setServices(services.filter((s) => s.id !== id));
-  };
-
-  const filteredServices = services.filter(
-    (service) =>
-      service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.category.toLowerCase().includes(searchTerm.toLowerCase())
+  const filtered = visibleServices.filter(
+    (s) =>
+      s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.description.toLowerCase().includes(searchTerm.toLowerCase())
+    // s.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  useEffect(() => {
-    setTimeout(()=>{
-      setLoading(false)
-    },1500)
-  },[])
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setForm((f) => ({ ...f, imageFile: file }));
+    }
+  };
+
+  // Handlers
+  const handleAdd = async () => {
+    const fd = new FormData();
+    fd.append("name", form.name);
+    fd.append("description", form.description);
+    fd.append("price", form.price.toString());
+    // fd.append("category", form.category);
+    if (userType === "ADMIN") fd.append("vendor_id", form.vendor_id);
+    else fd.append("vendor_id", availableVendors[0].vendor_id);
+    if (form.imageFile) {
+      fd.append("image", form.imageFile);
+    }
+    try {
+      await addService(fd as any).unwrap();
+      setToastMessage("Service added");
+      setToastSeverity("success");
+      setOpenAdd(false);
+    } catch (err) {
+      console.error(err);
+      setToastMessage("Add failed");
+      setToastSeverity("error");
+    } finally {
+      setToastOpen(true);
+    }
+  };
+
+  const handleEdit = (service: ServiceDto) => {
+    // setEditService(service);
+    setForm(service);
+    setOpenEdit(true);
+  };
+
+  // const handleSaveEdit = async () => {
+  //   if (!editService) return;
+  //   try {
+  //     await updateService(form).unwrap();
+  //     setToastMessage("Service updated");
+  //     setToastSeverity("success");
+  //     setOpenEdit(false);
+  //   } catch (err) {
+  //     console.error(err);
+  //     setToastMessage("Update failed");
+  //     setToastSeverity("error");
+  //   } finally {
+  //     setToastOpen(true);
+  //   }
+  // };
+
+  const handleDelete = async (id?: number) => {
+    if (!id) return;
+    setDeletingId(id);
+    try {
+      await deleteService(id).unwrap();
+      setToastMessage("Service deleted");
+      setToastSeverity("success");
+    } catch (err: any) {
+      setToastMessage(err.data.message || "Delete failed");
+      setToastSeverity("error");
+    } finally {
+      setDeletingId(null);
+      setToastOpen(true);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Box p={6}>
+        <Box mb={2} display="flex" gap={2}>
+          {[1, 2, 3].map((i) => (
+            <Skeleton variant="rectangular" width="100%" height={80} key={i} />
+          ))}
+        </Box>
+        <Skeleton variant="rectangular" height={40} />
+        <Box mt={2}>
+          {[...Array(5)].map((_, idx) => (
+            <Skeleton
+              key={idx}
+              variant="rectangular"
+              height={40}
+              sx={{ mb: 1 }}
+            />
+          ))}
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
-      {/* Dashboard Overview */}
+      {(isAdding || isDeleting) && <LinearProgress />}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardContent>Total Services: {services.length}</CardContent>
+          <CardContent>Total Services: {visibleServices.length}</CardContent>
         </Card>
         <Card>
           <CardContent>
             Total Bookings:{" "}
-            {services.reduce((sum, s) => sum + (s.bookings ?? 0), 0)}
+            {visibleServices.reduce((sum, s) => sum + (s.bookings || 0), 0)}
           </CardContent>
         </Card>
         <Card>
-          <CardContent>
-            Total Revenue: $
-            {/* {services.reduce((sum, s) => sum + s.bookings * s.price, 0)} */}
-          </CardContent>
+          <CardContent>Total Revenue: $0</CardContent>
         </Card>
       </div>
 
-      {/* Service Management Area */}
-      <div className="bg-white shadow rounded p-4">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-          <h2 className="text-xl font-bold mb-2 md:mb-0">Manage Services</h2>
-          <div className="flex gap-2 flex-wrap">
-            <TextField
-              variant="outlined"
-              size="small"
-              placeholder="Search services..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setOpenAdd(true)}
-            >
-              Add New Service
-            </Button>
-          </div>
+      <div className="bg-white shadow rounded p-4 overflow-x-auto">
+        <div className="flex justify-between mb-4">
+          <TextField
+            size="small"
+            placeholder="Search…"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <Button
+            variant="contained"
+            onClick={() => setOpenAdd(true)}
+            disabled={isAdding}
+          >
+            Add Service
+          </Button>
+        </div>
 
-          {/* Add New Service Dialog */}
-          <Dialog open={openAdd} onClose={() => setOpenAdd(false)}>
-            <DialogTitle>Add New Service</DialogTitle>
-            <DialogContent>
+        {/* Add Dialog */}
+        <Dialog
+          open={openAdd}
+          onClose={() => setOpenAdd(false)}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Add Service</DialogTitle>
+          <DialogContent>
+            <Box display="flex" flexDirection="column" gap={2}>
               <TextField
-                fullWidth
-                margin="dense"
-                label="Service Name"
-                variant="outlined"
+                label="Name"
+                value={form.name}
                 onChange={(e) =>
-                  setNewService({ ...newService, name: e.target.value })
+                  setForm((f) => ({ ...f, name: e.target.value }))
                 }
+                fullWidth
               />
               <TextField
-                fullWidth
-                margin="dense"
                 label="Description"
-                variant="outlined"
+                value={form.description}
                 onChange={(e) =>
-                  setNewService({ ...newService, description: e.target.value })
+                  setForm((f) => ({ ...f, description: e.target.value }))
                 }
+                fullWidth
               />
               <TextField
-                fullWidth
-                margin="dense"
                 label="Price"
-                variant="outlined"
                 type="number"
+                value={form.price}
                 onChange={(e) =>
-                  setNewService({ ...newService, price: e.target.value })
+                  setForm((f) => ({ ...f, price: Number(e.target.value) }))
                 }
+                fullWidth
               />
-              {/* Provider Dropdown */}
-              <FormControl fullWidth margin="dense">
-                <InputLabel id="service-provider-label">Provider</InputLabel>
+              <Button component="label" variant="outlined">
+                Upload Image
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </Button>
+              {form.imageFile && <span>{form.imageFile.name}</span>}
+              {/* <FormControl fullWidth>
+                <InputLabel>Category</InputLabel>
                 <Select
-                  labelId="service-provider-label"
-                  label="Provider"
-                  value={newService.provider || ""}
+                  value={form.category}
                   onChange={(e) =>
-                    setNewService({ ...newService, provider: e.target.value })
+                    setForm((f) => ({ ...f, category: e.target.value }))
                   }
                 >
-                  {availableServiceProviders.map((provider) => (
-                    <MenuItem key={provider.id} value={provider.name}>
-                      {provider.name}
+                  {[
+                    "Electronics",
+                    "Clothing",
+                    "Accessories",
+                    "Beauty",
+                    "Wellness",
+                  ].map((cat) => (
+                    <MenuItem key={cat} value={cat}>
+                      {cat}
                     </MenuItem>
                   ))}
                 </Select>
-              </FormControl>
-              {/* Category Dropdown */}
-              <FormControl fullWidth margin="dense">
-                <InputLabel id="service-category-label">Category</InputLabel>
-                <Select
-                  labelId="service-category-label"
-                  label="Category"
-                  value={newService.category || ""}
-                  onChange={(e) =>
-                    setNewService({ ...newService, category: e.target.value })
-                  }
-                >
-                  {availableCategories.map((cat) => (
-                    <MenuItem key={cat.id} value={cat.name}>
-                      {cat.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <div
-                style={{
-                  marginTop: 16,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 16,
-                }}
-              >
-                <Button variant="contained" component="label">
-                  Upload Image
-                  <input
-                    hidden
-                    type="file"
-                    accept="image/*"
-                    onChange={handleServiceImageChange}
-                  />
-                </Button>
-                {serviceImageUploading ? (
-                  <CircularProgress size={24} />
-                ) : newService.image ? (
-                  <img
-                    src={newService.image}
-                    alt="Service"
-                    width="50"
-                    height="50"
-                  />
-                ) : null}
-              </div>
+              </FormControl> */}
+              {userType === "ADMIN" && (
+                <FormControl fullWidth>
+                  <InputLabel>Vendor</InputLabel>
+                  <Select
+                    value={form.vendor_id}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, vendor_id: e.target.value }))
+                    }
+                  >
+                    {availableVendors?.map((v) => (
+                      <MenuItem key={v.id} value={v.vendor_id}>
+                        {v.vendor_name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+              {/* Optionally allow setting bookings on creation */}
               <Button
                 variant="contained"
-                color="primary"
-                sx={{ mt: 2, display: "block" }}
-                onClick={handleAddService}
+                onClick={handleAdd}
+                disabled={isAdding}
               >
                 Save
               </Button>
-            </DialogContent>
-          </Dialog>
+            </Box>
+          </DialogContent>
+        </Dialog>
 
-          {/* Edit Service Dialog */}
-          <Dialog open={openEdit} onClose={() => setOpenEdit(false)}>
-            <DialogTitle>Edit Service</DialogTitle>
-            <DialogContent>
-              {editService && (
-                <>
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Service Name"
-                    variant="outlined"
-                    value={editService.name}
+        {/* Edit Dialog */}
+        <Dialog
+          open={openEdit}
+          onClose={() => setOpenEdit(false)}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Edit Service</DialogTitle>
+          <DialogContent>
+            <Box display="flex" flexDirection="column" gap={2}>
+              <TextField
+                label="Name"
+                value={form.name}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, name: e.target.value }))
+                }
+                fullWidth
+              />
+              <TextField
+                label="Description"
+                value={form.description}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, description: e.target.value }))
+                }
+                fullWidth
+              />
+              <TextField
+                label="Price"
+                type="number"
+                value={form.price}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, price: Number(e.target.value) }))
+                }
+                fullWidth
+              />
+              {/* <FormControl fullWidth>
+                <InputLabel>Category</InputLabel>
+                <Select
+                  value={form.category}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, category: e.target.value }))
+                  }
+                >
+                  {[
+                    "Electronics",
+                    "Clothing",
+                    "Accessories",
+                    "Beauty",
+                    "Wellness",
+                  ].map((cat) => (
+                    <MenuItem key={cat} value={cat}>
+                      {cat}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl> */}
+              {userType === "ADMIN" && (
+                <FormControl fullWidth>
+                  <InputLabel>Vendor</InputLabel>
+                  <Select
+                    value={form.vendor_id}
                     onChange={(e) =>
-                      setEditService({ ...editService, name: e.target.value })
+                      setForm((f) => ({ ...f, vendor_id: e.target.value }))
                     }
-                  />
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Description"
-                    variant="outlined"
-                    value={editService.description}
-                    onChange={(e) =>
-                      setEditService({
-                        ...editService,
-                        description: e.target.value,
-                      })
-                    }
-                  />
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Price"
-                    variant="outlined"
-                    type="number"
-                    value={editService.price}
-                    onChange={(e) =>
-                      setEditService({ ...editService, price: e.target.value })
-                    }
-                  />
-
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Provider"
-                    variant="outlined"
-                    value={editService.provider}
-                    onChange={(e) =>
-                      setEditService({
-                        ...editService,
-                        provider: e.target.value,
-                      })
-                    }
-                  />
-                  {/* Category Dropdown for Edit */}
-                  <FormControl fullWidth margin="dense">
-                    <InputLabel id="edit-service-category-label">
-                      Category
-                    </InputLabel>
-                    <Select
-                      labelId="edit-service-category-label"
-                      label="Category"
-                      value={editService.category || ""}
-                      onChange={(e) =>
-                        setEditService({
-                          ...editService,
-                          category: e.target.value,
-                        })
-                      }
-                    >
-                      {availableCategories.map((cat) => (
-                        <MenuItem key={cat.id} value={cat.name}>
-                          {cat.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <div
-                    style={{
-                      marginTop: 16,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 16,
-                    }}
                   >
-                    <Button variant="contained" component="label">
-                      Upload Image
-                      <input
-                        hidden
-                        type="file"
-                        accept="image/*"
-                        onChange={handleEditServiceImageChange}
-                      />
-                    </Button>
-                    {editServiceImageUploading ? (
-                      <CircularProgress size={24} />
-                    ) : editService.image ? (
-                      <img
-                        src={editService.image}
-                        alt="Service"
-                        width="50"
-                        height="50"
-                      />
-                    ) : null}
-                  </div>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    sx={{ mt: 2, display: "block" }}
-                    onClick={handleEditServiceSave}
-                  >
-                    Save Changes
-                  </Button>
-                </>
+                    {availableVendors?.map((v) => (
+                      <MenuItem key={v.id} value={v.vendor_id}>
+                        {v.vendor_name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               )}
-            </DialogContent>
-          </Dialog>
-        </div>
+              {/* <Button variant="contained" onClick={handleSaveEdit}>
+                Save Changes
+              </Button> */}
+            </Box>
+          </DialogContent>
+        </Dialog>
 
-        {/* Services Table */}
-        {loading ? (
-          <ShimmerTable />
-        ) : (
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Service</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Price ($)</TableCell>
+        {/* Toast */}
+        <Snackbar
+          open={toastOpen}
+          autoHideDuration={3000}
+          onClose={() => setToastOpen(false)}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <Alert
+            onClose={() => setToastOpen(false)}
+            severity={toastSeverity}
+            sx={{ width: "100%" }}
+          >
+            {toastMessage}
+          </Alert>
+        </Snackbar>
 
-                  <TableCell>Provider</TableCell>
-                  <TableCell>Category</TableCell>
-                  <TableCell>Bookings</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredServices.map((service) => (
-                  <TableRow key={service.id} className="">
-                    <TableCell
-                      style={{ display: "flex", alignItems: "center" }}
-                    >
-                      <img
-                        src={service.image}
-                        alt={service.name}
-                        style={{ marginRight: 10 }}
-                        className="w-[3rem] h-[3rem] rounded-full object-cover"
-                      />
-                      {service.name}
+        {/* Table */}
+        <TableContainer component={Paper} sx={{ width: "100%" }}>
+          <Table sx={{ minWidth: 650 }} aria-label="services table">
+            <TableHead>
+              <TableRow>
+                <TableCell align="left">Name</TableCell>
+                <TableCell align="left">Description</TableCell>
+                <TableCell align="right">Price</TableCell>
+                {/* <TableCell>Category</TableCell> */}
+                {userType === "ADMIN" && (
+                  <TableCell align="left">Vendor</TableCell>
+                )}
+                <TableCell align="center">Bookings</TableCell>
+                <TableCell align="center">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filtered.map((s) => (
+                <TableRow key={s.id} hover>
+                  <TableCell align="left">{s.name}</TableCell>
+                  <TableCell align="left">{s.description}</TableCell>
+                  <TableCell align="right">{s.price}</TableCell>
+                  {/* <TableCell>{s.category}</TableCell> */}
+
+                  {userType === "ADMIN" && (
+                    <TableCell align="left">
+                      {
+                        availableVendors.find(
+                          (v) => v.vendor_id === s.vendor.vendor_id
+                        )?.vendor_name
+                      }
                     </TableCell>
-                    <TableCell>{service.description}</TableCell>
-                    <TableCell>{service.price}</TableCell>
+                  )}
 
-                    <TableCell>{service.provider}</TableCell>
-                    <TableCell>{service.category}</TableCell>
-                    <TableCell>{service.bookings}</TableCell>
-                    <TableCell style={{}}>
-                      <Button
-                        color="primary"
-                        onClick={() =>
-                          navigate({ to: `/admin-services/${service.id}` })
-                        }
-                      >
-                        View
-                      </Button>
-                      <Button
-                        color="secondary"
-                        onClick={() => {
-                          setEditService(service);
-                          setOpenEdit(true);
-                        }}
-                      >
-                        Edit
-                      </Button>
+                  <TableCell align="center">{s.bookings}</TableCell>
+                  <TableCell align="center">
+                    <Button
+                      onClick={() => {
+                        handleEdit(s);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    {deletingId === s.id ? (
+                      <CircularProgress size={24} />
+                    ) : (
                       <Button
                         color="error"
-                        onClick={() => handleDeleteService(service.id)}
+                        onClick={() => handleDelete(Number(s.id))}
                       >
                         Delete
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </div>
-
-      {/* Service Bookings Analytics Chart */}
-      {/* <div className="bg-white shadow rounded p-4">
-        <h2 className="text-xl font-bold mb-4">Service Bookings</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={bookingsData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="bookings"
-              stroke="#3b82f6"
-              strokeWidth={2}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div> */}
     </div>
   );
 }
