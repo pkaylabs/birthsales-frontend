@@ -1,135 +1,107 @@
 import React, { useState } from "react";
-import {
-  FaShoppingCart,
-  FaHeart,
-  FaUser,
-  FaBars,
-  FaTimes,
-} from "react-icons/fa";
+import { FaShoppingCart, FaHeart, FaUser, FaBars, FaTimes } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 import logo from "@/assets/images/logo.jpg";
 import { Link } from "react-location";
 import { SIGN_UP_ROLE } from "@/constants";
+
+const menuVariants = {
+  hidden: { height: 0, opacity: 0 },
+  visible: { height: 'auto', opacity: 1, transition: { duration: 0.3 } },
+  exit: { height: 0, opacity: 0, transition: { duration: 0.2 } },
+};
 
 const Header: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="bg-white shadow-md relative">
-      {/* Mobile & Tablet Header: visible only on screens below 1201px */}
-      <div className="block desktop-up:hidden">
-        <div className="flex items-center justify-between py-4 px-6">
-          <img
-            src={logo}
-            alt="Logo"
-            className="h-8 w-auto cursor-pointer rounded-md"
-          />
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="text-gray-700 text-2xl focus:outline-none"
-          >
-            {menuOpen ? <FaTimes /> : <FaBars />}
-          </button>
-        </div>
-        {menuOpen && (
-          <nav className="flex flex-col items-center space-y-4 py-4 border-t border-gray-200">
-            <Link
-              to="/"
-              onClick={() => setMenuOpen(false)}
-              className="text-xl text-gray-700 hover:text-red-500"
-            >
-              Home
+    <header className="bg-white/80 backdrop-blur-md fixed w-full z-50 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo + Title */}
+          <div className="flex items-center">
+            <Link to="/">
+              <motion.img
+                src={logo}
+                alt="Logo"
+                className="h-10 w-auto rounded-md cursor-pointer"
+                whileHover={{ scale: 1.1 }}
+              />
             </Link>
-            <Link
-              to="/services"
-              onClick={() => setMenuOpen(false)}
-              className="text-xl text-gray-700 hover:text-red-500"
-            >
-              Services
+            <Link to="/" className="ml-3 text-2xl font-bold text-gray-800 hover:text-rose-500 transition">
+              BirthNon
             </Link>
-            <Link
-              to="/about"
-              onClick={() => setMenuOpen(false)}
-              className="text-xl text-gray-700 hover:text-red-500"
-            >
-              About
-            </Link>
-            <Link
-              to={SIGN_UP_ROLE}
-              onClick={() => setMenuOpen(false)}
-              className="text-xl text-gray-700 hover:text-red-500"
-            >
-              Sign Up
-            </Link>
-            <Link
-              to="/cart"
-              onClick={() => setMenuOpen(false)}
-              className="text-xl text-gray-700 hover:text-red-500"
-            >
-              Cart
-            </Link>
-            <Link
-              to="/wish-list"
-              onClick={() => setMenuOpen(false)}
-              className="text-xl text-gray-700 hover:text-red-500"
-            >
-              Wishlist
-            </Link>
+          </div>
+
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center space-x-6">
+            {['/', '/services', '/about', SIGN_UP_ROLE].map((path, idx) => (
+              <Link
+                key={idx}
+                to={path}
+                className="text-gray-700 hover:text-rose-500 transition"
+              >
+                {path === '/' ? 'Home' : path.replace('/', '').charAt(0).toUpperCase() + path.slice(2)}
+              </Link>
+            ))}
           </nav>
-        )}
+
+          {/* Icons + Mobile Menu Button */}
+          <div className="flex items-center space-x-4">
+            <Link to="/wish-list" className="hidden md:block">
+              <FaHeart className="text-xl text-gray-700 hover:text-rose-500 transition" />
+            </Link>
+            <Link to="/cart" className="hidden md:block relative">
+              <FaShoppingCart className="text-xl text-gray-700 hover:text-rose-500 transition" />
+              <span className="absolute -top-1 -right-2 bg-rose-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                2
+              </span>
+            </Link>
+            <Link to="/account" className="hidden md:block">
+              <FaUser className="text-xl text-gray-700 hover:text-rose-500 transition" />
+            </Link>
+
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="text-gray-700 md:hidden focus:outline-none"
+            >
+              {menuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Desktop & Larger Header: visible only on screens 1201px and up */}
-      <div className="hidden desktop-up:flex items-center justify-between py-4 px-6">
-        <div className="flex items-center">
-          <img
-            src={logo}
-            alt="Logo"
-            className="h-8 w-auto cursor-pointer rounded-md mr-3"
-          />
-          <Link to="/" className="text-2xl font-bold text-gray-800">
-            BirthNon
-          </Link>
-        </div>
-        <nav className="flex items-center space-x-6">
-          <Link to="/" className="text-gray-700 hover:text-red-500 text-lg">
-            Home
-          </Link>
-          <Link
-            to="/services"
-            className="text-gray-700 hover:text-red-500 text-lg"
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.nav
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            variants={menuVariants}
+            className="md:hidden bg-white overflow-hidden shadow-inner"
           >
-            Services
-          </Link>
-          <Link
-            to="/about"
-            className="text-gray-700 hover:text-red-500 text-lg"
-          >
-            About
-          </Link>
-          <Link
-            to={SIGN_UP_ROLE}
-            className="text-gray-700 hover:text-red-500 text-lg"
-          >
-            Sign Up
-          </Link>
-        </nav>
-        <div className="flex items-center space-x-6">
-          <Link to="/wish-list">
-            <FaHeart className="text-xl text-gray-700 hover:text-red-500" />
-          </Link>
-          <Link to="/cart" className="relative">
-            <FaShoppingCart className="text-xl text-gray-700 hover:text-red-500" />
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white bg-red text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
-              2
-            </span>
-          </Link>
-          <Link to="/account">
-            <FaUser className="text-xl text-gray-700 hover:text-red-500" />
-          </Link>
-        </div>
-      </div>
+            <div className="px-4 pt-4 pb-2 space-y-2">
+              {['Home', 'Services', 'About', 'Sign Up', 'Cart', 'Wishlist'].map((label, i) => {
+                const to = label === 'Home' ? '/' : `/${label.toLowerCase().replace(' ', '-')}`;
+                return (
+                  <Link
+                    key={i}
+                    to={to === '/sign up' ? SIGN_UP_ROLE : to}
+                    onClick={() => setMenuOpen(false)}
+                    className="block text-lg text-gray-700 hover:text-rose-500 transition py-2"
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+            </div>
+          </motion.nav>
+        )}
+      </AnimatePresence>
     </header>
   );
 };
 
 export default Header;
+

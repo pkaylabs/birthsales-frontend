@@ -5,11 +5,12 @@ export interface ServiceDto {
   id?: number | string;
   name: string;
   description: string;
-  price: number | string;
+  price: number;
   image?: string;
-  category: string;
-  provider: number; // vendor user ID
+  // category: string;
+  vendor_id: string; // vendor ID
   bookings?: number;
+
 }
 
 export const serviceApi = api.injectEndpoints({
@@ -19,7 +20,7 @@ export const serviceApi = api.injectEndpoints({
       providesTags: (result = []) =>
         result
           .map(({ id }) => ({ type: "Service" as const, id }))
-          .concat([{ type: "Service", id: 'LIST' }]),
+          .concat([{ type: "Service", id: "LIST" }]),
     }),
     getService: builder.query<Service, number>({
       query: (id) => `services/${id}/`,

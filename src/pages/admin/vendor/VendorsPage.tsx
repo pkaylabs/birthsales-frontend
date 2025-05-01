@@ -42,7 +42,6 @@ export default function VendorsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [current, setCurrent] = useState<VendorForm>({
-    user: 0,
     vendor_name: "",
     vendor_email: "",
     vendor_address: "",
@@ -59,8 +58,8 @@ export default function VendorsPage() {
   // Pagination & filtering
   const filtered = vendors.filter(
     (v) =>
-      v.name.toLowerCase().includes(search.toLowerCase()) ||
-      v.email.toLowerCase().includes(search.toLowerCase())
+      v.vendor_name.toLowerCase().includes(search.toLowerCase()) ||
+      v.vendor_email.toLowerCase().includes(search.toLowerCase())
   );
   const paginated = filtered.slice(
     page * rowsPerPage,
@@ -83,10 +82,10 @@ export default function VendorsPage() {
     setEditId(v.id);
     setCurrent({
       user: v.user,
-      vendor_name: v.name,
-      vendor_email: v.email,
-      vendor_address: v.address,
-      vendor_phone: v.phone,
+      vendor_name: v.vendor_name,
+      vendor_email: v.vendor_email,
+      vendor_address: v.vendor_address,
+      vendor_phone: v.vendor_phone,
     });
     setDialogOpen(true);
   };
@@ -159,10 +158,10 @@ export default function VendorsPage() {
               <TableBody>
                 {paginated.map((v) => (
                   <TableRow key={v.id}>
-                    <TableCell>{v.name}</TableCell>
-                    <TableCell>{v.email}</TableCell>
-                    <TableCell>{v.address}</TableCell>
-                    <TableCell>{v.phone}</TableCell>
+                    <TableCell>{v.vendor_name}</TableCell>
+                    <TableCell>{v.vendor_email}</TableCell>
+                    <TableCell>{v.vendor_address}</TableCell>
+                    <TableCell>{v.vendor_phone}</TableCell>
                     <TableCell>
                       <Button onClick={() => openEdit(v)}>Edit</Button>
                       <Button color="error" onClick={() => handleDelete(v.id)}>

@@ -1,5 +1,5 @@
 // src/pages/ServicesPage.tsx
-import React, { useEffect, useState } from "react";
+import React, {  useMemo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -15,7 +15,6 @@ import {
   DialogTitle,
   DialogContent,
   TextField,
- 
   FormControl,
   InputLabel,
   Select,
@@ -23,19 +22,22 @@ import {
   Box,
   Snackbar,
   Alert,
+  LinearProgress,
+  CircularProgress,
+  Skeleton,
 } from "@mui/material";
 import { useNavigate } from "react-location";
 import {
   useGetServicesQuery,
   useAddServiceMutation,
-  useUpdateServiceMutation,
+  // useUpdateServiceMutation,
   useDeleteServiceMutation,
   ServiceDto,
 } from "@/redux/features/services/servicesApi";
-import ShimmerTable from "../components/Shimmer";
 import { useGetVendorsQuery } from "@/redux/features/vendor/vendorApiSlice";
 import { useAppSelector } from "@/redux";
 import { RootState } from "@/app/store";
+import { ServiceForm } from "@/redux/type";
 
 export default function ServicesPage() {
   const navigate = useNavigate();
@@ -45,9 +47,9 @@ export default function ServicesPage() {
     // isFetching,
     // refetch,
   } = useGetServicesQuery();
-  const [addService] = useAddServiceMutation();
-  const [updateService] = useUpdateServiceMutation();
-  const [deleteService] = useDeleteServiceMutation();
+  const [addService, { isLoading: isAdding }] = useAddServiceMutation();
+  // const [updateService] = useUpdateServiceMutation();
+  const [deleteService, { isLoading: isDeleting }] = useDeleteServiceMutation();
 
   // vendors list for admin
   const { data: allVendors = [] } = useGetVendorsQuery();
@@ -57,27 +59,38 @@ export default function ServicesPage() {
   const userType = user?.user_type;
 
   // compute available providers
-  const availableProviders = React.useMemo(() => {
+  const availableVendors = useMemo(() => {
     if (userType === "ADMIN") {
       return allVendors;
     } else if (userType === "VENDOR") {
-      return user ? [{ id: user.id, name: user.name }] : [];
+      return allVendors.filter((v) => v.user === user?.id);
     }
     return [];
   }, [userType, allVendors, user]);
 
+  console.log("availableVendors", availableVendors);
+
+  // Filter services accordingly
+  const visibleServices = useMemo(() => {
+    if (userType === "ADMIN") return services;
+    // vendor user sees only own services
+    return services.filter((s) =>
+      availableVendors.some((v) => v.vendor_id === s.vendor.vendor_id)
+    );
+  }, [services, availableVendors, userType]);
+
   // Local state for dialogs & form
   const [openAdd, setOpenAdd] = useState(false);
-
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [openEdit, setOpenEdit] = useState(false);
-  const [editService, setEditService] = useState<ServiceDto | null>(null);
-  const [form, setForm] = useState<ServiceDto>({
+  // const [editService, setEditService] = useState<ServiceDto | null>(null);
+  const [form, setForm] = useState<ServiceForm>({
     name: "",
     description: "",
-    price: "",
-    category: "",
-    provider: availableProviders[0]?.id || 0,
-    bookings: 0,
+    price: 0,
+    // category: "",
+    vendor_id: "",
+    imageFile: undefined,
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [toastOpen, setToastOpen] = useState(false);
@@ -94,23 +107,40 @@ export default function ServicesPage() {
   // ];
 
   // sync initial provider selection when availableProviders load
-  useEffect(() => {
-    if (!editService) {
-      setForm((f) => ({ ...f, provider: availableProviders[0]?.id || 0 }));
-    }
-  }, [availableProviders]);
+  // useEffect(() => {
+  //   if (!editService) {
+  //     setForm((f) => ({ ...f, vendor_id: availableVendors[0]?.id |}));
+  //   }
+  // }, [availableVendors, editService]);
 
-  const filtered = services.filter(
+  const filtered = visibleServices.filter(
     (s) =>
       s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.category.toLowerCase().includes(searchTerm.toLowerCase())
+      s.description.toLowerCase().includes(searchTerm.toLowerCase())
+    // s.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setForm((f) => ({ ...f, imageFile: file }));
+    }
+  };
 
   // Handlers
   const handleAdd = async () => {
+    const fd = new FormData();
+    fd.append("name", form.name);
+    fd.append("description", form.description);
+    fd.append("price", form.price.toString());
+    // fd.append("category", form.category);
+    if (userType === "ADMIN") fd.append("vendor_id", form.vendor_id);
+    else fd.append("vendor_id", availableVendors[0].vendor_id);
+    if (form.imageFile) {
+      fd.append("image", form.imageFile);
+    }
     try {
-      await addService(form).unwrap();
+      await addService(fd as any).unwrap();
       setToastMessage("Service added");
       setToastSeverity("success");
       setOpenAdd(false);
@@ -124,54 +154,77 @@ export default function ServicesPage() {
   };
 
   const handleEdit = (service: ServiceDto) => {
-    setEditService(service);
+    // setEditService(service);
     setForm(service);
     setOpenEdit(true);
   };
 
-  const handleSaveEdit = async () => {
-    if (!editService) return;
-    try {
-      await updateService(form).unwrap();
-      setToastMessage("Service updated");
-      setToastSeverity("success");
-      setOpenEdit(false);
-    } catch (err) {
-      console.error(err);
-      setToastMessage("Update failed");
-      setToastSeverity("error");
-    } finally {
-      setToastOpen(true);
-    }
-  };
+  // const handleSaveEdit = async () => {
+  //   if (!editService) return;
+  //   try {
+  //     await updateService(form).unwrap();
+  //     setToastMessage("Service updated");
+  //     setToastSeverity("success");
+  //     setOpenEdit(false);
+  //   } catch (err) {
+  //     console.error(err);
+  //     setToastMessage("Update failed");
+  //     setToastSeverity("error");
+  //   } finally {
+  //     setToastOpen(true);
+  //   }
+  // };
 
   const handleDelete = async (id?: number) => {
     if (!id) return;
+    setDeletingId(id);
     try {
       await deleteService(id).unwrap();
       setToastMessage("Service deleted");
       setToastSeverity("success");
-    } catch (err) {
-      console.error(err);
-      setToastMessage("Deletion failed");
+    } catch (err: any) {
+      setToastMessage(err.data.message || "Delete failed");
       setToastSeverity("error");
     } finally {
+      setDeletingId(null);
       setToastOpen(true);
     }
   };
 
-  if (isLoading) return <ShimmerTable />;
+  if (isLoading) {
+    return (
+      <Box p={6}>
+        <Box mb={2} display="flex" gap={2}>
+          {[1, 2, 3].map((i) => (
+            <Skeleton variant="rectangular" width="100%" height={80} key={i} />
+          ))}
+        </Box>
+        <Skeleton variant="rectangular" height={40} />
+        <Box mt={2}>
+          {[...Array(5)].map((_, idx) => (
+            <Skeleton
+              key={idx}
+              variant="rectangular"
+              height={40}
+              sx={{ mb: 1 }}
+            />
+          ))}
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
+      {(isAdding || isDeleting) && <LinearProgress />}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardContent>Total Services: {services.length}</CardContent>
+          <CardContent>Total Services: {visibleServices.length}</CardContent>
         </Card>
         <Card>
           <CardContent>
             Total Bookings:{" "}
-            {services.reduce((sum, s) => sum + (s.bookings || 0), 0)}
+            {visibleServices.reduce((sum, s) => sum + (s.bookings || 0), 0)}
           </CardContent>
         </Card>
         <Card>
@@ -179,7 +232,7 @@ export default function ServicesPage() {
         </Card>
       </div>
 
-      <div className="bg-white shadow rounded p-4">
+      <div className="bg-white shadow rounded p-4 overflow-x-auto">
         <div className="flex justify-between mb-4">
           <TextField
             size="small"
@@ -187,7 +240,11 @@ export default function ServicesPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Button variant="contained" onClick={() => setOpenAdd(true)}>
+          <Button
+            variant="contained"
+            onClick={() => setOpenAdd(true)}
+            disabled={isAdding}
+          >
             Add Service
           </Button>
         </div>
@@ -223,11 +280,21 @@ export default function ServicesPage() {
                 type="number"
                 value={form.price}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, price: e.target.value }))
+                  setForm((f) => ({ ...f, price: Number(e.target.value) }))
                 }
                 fullWidth
               />
-              <FormControl fullWidth>
+              <Button component="label" variant="outlined">
+                Upload Image
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </Button>
+              {form.imageFile && <span>{form.imageFile.name}</span>}
+              {/* <FormControl fullWidth>
                 <InputLabel>Category</InputLabel>
                 <Select
                   value={form.category}
@@ -247,33 +314,30 @@ export default function ServicesPage() {
                     </MenuItem>
                   ))}
                 </Select>
-              </FormControl>
-              <FormControl fullWidth>
-                <InputLabel>Provider</InputLabel>
-                <Select
-                  value={form.provider}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, provider: Number(e.target.value) }))
-                  }
-                >
-                  {availableProviders.map((v) => (
-                    <MenuItem key={v.id} value={v.id}>
-                      {v.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              </FormControl> */}
+              {userType === "ADMIN" && (
+                <FormControl fullWidth>
+                  <InputLabel>Vendor</InputLabel>
+                  <Select
+                    value={form.vendor_id}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, vendor_id: e.target.value }))
+                    }
+                  >
+                    {availableVendors?.map((v) => (
+                      <MenuItem key={v.id} value={v.vendor_id}>
+                        {v.vendor_name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
               {/* Optionally allow setting bookings on creation */}
-              <TextField
-                label="Bookings"
-                type="number"
-                value={form.bookings}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, bookings: Number(e.target.value) }))
-                }
-                fullWidth
-              />
-              <Button variant="contained" onClick={handleAdd}>
+              <Button
+                variant="contained"
+                onClick={handleAdd}
+                disabled={isAdding}
+              >
                 Save
               </Button>
             </Box>
@@ -311,11 +375,11 @@ export default function ServicesPage() {
                 type="number"
                 value={form.price}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, price: e.target.value }))
+                  setForm((f) => ({ ...f, price: Number(e.target.value) }))
                 }
                 fullWidth
               />
-              <FormControl fullWidth>
+              {/* <FormControl fullWidth>
                 <InputLabel>Category</InputLabel>
                 <Select
                   value={form.category}
@@ -335,34 +399,27 @@ export default function ServicesPage() {
                     </MenuItem>
                   ))}
                 </Select>
-              </FormControl>
-              <FormControl fullWidth>
-                <InputLabel>Provider</InputLabel>
-                <Select
-                  value={form.provider}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, provider: Number(e.target.value) }))
-                  }
-                >
-                  {availableProviders.map((v) => (
-                    <MenuItem key={v.id} value={v.id}>
-                      {v.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <TextField
-                label="Bookings"
-                type="number"
-                value={form.bookings}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, bookings: Number(e.target.value) }))
-                }
-                fullWidth
-              />
-              <Button variant="contained" onClick={handleSaveEdit}>
+              </FormControl> */}
+              {userType === "ADMIN" && (
+                <FormControl fullWidth>
+                  <InputLabel>Vendor</InputLabel>
+                  <Select
+                    value={form.vendor_id}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, vendor_id: e.target.value }))
+                    }
+                  >
+                    {availableVendors?.map((v) => (
+                      <MenuItem key={v.id} value={v.vendor_id}>
+                        {v.vendor_name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+              {/* <Button variant="contained" onClick={handleSaveEdit}>
                 Save Changes
-              </Button>
+              </Button> */}
             </Box>
           </DialogContent>
         </Dialog>
@@ -372,7 +429,7 @@ export default function ServicesPage() {
           open={toastOpen}
           autoHideDuration={3000}
           onClose={() => setToastOpen(false)}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
           <Alert
             onClose={() => setToastOpen(false)}
@@ -384,31 +441,41 @@ export default function ServicesPage() {
         </Snackbar>
 
         {/* Table */}
-        <TableContainer component={Paper}>
-          <Table>
+        <TableContainer component={Paper} sx={{ width: "100%" }}>
+          <Table sx={{ minWidth: 650 }} aria-label="services table">
             <TableHead>
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell>Category</TableCell>
-                <TableCell>Provider</TableCell>
-                <TableCell>Bookings</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell align="left">Name</TableCell>
+                <TableCell align="left">Description</TableCell>
+                <TableCell align="right">Price</TableCell>
+                {/* <TableCell>Category</TableCell> */}
+                {userType === "ADMIN" && (
+                  <TableCell align="left">Vendor</TableCell>
+                )}
+                <TableCell align="center">Bookings</TableCell>
+                <TableCell align="center">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {filtered.map((s) => (
-                <TableRow key={s.id}>
-                  <TableCell>{s.name}</TableCell>
-                  <TableCell>{s.description}</TableCell>
-                  <TableCell>{s.price}</TableCell>
-                  <TableCell>{s.category}</TableCell>
-                  <TableCell>
-                    {availableProviders.find((v) => v.id === s.provider)?.name}
-                  </TableCell>
-                  <TableCell>{s.bookings}</TableCell>
-                  <TableCell>
+                <TableRow key={s.id} hover>
+                  <TableCell align="left">{s.name}</TableCell>
+                  <TableCell align="left">{s.description}</TableCell>
+                  <TableCell align="right">{s.price}</TableCell>
+                  {/* <TableCell>{s.category}</TableCell> */}
+
+                  {userType === "ADMIN" && (
+                    <TableCell align="left">
+                      {
+                        availableVendors.find(
+                          (v) => v.vendor_id === s.vendor.vendor_id
+                        )?.vendor_name
+                      }
+                    </TableCell>
+                  )}
+
+                  <TableCell align="center">{s.bookings}</TableCell>
+                  <TableCell align="center">
                     <Button
                       onClick={() => {
                         handleEdit(s);
@@ -416,9 +483,18 @@ export default function ServicesPage() {
                     >
                       Edit
                     </Button>
-                    <Button color="error" onClick={() => handleDelete(Number(s.id))}>
-                      Delete
-                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    {deletingId === s.id ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      <Button
+                        color="error"
+                        onClick={() => handleDelete(Number(s.id))}
+                      >
+                        Delete
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

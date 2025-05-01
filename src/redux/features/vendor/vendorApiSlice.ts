@@ -4,6 +4,7 @@ import type { User, Vendor, VendorForm } from "@/redux/type";
 interface VendorDTO {
   id: number;
   user: number;
+  vendor_id: string;
   vendor_name: string;
   vendor_email: string;
   vendor_address: string;
@@ -32,10 +33,11 @@ export const vendorsApi = api.injectEndpoints({
         response.map((v) => ({
           id: v.id,
           user: v.user,
-          name: v.vendor_name,
-          email: v.vendor_email,
-          address: v.vendor_address,
-          phone: v.vendor_phone,
+          vendor_id: v.vendor_id,
+          vendor_name: v.vendor_name,
+          vendor_email: v.vendor_email,
+          vendor_address: v.vendor_address,
+          vendor_phone: v.vendor_phone,
         })),
       providesTags: (result) =>
         result
@@ -54,10 +56,11 @@ export const vendorsApi = api.injectEndpoints({
       transformResponse: (response: VendorDTO) => ({
         id: response.id,
         user: response.user,
-        name: response.vendor_name,
-        email: response.vendor_email,
-        address: response.vendor_address,
-        phone: response.vendor_phone,
+        vendor_id: response.vendor_id,
+        vendor_name: response.vendor_name,
+        vendor_email: response.vendor_email,
+        vendor_address: response.vendor_address,
+        vendor_phone: response.vendor_phone,
       }),
       invalidatesTags: [{ type: "Vendor", id: "LIST" }],
     }),
@@ -70,10 +73,11 @@ export const vendorsApi = api.injectEndpoints({
       transformResponse: (response: VendorDTO) => ({
         id: response.id,
         user: response.user,
-        name: response.vendor_name,
-        email: response.vendor_email,
-        address: response.vendor_address,
-        phone: response.vendor_phone,
+        vendor_id: response.vendor_id,
+        vendor_name: response.vendor_name,
+        vendor_email: response.vendor_email,
+        vendor_address: response.vendor_address,
+        vendor_phone: response.vendor_phone,
       }),
       invalidatesTags: (result, error, { id }) => [
         { type: "Vendor", id },

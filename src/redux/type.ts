@@ -62,25 +62,28 @@ export interface Service {
   id?: number | string;
   name: string;
   description: string;
-  price: number | string;
+  price: number;
   image?: string;
   bookings?: number;
-  provider: number;
-  category: string;
+  vendor_id: string;
+  vendor: Vendor
+  // category: string;
 }
 
 export interface Vendor {
   id: number;
   user: number;
-  name: string;
-  email: string;
-  address: string;
-  phone: string;
+  vendor_name: string;
+  vendor_id: string;
+  vendor_email: string;
+  vendor_address: string;
+  vendor_phone: string;
 }
 
 export interface VendorForm {
-  user: number;
+  user?: number;
   vendor_name: string;
+  // vendor_id: string;
   vendor_email: string;
   vendor_address: string;
   vendor_phone: string;
@@ -119,4 +122,12 @@ export interface DashboardData {
     status: string;
   }[];
   sales_today: number;
+}
+
+export interface ServiceForm {
+  name: string;
+  description: string;
+  price: number;
+  vendor_id: string;
+  imageFile?: File;       // <-- holds the picked file
 }

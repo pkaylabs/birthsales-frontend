@@ -2,113 +2,122 @@ import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-location";
-import { HOME } from "@/constants";
-import { ADMIN_HOME } from "@/constants";
+import { HOME, ADMIN_HOME, LOGIN_BG } from "@/constants";
 import { useLoginMutation } from "@/redux/features/auth/authApiSlice";
+import { CircularProgress } from "@mui/material";
 
 const Login = () => {
   const navigate = useNavigate();
   const [login, { isLoading, error }] = useLoginMutation();
-  const { values, handleBlur, handleChange, errors, touched, handleSubmit } =
-    useFormik({
-      initialValues: {
-        email: "",
-        password: "",
-      },
 
-      validationSchema: Yup.object().shape({
-        email: Yup.string()
-          .email("Please enter a valid email")
-          .required("Email is required"),
-        password: Yup.string()
-          .min(8, "Password must be 8 characters or more")
-          .required("Password is required"),
-      }),
-
-      onSubmit: async (values) => {
-        try {
-          const result = await login(values).unwrap();
-          const type = result.user.user_type;
-          if (type === "DELIVERY") navigate({ to: HOME, replace: true });
-          else navigate({ to: ADMIN_HOME, replace: true });
-        } catch {
-          // error shown below
-        }
-      },
-    });
+  const formik = useFormik({
+    initialValues: { email: "", password: "" },
+    validationSchema: Yup.object({
+      email: Yup.string()
+        .email("Enter a valid email")
+        .required("Email is required"),
+      password: Yup.string()
+        .min(8, "Must be at least 8 characters")
+        .required("Password is required"),
+    }),
+    onSubmit: async (vals) => {
+      try {
+        const { user } = await login(vals).unwrap();
+        navigate({ to: user.user_type === "DELIVERY" ? HOME : ADMIN_HOME, replace: true });
+      } catch {
+        // leave error for display
+      }
+    },
+  });
 
   return (
-    <div className="mt-[3rem] w-full slide-up">
-      <div className="flex  mb-20">
-        {/* Image */}
-        <div className="hidden lg:flex flex-[2]">
-          <img
-            alt="sign up image"
-            src="https://plus.unsplash.com/premium_photo-1728224403721-a4affa8e30ff?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            className="object-contain"
-          />
-        </div>
-        {/* form */}
-        <div className=" flex flex-col justify-center  flex-1 px-5 py-5 md:px-32 ">
-          <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
-            <div className="flex flex-col gap-2 items-center">
-              <h1 className="font-medium text-xl leading-7 md:text-4xl">
-                Login to Birthnon
-              </h1>
-              <p className="font-normal text-base">Enter your details below</p>
-            </div>
-            <div className="flex flex-col gap-5">
-              <input
-                type="email"
-                name="email"
-                id="email"
-                value={values.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className="p-2 border-b border-gray-500 w-full outline-none"
-                placeholder="Email"
-              />
-              {errors.email && touched.email ? (
-                <p className="text-rose-400">{errors.email}</p>
-              ) : (
-                ""
-              )}
-              <input
-                type="password"
-                name="password"
-                id="password"
-                value={values.password}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className="p-2 border-b border-gray-500 w-full outline-none"
-                placeholder="Password"
-              />
-              {errors.password && touched.password ? (
-                <p className="text-rose-400">{errors.password}</p>
-              ) : (
-                ""
-              )}
-              <div className="w-full flex justify-between items-center">
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="bg-[#DB4444] py-2 px-5 w-36 rounded-md text-white text-center"
-                >
-                  {isLoading ? "Loggin in..." : "Login"}
-                </button>
+    <div
+      className="min-h-screen flex items-center justify-center bg-gray-50 animate-fade-in"
+      style={{ backgroundImage: `url(${LOGIN_BG})`, backgroundSize: 'cover' }}
+    >
+      <div className="bg-white/90 backdrop-blur-lg rounded-xl shadow-lg max-w-md w-full p-8 relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/60 flex items-center justify-center rounded-xl">
+            <CircularProgress />
+          </div>
+        )}
+        <h2 className="text-3xl font-semibold text-gray-800 mb-6 text-center">
+          Welcome Back
+        </h2>
+        <form onSubmit={formik.handleSubmit} className="space-y-5">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              disabled={isLoading}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.email}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400"
+              placeholder="you@example.com"
+            />
+            {formik.touched.email && formik.errors.email && (
+              <p className="mt-1 text-xs text-rose-500">{formik.errors.email}</p>
+            )}
+          </div>
 
-                {error && (
-                  <div className="text-red-600">
-                    {(error as any).data?.detail || "Login failed"}
-                  </div>
-                )}
-                <p className="text-[#DB4444] cursor-pointer">
-                  Forget Password?
-                </p>
-              </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              disabled={isLoading}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.password}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400"
+              placeholder="••••••••"
+            />
+            {formik.touched.password && formik.errors.password && (
+              <p className="mt-1 text-xs text-rose-500">{formik.errors.password}</p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white font-medium py-2 rounded-lg transition-colors"
+          >
+            {isLoading ? <CircularProgress size={24} color="inherit" /> : "Login"}
+          </button>
+
+          {error && (
+            <div className="text-center text-sm text-rose-600">
+              {(error as any).data?.detail || "Login failed"}
             </div>
-          </form>
-        </div>
+          )}
+
+          <div className="flex justify-between text-sm">
+            <button
+              type="button"
+              onClick={() => {/* TODO: forgot password flow */}}
+              disabled={isLoading}
+              className="text-rose-500 hover:underline"
+            >
+              Forgot password?
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/" })}
+              disabled={isLoading}
+              className="text-gray-500 hover:underline"
+            >
+              Back to home
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

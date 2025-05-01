@@ -4,15 +4,54 @@ import FeaturedChart from "../components/featuredChart/FeaturedChart";
 import Tables from "../components/table/Table";
 import Widget from "../components/widgets/Widget";
 import { useGetDashboardQuery } from "@/redux/features/dashboard/dashboardApiSlice";
-import { Box, CircularProgress } from "@mui/material";
+import { Box, Skeleton } from "@mui/material";
 
 const AdminHomePage = () => {
   const { data, isLoading, isError } = useGetDashboardQuery();
 
   if (isLoading) {
     return (
-      <Box className="p-8 flex justify-center">
-        <CircularProgress />
+      <Box className="p-8 space-y-6">
+        {/* Widgets skeleton */}
+        <Box className="flex gap-5">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton
+              key={i}
+              variant="rectangular"
+              width={200}
+              height={120}
+              animation="wave"
+            />
+          ))}
+        </Box>
+
+        {/* Charts skeleton */}
+        <Box className="flex gap-5 py-2">
+          <Skeleton
+            variant="rectangular"
+            width="100%"
+            height={300}
+            animation="wave"
+          />
+          <Skeleton
+            variant="rectangular"
+            width="100%"
+            height={300}
+            animation="wave"
+          />
+        </Box>
+
+        {/* Table header skeleton */}
+        <Box className="shadow-lg p-5 m-5">
+          <Skeleton variant="text" width={200} height={32} animation="wave" />
+          <Skeleton
+            variant="rectangular"
+            width="100%"
+            height={200}
+            animation="wave"
+            sx={{ mt: 2 }}
+          />
+        </Box>
       </Box>
     );
   }
@@ -32,7 +71,7 @@ const AdminHomePage = () => {
       </div>
       {/* Charts */}
       <div className="flex gap-5 py-2 ">
-        <FeaturedChart salesToday={data.sales_today}/>
+        <FeaturedChart salesToday={data.sales_today} />
         <Chart aspect={2 / 1} title="Last 6 months (Revenue)" />
       </div>
       {/* list of transactions */}
@@ -40,7 +79,7 @@ const AdminHomePage = () => {
         <div className="font-medium mb-4 text-gray-400">
           Latest Transactions
         </div>
-        <Tables rows={data.latest_transactions}/>
+        <Tables rows={data.latest_transactions} />
       </div>
     </div>
   );
