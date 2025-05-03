@@ -1,87 +1,44 @@
-
 import React from "react";
 import CardCarousel from "./components/cards-carousel";
 import CategoryCard from "./components/cards/category";
 import ProductCard from "./components/cards/product";
 import Countdown from "./components/countdown";
-import Dropdown from "./components/sidebar-dropdown";
-import ResponsiveAside from "./components/responsive-aside";
 import Carousel from "./components/swiper";
 import BottomCards from "./components/bottom-cards";
 import speaker from "@/assets/images/speaker.png";
-import ps from "@/assets/images/ps5.png";
-import woman from "@/assets/images/womanInHut.png";
-import amazon from "@/assets/images/amazonSpeaker.png";
-import pef from "@/assets/images/pef.png";
-
-interface DropdownItem {
-  title: string;
-  to?: string;
-  sublinks?: DropdownItem[];
-}
-
-const sidebarLinks: DropdownItem[] = [
-  {
-    title: "Woman’s Fashion",
-    to: "/",
-    sublinks: [
-      { title: "Dresses", to: "/" },
-      { title: "Tops", to: "/" },
-      { title: "Bottoms", to: "/" },
-      { title: "Jackets", to: "/" },
-      { title: "Shoes", to: "/" },
-      { title: "Bags", to: "/" },
-      { title: "Accessories", to: "/" },
-    ],
-  },
-  {
-    title: "Men’s Fashion",
-    to: "/about",
-    sublinks: [
-      { title: "Shirts", to: "/" },
-      { title: "Trousers", to: "/" },
-      { title: "Jackets", to: "/" },
-      { title: "Shoes", to: "/" },
-      { title: "Bags", to: "/" },
-      { title: "Accessories", to: "/" },
-    ],
-  },
-  { title: "Electronics", to: "/contact" },
-  { title: "Home & Lifestyle", to: "/contact" },
-  { title: "Medicine", to: "/contact" },
-  { title: "Sports & Outdoor", to: "/contact" },
-  { title: "Baby’s & Toys", to: "/contact" },
-  { title: "Groceries & Pets", to: "/contact" },
-  { title: "Health & Beauty", to: "/contact" },
-];
-
-const tilt = (
-  <div className="h-[22.5rem] bg-black w-full flex justify-center items-center mobile:h-[10rem]">
-    <h2 className="text-white text-center">
-      We will change this text later please.
-    </h2>
-  </div>
-);
-
-export const productCards = [
-  ProductCard,
-  ProductCard,
-  ProductCard,
-  ProductCard,
-  ProductCard,
-];
-
-const images = [tilt, tilt, tilt, tilt, tilt];
-
-const catCards = [
-  CategoryCard,
-  CategoryCard,
-  CategoryCard,
-  CategoryCard,
-  CategoryCard,
-];
+import { useGetHomePageDataQuery } from "@/redux/features/homepage/homepageApiSlice";
+import { Box, CircularProgress } from "@mui/material";
+import { Category, Product } from "@/redux/type";
 
 const Home = () => {
+  const { data, isLoading, isError } = useGetHomePageDataQuery();
+
+  if (isLoading) {
+    return (
+      <Box className="p-8 flex justify-center">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isError || !data) {
+    return <Box className="p-8 text-red-500">Error loading home page.</Box>;
+  }
+
+  const bannerItems = data.banners ?? [];
+
+  const categoryComponents = data.categories.map((cat: Category) => (
+    <CategoryCard id={cat.id} key={cat.id} name={cat.name} image={cat.image} description={cat.description}/>
+  ));
+
+  const productComponents = data.products.map((prod: Product) => (
+    <ProductCard key={prod.id} product={prod} />
+  ));
+
+  const bestSellingComponents = data.best_selling_products.map((prod) => (
+    <ProductCard key={prod.id} product={prod} />
+  ));
+
   return (
     <main className="w-full max-w-[80rem] mx-auto px-4 large-screen:px-8">
       {/* HEADER SECTION */}
@@ -95,8 +52,12 @@ const Home = () => {
           <Dropdown items={sidebarLinks} />
         </aside> */}
         {/* Main Carousel – full width on mobile; 4/5 width on desktop-up */}
-        <div className="w-full desktop-up:w-full">
-          <Carousel items={images} autoPlay={true} />
+        <div className="w-full desktop-up:w-full h-64 md:h-96 lg:h-[500px] overflow-hidden rounded-lg shadow-lg">
+          <Carousel
+            banners={bannerItems}
+            autoPlay={true}
+            autoPlayInterval={10000}
+          />
         </div>
       </header>
 
@@ -107,7 +68,7 @@ const Home = () => {
           title="Flash Sales"
           showControls
           showCountdown
-          items={productCards}
+          items={productComponents}
         />
         <div className="mt-6 flex justify-center">
           <button
@@ -128,7 +89,7 @@ const Home = () => {
           type="Categories"
           title="Browse By Categories"
           showControls
-          items={catCards}
+          items={categoryComponents}
         />
       </section>
 
@@ -138,7 +99,7 @@ const Home = () => {
           type="This Month"
           title="Best Selling Products"
           showViewAll
-          items={productCards}
+          items={bestSellingComponents}
         />
       </section>
 
@@ -181,7 +142,7 @@ const Home = () => {
           type="Our Products"
           title="Explore Our Products"
           showControls
-          items={productCards}
+          items={productComponents}
         />
         <div className="mt-6 flex justify-center">
           <button
@@ -211,62 +172,23 @@ const Home = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
           {/* Featured Item – Hidden on mobile */}
-          <div className="relative bg-black rounded overflow-hidden hidden md:block  md:h-[400px] xl:block xl:h-[500px]">
-            <img src={ps} alt="ps-5" className="w-full h-full object-contain" />
-            <div className="absolute inset-0 p-8 flex flex-col justify-end text-white">
-              <h5 className="font-semibold text-2xl">PlayStation 5</h5>
-              <p className="text-sm">
-                Black and White version of the PS5 coming out on sale.
-              </p>
-              <button className="mt-2 border-b border-white">Shop Now</button>
-            </div>
-          </div>
-          <div className="md:col-span-2 grid lg:grid-rows-2 gap-4">
-            <div className="relative bg-gray-800 rounded overflow-hidden md:h-[400px] lg:h-[500px]">
+          {data.new_arrivals.map((item, index) => (
+            <div
+              key={index}
+              className="relative bg-black rounded overflow-hidden md:h-[400px] lg:h-[500px]"
+            >
               <img
-                src={woman}
-                alt="woman"
+                src={item.image}
+                alt={item.name}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 p-8 flex flex-col justify-end text-white">
-                <h5 className="font-semibold text-2xl">Women's Collections</h5>
-                <p className="text-sm">
-                  Featured woman collections that give you another vibe.
-                </p>
+                <h5 className="font-semibold text-2xl">{item.name}</h5>
+                <p className="text-sm">{item.description}</p>
                 <button className="mt-2 border-b border-white">Shop Now</button>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
-              <div className="relative bg-black rounded overflow-hidden md:h-[200px] lg:h-[250px]">
-                <img
-                  src={amazon}
-                  alt="amazon speaker"
-                  className="w-full h-full object-contain"
-                />
-                <div className="absolute inset-0 p-8 flex flex-col justify-end text-white">
-                  <h5 className="font-semibold text-2xl">Speakers</h5>
-                  <p className="text-sm">Amazon wireless speakers</p>
-                  <button className="mt-2 border-b border-white">
-                    Shop Now
-                  </button>
-                </div>
-              </div>
-              <div className="relative bg-black rounded overflow-hidden md:h-[200px] lg:h-[250px]">
-                <img
-                  src={pef}
-                  alt="pef"
-                  className="w-full h-full object-contain"
-                />
-                <div className="absolute inset-0 p-8 flex flex-col justify-end text-white">
-                  <h5 className="font-semibold text-2xl">Perfume</h5>
-                  <p className="text-sm">Gucci intense oud edp</p>
-                  <button className="mt-2 border-b border-white">
-                    Shop Now
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
 

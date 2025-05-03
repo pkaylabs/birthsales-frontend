@@ -1,111 +1,119 @@
+import { Banner } from "@/redux/type";
 import React, { useEffect, useState } from "react";
+import { GoArrowLeft, GoArrowRight } from "react-icons/go";
+import { useSwipeable } from "react-swipeable";
 
 interface CarouselProps {
-  items: React.ReactNode[]; // Array of custom components or content
+  banners: Banner[]; // Array of custom components or content
   autoPlay?: boolean; // Option to enable auto play
   autoPlayInterval?: number; // Interval for auto play in milliseconds
+  showDots?: boolean; // Option to show dots for navigation
+  showControls?: boolean; // Option to show next/prev controls
 }
 
 const Carousel: React.FC<CarouselProps> = ({
-  items,
+  banners = [],
   autoPlay = false,
-  autoPlayInterval = 3000,
+  autoPlayInterval = 10000,
+  showDots = true,
+  showControls = true,
 }) => {
+  const activeBanners = banners?.filter((b) => b.is_active);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [startX, setStartX] = useState<number | null>(null);
-
-  const handleDotClick = (index: number) => {
-    setCurrentIndex(index);
-  };
+  const totalBanners = activeBanners.length;
 
   const nextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % items.length);
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % totalBanners);
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? items.length - 1 : prevIndex - 1
-    );
+    setCurrentIndex((prev) => (prev - 1 + totalBanners) % totalBanners);
   };
 
   useEffect(() => {
-    if (autoPlay) {
+    if (autoPlay && totalBanners > 1) {
       const interval = setInterval(nextSlide, autoPlayInterval);
       return () => clearInterval(interval);
     }
-  }, [autoPlay, autoPlayInterval, items.length]);
+  }, [autoPlay, autoPlayInterval, totalBanners]);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setStartX(e.touches[0].clientX);
-  };
+  const handlers = useSwipeable({
+    onSwipedLeft: nextSlide,
+    onSwipedRight: prevSlide,
+    preventScrollOnSwipe: true,
+    trackMouse: true,
+  });
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!startX) return;
-
-    const endX = e.touches[0].clientX;
-    const difference = startX - endX;
-
-    if (difference > 50) {
-      nextSlide();
-      setStartX(null);
-    } else if (difference < -50) {
-      prevSlide();
-      setStartX(null);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    setStartX(null);
-  };
+  if (totalBanners === 0) return null;
 
   return (
     <div
-      className="relative w-full overflow-hidden"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      className="relative w-full h-64 md:h-96 lg:h-[500px] overflow-hidden rounded-lg shadow-lg"
+      {...handlers}
     >
       {/* Carousel Content */}
       <div
-        className="flex transition-transform duration-500 ease-in-out"
+        className="flex h-full transition-transform duration-700 ease-out"
         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
       >
-        {items.map((item, index) => (
+        {activeBanners.map((banner, idx) => (
           <div
-            key={index}
-            className="min-w-full flex justify-center items-center"
+            key={idx}
+            className="min-w-full h-full relative"
+            aria-label={banner.title}
           >
-            {item}
+            <img
+              src={banner.link}
+              alt={banner.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            {banner.title && (
+              <div className="absolute bottom-6 left-6 bg-black bg-opacity-60 text-white px-4 py-2 rounded">
+                <h3 className="text-lg md:text-xl font-semibold">
+                  {banner.title}
+                </h3>
+              </div>
+            )}
           </div>
         ))}
       </div>
 
-      {/* Navigation Dots */}
-      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
-        {items.map((_, index) => (
-          <button
-            key={index}
-            className={`w-3 h-3 rounded-full ${
-              index === currentIndex ? "bg-blue-500" : "bg-gray-400"
-            }`}
-            onClick={() => handleDotClick(index)}
-          ></button>
-        ))}
-      </div>
-
       {/* Controls */}
-      {/* <button
-        onClick={prevSlide}
-        className="absolute top-1/2 left-2 transform -translate-y-1/2 text-white bg-black/50 p-2 rounded-full hover:bg-black"
-      >
-        ❮
-      </button>
-      <button
-        onClick={nextSlide}
-        className="absolute top-1/2 right-2 transform -translate-y-1/2 text-white bg-black/50 p-2 rounded-full hover:bg-black"
-      >
-        ❯
-      </button> */}
+      {showControls && totalBanners > 1 && (
+        <>
+          <button
+            onClick={prevSlide}
+            className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white p-2 rounded-full backdrop-blur"
+            aria-label="Previous"
+          >
+            <GoArrowLeft className="w-5 h-5" />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white p-2 rounded-full backdrop-blur"
+            aria-label="Next"
+          >
+            <GoArrowRight className="w-5 h-5" />
+          </button>
+        </>
+      )}
+
+      {/* Navigation Dots */}
+      {showDots && totalBanners > 1 && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          {activeBanners.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentIndex(i)}
+              className={`w-3 h-3 rounded-full transition-colors duration-200 focus:outline-none $`
+              + `${i === currentIndex ? 'bg-white' : 'bg-gray-400/70'}`
+              }
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

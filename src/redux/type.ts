@@ -47,7 +47,7 @@ export interface Plan {
 }
 
 export interface Product {
-  id: number;
+  id: string;
   business_id: number;
   name: string;
   category: string;
@@ -66,7 +66,7 @@ export interface Service {
   image?: string;
   bookings?: number;
   vendor_id: string;
-  vendor: Vendor
+  vendor: Vendor;
   // category: string;
 }
 
@@ -129,5 +129,88 @@ export interface ServiceForm {
   description: string;
   price: number;
   vendor_id: string;
-  imageFile?: File;       // <-- holds the picked file
+  imageFile?: File;
+}
+
+export interface Banner {
+  id: number;
+  image: string;
+  title: string;
+  link: string;
+  is_active: boolean;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  description: string;
+  image?: string;
+}
+
+export interface CategoryForm {
+  name: string;
+  imageFile?: File;
+  description?: string;
+}
+
+
+export interface Product {
+  id: string 
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  in_stock: boolean;
+  vendor: string;
+  image?: string;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+  original_price?: number;
+  discount_percent?: number;
+  rating?: number;
+  reviews_count?: number;
+  available_sizes?: string[];
+  available_colors?: string[];
+}
+
+export interface ProductForm {
+  name: string;
+  description: string;
+  price: number;
+  vendor: number;
+  imageFile?: File;
+}
+
+
+export interface HomePageData {
+  banners: Banner[];
+  categories: Category[];
+  products: Product[];
+  best_selling_products: Product[];
+  new_arrivals: Product[];
+}
+
+export interface OrderItem {
+  id: number;
+  product: number;
+  quantity: number;
+  price: number;
+}
+
+export interface OrderData {
+  id: number;
+  items: OrderItem[];
+  payment_status: string;
+  total_price: number;
+  vendor_id: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  user: number;
+}
+
+export interface PlaceOrderResponse {
+  message: string;
+  data: OrderData;
 }
