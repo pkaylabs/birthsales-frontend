@@ -1,4 +1,4 @@
-name: React Frontend CI/CD
+name: BIRTHNON Frontend CI/CD
 
 on:
   push:
@@ -39,8 +39,6 @@ jobs:
       
     - name: Build production app
       run: npm run build
-      env:
-        REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}  # If you need build-time env vars
 
   deploy:
     needs: test
@@ -61,7 +59,7 @@ jobs:
         path: |
           **/node_modules
           ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package.json') }}
         restore-keys: |
           ${{ runner.os }}-node-
     
@@ -70,19 +68,12 @@ jobs:
       
     - name: Build production app
       run: npm run build
-      env:
-        REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}  # If you need build-time env vars
       
     - name: Install sshpass for password authentication
       run: sudo apt-get install -y sshpass
       
     - name: Deploy React App
       run: |
-        # Transfer build files to server
-        sshpass -p "${{ secrets.DO_PASSWORD }}" scp -o StrictHostKeyChecking=no \
-        -r build/* \
-        ${{ secrets.DO_USERNAME || 'root' }}@${{ secrets.DO_HOST }}:/tmp/react-build/
-        
         # Execute deployment script on server
         sshpass -p "${{ secrets.DO_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
         ${{ secrets.DO_USERNAME || 'root' }}@${{ secrets.DO_HOST }} \
