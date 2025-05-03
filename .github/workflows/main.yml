@@ -1,0 +1,89 @@
+name: React Frontend CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  NODE_VERSION: '20'  # Recommended LTS version
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: Cache node modules
+      uses: actions/cache@v3
+      with:
+        path: |
+          **/node_modules
+          ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+    
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests
+      run: npm test
+      
+    - name: Build production app
+      run: npm run build
+      env:
+        REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}  # If you need build-time env vars
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: Cache node modules
+      uses: actions/cache@v3
+      with:
+        path: |
+          **/node_modules
+          ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+    
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build production app
+      run: npm run build
+      env:
+        REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}  # If you need build-time env vars
+      
+    - name: Install sshpass for password authentication
+      run: sudo apt-get install -y sshpass
+      
+    - name: Deploy React App
+      run: |
+        # Transfer build files to server
+        sshpass -p "${{ secrets.DO_PASSWORD }}" scp -o StrictHostKeyChecking=no \
+        -r build/* \
+        ${{ secrets.DO_USERNAME || 'root' }}@${{ secrets.DO_HOST }}:/tmp/react-build/
+        
+        # Execute deployment script on server
+        sshpass -p "${{ secrets.DO_PASSWORD }}" ssh -o StrictHostKeyChecking=no \
+        ${{ secrets.DO_USERNAME || 'root' }}@${{ secrets.DO_HOST }} \
+        "python3 deploy_react.py"
