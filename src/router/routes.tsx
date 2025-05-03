@@ -388,6 +388,7 @@ import {
   VENDORS,
   BOOKINGS,
   PROFILE,
+  ADMIN_SUBSCRIPTIONS,
 } from "@/constants";
 import { lazy, Suspense } from "react";
 
@@ -426,6 +427,9 @@ const AdminServiceDetails = lazy(
 const VendorAccount = lazy(() => import("@/pages/auth/vendor/VendorAccount"));
 const SubscriptionPlansPage = lazy(
   () => import("@/pages/admin/plans/SubscriptionPlansPage")
+);
+const Subscriptions = lazy(
+  () => import("@/pages/admin/subscriptions/Subscriptions")
 );
 const VendorsPage = lazy(() => import("@/pages/admin/vendor/VendorsPage"));
 const Bookings = lazy(() => import("@/pages/admin/bookings/Bookings"));
@@ -583,6 +587,15 @@ const routes: RouteProps[] = [
     element: (
       <Suspense fallback={<div>Loading...</div>}>
         <SubscriptionPlansPage />
+      </Suspense>
+    ),
+    meta: { layout: "Admin" },
+  },
+  {
+    path: ADMIN_SUBSCRIPTIONS,
+    element: (
+      <Suspense fallback={<div>Loading...</div>}>
+        <Subscriptions />
       </Suspense>
     ),
     meta: { layout: "Admin" },

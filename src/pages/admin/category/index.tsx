@@ -103,7 +103,7 @@ export default function Category() {
       description: newCategory.description,
       image: newCategory.imageFile
         ? URL.createObjectURL(newCategory.imageFile)
-        : "",
+        : undefined,
     };
     try {
       await addCategory(newCat).unwrap();

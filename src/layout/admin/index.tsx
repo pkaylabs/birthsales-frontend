@@ -128,8 +128,14 @@ export default function AdminLayout() {
   if (userType === "ADMIN") {
     navigation.push(
       {
-        name: "Subscriptions",
+        name: "Subscription Packages",
         href: "/admin-plans",
+        icon: TagIcon,
+        current: false,
+      },
+      {
+        name: "Subscription",
+        href: "/admin-subscriptions",
         icon: TagIcon,
         current: false,
       },

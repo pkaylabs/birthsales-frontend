@@ -10,6 +10,13 @@ export const productsApi = api.injectEndpoints({
           .map(({ id }) => ({ type: "Products" as const, id }))
           .concat([{ type: "Products", id: "LIST" }]),
     }),
+    getProduct: builder.query<Product,  number >({
+      query: (id) => `customerproducts/?query=${id}`,
+      // providesTags: (result = []) =>
+      //   result
+      //     .map(({ id }) => ({ type: "Products" as const, id }))
+      //     .concat([{ type: "Products", id: "LIST" }]),
+    }),
     addProduct: builder.mutation<Product, FormData>({
       query: (formData) => ({
         url: `products/`,
@@ -28,13 +35,13 @@ export const productsApi = api.injectEndpoints({
       invalidatesTags: (result, error, id) => [{ type: "Products", id }],
     }),
 
-    updateProduct: builder.mutation<Product,  FormData>({
+    updateProduct: builder.mutation<Product, FormData>({
       query: (form) => ({
         url: `products/`,
         method: "PUT",
         body: form,
       }),
-      invalidatesTags: ['Products'],
+      invalidatesTags: ["Products"],
     }),
   }),
   overrideExisting: false,
@@ -45,4 +52,5 @@ export const {
   useAddProductMutation,
   useDeleteProductMutation,
   useUpdateProductMutation,
+  useGetProductQuery,
 } = productsApi;

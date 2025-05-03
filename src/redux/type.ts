@@ -141,7 +141,7 @@ export interface Banner {
 }
 
 export interface Category {
-  id: string;
+  id: number | string;
   name: string;
   description: string;
   image?: string;
@@ -213,4 +213,14 @@ export interface OrderData {
 export interface PlaceOrderResponse {
   message: string;
   data: OrderData;
+}
+
+export interface Subscriptions {
+  id: number,
+  vendor_name: string,
+  package_name: string,
+  expired: boolean,
+  payment_status?: null,
+  vendor: number,
+  package: number
 }

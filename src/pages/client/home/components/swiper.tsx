@@ -1,3 +1,4 @@
+import { BASE_URL } from "@/constants";
 import { Banner } from "@/redux/type";
 import React, { useEffect, useState } from "react";
 import { GoArrowLeft, GoArrowRight } from "react-icons/go";
@@ -63,7 +64,7 @@ const Carousel: React.FC<CarouselProps> = ({
             aria-label={banner.title}
           >
             <img
-              src={banner.link}
+              src={`${BASE_URL}${banner.image}`}
               alt={banner.title}
               className="w-full h-full object-cover"
             />

@@ -429,7 +429,7 @@ export default function ServicesPage() {
               <TableRow>
                 <TableCell align="left">Name</TableCell>
                 <TableCell align="left">Description</TableCell>
-                <TableCell align="right">Price</TableCell>
+                <TableCell>Price</TableCell>
                 {/* <TableCell>Category</TableCell> */}
                 {userType === "ADMIN" && (
                   <TableCell align="left">Vendor</TableCell>
@@ -443,7 +443,7 @@ export default function ServicesPage() {
                 <TableRow key={s.id} hover>
                   <TableCell align="left">{s.name}</TableCell>
                   <TableCell align="left">{s.description}</TableCell>
-                  <TableCell align="right">{s.price}</TableCell>
+                  <TableCell>GHC{s.price}</TableCell>
                   {/* <TableCell>{s.category}</TableCell> */}
 
                   {userType === "ADMIN" && (
@@ -463,7 +463,7 @@ export default function ServicesPage() {
                         handleEdit(s);
                       }}
                     >
-                      Edit
+                      View
                     </Button>
                   </TableCell>
                   <TableCell>

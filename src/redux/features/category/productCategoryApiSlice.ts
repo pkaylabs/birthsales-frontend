@@ -2,10 +2,10 @@ import { api } from "@/app/api/auth";
 import { Category, CategoryForm } from "@/redux/type";
 
 interface CategoryDTO {
-  id: number;
+  id: number | string;
   name: string;
   description: string;
-  image: string;
+  image?: string;
 }
 
 export const productCategoryApi = api.injectEndpoints({
@@ -24,14 +24,14 @@ export const productCategoryApi = api.injectEndpoints({
         body: {
           name: newCategory.name,
           description: newCategory.description,
-          image: newCategory.imageFile,
+          image: newCategory?.imageFile,
         },
       }),
       transformResponse: (response: CategoryDTO) => ({
-        id: response.id.toString(),
+        id: response.id,
         name: response.name,
         description: response.description,
-        image: response.image,
+        image: response?.image ?? "",
       }),
       invalidatesTags: [{ type: "Category", id: "LIST" }],
     }),

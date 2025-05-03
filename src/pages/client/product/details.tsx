@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { Link, useSearch } from "react-location";
+import { Link, useMatch } from "react-location";
 import { IoStar } from "react-icons/io5";
 import { MdOutlineFavoriteBorder } from "react-icons/md";
 import { TbTruckDelivery } from "react-icons/tb";
 import { GrPowerCycle } from "react-icons/gr";
 import { motion } from "framer-motion";
-import { useGetProductsQuery } from "@/redux/features/products/productsApi";
+import { useGetProductQuery } from "@/redux/features/products/productsApi";
 import { Box, CircularProgress } from "@mui/material";
+import { BASE_URL } from "@/constants";
 
 const ProductDetails = () => {
-  const { id } = useSearch<{ Search: { id: string } }>();
-  const prodId = Number(id);
-  const { data: products, isLoading, isError } = useGetProductsQuery();
-  const product = products?.find((p) => Number(p.id) === prodId);
+  const { params } = useMatch();
+  const prodId = Number(params.id);
 
+  const { data: product, isLoading, isError } = useGetProductQuery(prodId);
+
+  console.log("Product Details", product);
 
   const [gallery, setGallery] = useState<string[]>([]);
   // const [selectedSize, setSelectedSize] = useState<string | null>(null);
@@ -100,7 +102,7 @@ const ProductDetails = () => {
               onClick={() => setSelectedImage(image)}
             >
               <img
-                src={image}
+                src={`${BASE_URL}${product.image}`} 
                 alt={`product-${index}`}
                 className="w-full h-full object-cover rounded"
               />
@@ -118,7 +120,7 @@ const ProductDetails = () => {
           transition={{ duration: 0.5, ease: "easeInOut" }}
         >
           <img
-            src={selectedImage}
+            src={`${BASE_URL}${product.image}`}
             alt={product.name}
             className="md:w-[446px] md:h-[315px] md:object-contain w-[250px]"
           />
@@ -181,7 +183,10 @@ const ProductDetails = () => {
                 </div>
               </div>
               <div className="flex-1 w-full">
-                <button className="w-full h-11 flex justify-center items-center bg-[#DB4444] text-white rounded-md" onClick={() => {}}>
+                <button
+                  className="w-full h-11 flex justify-center items-center bg-[#DB4444] text-white rounded-md"
+                  onClick={() => {}}
+                >
                   Buy Now
                 </button>
               </div>

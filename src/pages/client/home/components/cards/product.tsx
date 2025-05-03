@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { IoStar } from "react-icons/io5";
 import { useNavigate } from "react-location";
 import { Product } from "@/redux/type";
+import { BASE_URL } from "@/constants";
 
 interface ProductCardProps {
   product: Product;
@@ -34,9 +35,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
     rating,
     reviews_count,
   } = product;
-  const handleView = () => {
-    if (onView) return onView(Number(id));
-    navigate({ to: `/product-details`, search: { id } });
+  const handleView = (id: number) => {
+    navigate({ to: `/product-details/${id}` });
   };
 
   return (
@@ -59,7 +59,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             />
           </button>
           <button
-            onClick={handleView}
+            onClick={() => handleView(Number(id))}
             className="w-9 h-9 rounded-full bg-white flex justify-center items-center cursor-pointer shadow-sm mobile:w-6 mobile:h-6 tablet:w-8 tablet:h-8 desktop:w-9 desktop:h-9"
           >
             <LuEye
@@ -69,12 +69,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </button>
         </div>
 
-        <div className="w-full flex justify-center items-center mobile:h-full">
-          <div className="w-44 h-36 mobile:w-24 mobile:h-20 tablet:w-32 tablet:h-28 desktop:w-44 desktop:h-36">
+        {/* <div className="w-full flex justify-center items-center mobile:h-full">
+          <div className="w-full h-36 mobile:w-24 mobile:h-20 tablet:w-32 tablet:h-28 desktop:w-44 desktop:h-36">
             <img
-              src={image || pad}
+              src={`${BASE_URL}${image}`}
+              alt={`${name}`}
+              className="w-full h-full object-cover rounded-md"
+            />
+          </div>
+        </div> */}
+        <div className="w-full h-full flex justify-center items-center">
+          <div className="w-44 h-60 mobile:w-20 mobile:h-20 tablet:w-28 tablet:h-28 desktop:w-36 desktop:h-36 flex items-center justify-center">
+            <img
+              src={`${BASE_URL}${image}`}
               alt={name}
-              className="w-full h-full object-contain"
+              className="max-w-full max-h-full object-contain"
             />
           </div>
         </div>

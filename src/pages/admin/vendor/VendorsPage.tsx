@@ -17,23 +17,25 @@ import {
   TablePagination,
   Snackbar,
   Alert,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
 } from "@mui/material";
-import { useNavigate } from "react-location";
 
 import {
   useGetVendorsQuery,
   useAddVendorMutation,
   useUpdateVendorMutation,
-  useDeleteVendorMutation,
 } from "@/redux/features/vendor/vendorApiSlice";
 import type { Vendor, VendorForm } from "@/redux/type";
+import { useGetUsersQuery } from "@/redux/features/users/usersApi";
 
 export default function VendorsPage() {
-  const navigate = useNavigate();
+  const { data: users } = useGetUsersQuery();
   const { data: vendors = [], isLoading, isError } = useGetVendorsQuery();
   const [addVendor] = useAddVendorMutation();
   const [updateVendor] = useUpdateVendorMutation();
-  const [deleteVendor] = useDeleteVendorMutation();
 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
@@ -42,6 +44,7 @@ export default function VendorsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [current, setCurrent] = useState<VendorForm>({
+    user: 0,
     vendor_name: "",
     vendor_email: "",
     vendor_address: "",
@@ -54,6 +57,8 @@ export default function VendorsPage() {
   const [toastSeverity, setToastSeverity] = useState<"success" | "error">(
     "success"
   );
+
+  console.log("Vendors data", users);
 
   // Pagination & filtering
   const filtered = vendors.filter(
@@ -110,20 +115,20 @@ export default function VendorsPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm("Delete this vendor?")) return;
-    try {
-      await deleteVendor(id).unwrap();
-      setToastMsg("Vendor deleted");
-      setToastSeverity("success");
-    } catch (err) {
-      console.error(err);
-      setToastMsg("Deletion failed");
-      setToastSeverity("error");
-    } finally {
-      setToastOpen(true);
-    }
-  };
+  // const handleDelete = async (id: number) => {
+  //   if (!window.confirm("Delete this vendor?")) return;
+  //   try {
+  //     await deleteVendor(id).unwrap();
+  //     setToastMsg("Vendor deleted");
+  //     setToastSeverity("success");
+  //   } catch (err) {
+  //     console.error(err);
+  //     setToastMsg("Deletion failed");
+  //     setToastSeverity("error");
+  //   } finally {
+  //     setToastOpen(true);
+  //   }
+  // };
 
   if (isLoading) return <CircularProgress />;
 
@@ -164,9 +169,9 @@ export default function VendorsPage() {
                     <TableCell>{v.vendor_phone}</TableCell>
                     <TableCell>
                       <Button onClick={() => openEdit(v)}>Edit</Button>
-                      <Button color="error" onClick={() => handleDelete(v.id)}>
+                      {/* <Button color="error" onClick={() => handleDelete(v.id)}>
                         Delete
-                      </Button>
+                      </Button> */}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -196,15 +201,25 @@ export default function VendorsPage() {
         <DialogTitle>{editMode ? "Edit Vendor" : "Add Vendor"}</DialogTitle>
         <DialogContent>
           <Box display="flex" flexDirection="column" gap={2} mt={1}>
-            <TextField
-              label="User ID"
-              type="number"
-              value={current.user}
-              onChange={(e) =>
-                setCurrent((f) => ({ ...f, user: +e.target.value }))
-              }
-              fullWidth
-            />
+            {users && (
+              <FormControl fullWidth>
+                <InputLabel>User Type</InputLabel>
+                <Select
+                  value={current.user}
+                  label="User Type"
+                  onChange={(e) =>
+                    setCurrent((f) => ({
+                      ...f,
+                      user: Number(e.target.value),
+                    }))
+                  }
+                >
+                  {users.map((user) => (
+                    <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
             <TextField
               label="Name"
               value={current.vendor_name}

@@ -80,7 +80,7 @@ const Widget = ({ type, path, count = 0, amount = 0 }: WidgetProp) => {
       <div className="flex flex-col justify-between">
         <span className="font-bold text-sm text-gray-400">{data?.title}</span>
         <span className="text-3xl font-light">
-          {data?.isMoney && "$"} {data.value}
+          {data?.isMoney && "GHC"} {data.value}
         </span>
         <span
           className="text-xs border-b border-gray-400 w-max cursor-pointer"

@@ -9,6 +9,7 @@ import speaker from "@/assets/images/speaker.png";
 import { useGetHomePageDataQuery } from "@/redux/features/homepage/homepageApiSlice";
 import { Box, CircularProgress } from "@mui/material";
 import { Category, Product } from "@/redux/type";
+import { BASE_URL } from "@/constants";
 
 const Home = () => {
   const { data, isLoading, isError } = useGetHomePageDataQuery();
@@ -178,7 +179,7 @@ const Home = () => {
               className="relative bg-black rounded overflow-hidden md:h-[400px] lg:h-[500px]"
             >
               <img
-                src={item.image}
+                src={`${BASE_URL}${item.image}`}
                 alt={item.name}
                 className="w-full h-full object-cover"
               />

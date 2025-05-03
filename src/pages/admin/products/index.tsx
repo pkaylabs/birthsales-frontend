@@ -38,6 +38,7 @@ import { RootState } from "@/app/store";
 import { useGetVendorsQuery } from "@/redux/features/vendor/vendorApiSlice";
 import { useGetCategoriesQuery } from "@/redux/features/category/productCategoryApiSlice";
 import { Product } from "@/redux/type";
+import { BASE_URL } from "@/constants";
 
 export default function ProductsPage() {
   // auth user
@@ -187,10 +188,14 @@ export default function ProductsPage() {
     form.append("product_id", String(p.id));
     try {
       await updateProduct(form).unwrap();
+      setToastMessage("Product published successfully");
+      setToastSeverity("success");
       refetch();
       setDetailProduct(null);
     } catch (err) {
       console.error(err);
+      setToastMessage("Failed to publish product");
+      setToastSeverity("error");
     }
   };
 
@@ -348,7 +353,7 @@ export default function ProductsPage() {
             {detailProduct?.image && (
               <Box
                 component="img"
-                src={detailProduct.image}
+                src={`${BASE_URL}${detailProduct.image}`}
                 alt={detailProduct.name}
                 sx={{
                   width: "100%",
@@ -480,7 +485,7 @@ export default function ProductsPage() {
                 </TableCell>
 
                 {/* <TableCell>{p.vendor}</TableCell> */}
-                <TableCell>${p.price}</TableCell>
+                <TableCell>GHC{p.price}</TableCell>
                 <TableCell>{p.in_stock ? "Yes" : "No"}</TableCell>
                 <TableCell>{p.is_published ? "✅" : "⏳"}</TableCell>
                 <TableCell>
@@ -492,7 +497,10 @@ export default function ProductsPage() {
                   {deletingId === Number(p.id) ? (
                     <CircularProgress size={24} />
                   ) : (
-                    <Button color="error" onClick={() => handleDelete(Number(p.id))}>
+                    <Button
+                      color="error"
+                      onClick={() => handleDelete(Number(p.id))}
+                    >
                       Delete
                     </Button>
                   )}

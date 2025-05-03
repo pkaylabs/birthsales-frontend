@@ -1,12 +1,14 @@
 import { Link, useMatch, useNavigate } from "react-location";
 import { Product, useProducts } from "../utils/ProductContext";
 import {
+  Alert,
   Box,
   Button,
   Card,
   CardContent,
   CircularProgress,
   Grow,
+  Snackbar,
   Stack,
   Typography,
 } from "@mui/material";
@@ -51,18 +53,7 @@ const ProductAdminDetails = () => {
     setIsApproving(false);
   }
 
-  // Get current user role from Redux
-  // const role = useSelector((state: RootState) => state.auth.user?.role);
 
-  // After a successful approve, refetch products or navigate
-  //  useEffect(() => {
-  //   if (isSuccess) {
-  //     // Option A: Navigate back to list
-  //     navigate({ to: "/products" });
-  //     // Option B: Or just update local product.status
-  //     // setLocalStatus("approved");
-  //   }
-  // }, [isSuccess, navigate]);
 
   if (!product)
     return (
@@ -205,6 +196,21 @@ const ProductAdminDetails = () => {
           </CardContent>
         </Card>
       </Grow>
+        {/* Toast */}
+            {/* <Snackbar
+              open={toastOpen}
+              autoHideDuration={3000}
+              onClose={() => setToastOpen(false)}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+              <Alert
+                onClose={() => setToastOpen(false)}
+                severity={toastSeverity}
+                sx={{ width: "100%" }}
+              >
+                {toastMessage}
+              </Alert>
+            </Snackbar> */}
     </Box>
   );
 };
