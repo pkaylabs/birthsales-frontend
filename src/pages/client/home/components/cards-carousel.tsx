@@ -1,5 +1,5 @@
 // export default CardCarousel;
-import React, { JSX, useEffect, useState } from "react";
+import React, {  useEffect, useState } from "react";
 import { useSwipeable } from "react-swipeable";
 import { GoArrowLeft, GoArrowRight } from "react-icons/go";
 import Countdown from "./countdown";
@@ -10,7 +10,7 @@ interface CarouselProps {
   showCountdown?: boolean;
   showControls?: boolean;
   showViewAll?: boolean;
-  items: (() => JSX.Element)[]; // Array of functions returning JSX elements
+  items: Array<React.ReactNode | null | undefined>; // Array of functions returning JSX elements
 }
 
 const CardCarousel: React.FC<CarouselProps> = ({
@@ -50,7 +50,7 @@ const CardCarousel: React.FC<CarouselProps> = ({
   }, []);
 
   // Check if we've reached the last slide.
-  const isLastSlide = startIndex >= items.length - itemsPerView;
+  const isLastSlide = startIndex >= items.filter(Boolean).length - itemsPerView;
   const isFirstSlide = startIndex === 0;
 
   const nextSlide = () => {
@@ -76,6 +76,10 @@ const CardCarousel: React.FC<CarouselProps> = ({
   });
 
   const conditionalHandlers = showControls ? { ...handlers } : {};
+
+  const validItems = items.filter((item): item is React.ReactNode =>
+    Boolean(item)
+  );
 
   return (
     <div className="select-none w-full">
@@ -132,13 +136,13 @@ const CardCarousel: React.FC<CarouselProps> = ({
             transform: `translateX(-${(startIndex * 100) / itemsPerView}%)`,
           }}
         >
-          {items.map((item, index) => (
+          {validItems.map((item, index) => (
             <div
               key={index}
               className="flex-shrink-0"
               style={{ width: `${100 / itemsPerView}%` }}
             >
-              {item()}
+              {item}
             </div>
           ))}
         </div>

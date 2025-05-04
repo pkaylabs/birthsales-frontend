@@ -17,59 +17,54 @@ import {
   DialogContent,
   TextField,
   CircularProgress,
+  Skeleton,
+  Box,
+  LinearProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
-
-interface Category {
-  id?: number;
-  name: string;
-  description: string;
-  image: string;
-}
+import {
+  useAddCategoryMutation,
+  useDeleteCategoryMutation,
+  useGetCategoriesQuery,
+} from "@/redux/features/category/productCategoryApiSlice";
+import { CategoryForm } from "@/redux/type";
 
 export default function Category() {
-  const [categories, setCategories] = useState<Category[]>([
-    {
-      id: 1,
-      name: "Electronics",
-      description: "All electronic items",
-      image:
-        "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    },
-    {
-      id: 2,
-      name: "Clothing",
-      description: "Apparel for men and women",
-      image:
-        "https://images.unsplash.com/photo-1543087903-1ac2ec7aa8c5?q=80&w=1798&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    },
-    {
-      id: 3,
-      name: "Accessories",
-      description: "All accessories",
-      image:
-        "https://images.unsplash.com/3/www.madebyvadim.com.jpg?q=80&w=1782&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    },
-  ]);
+  const {
+    data: categories = [],
+    isLoading: isFetching,
+    isError,
+  } = useGetCategoriesQuery();
+  const [addCategory, { isLoading: isAdding }] = useAddCategoryMutation();
+  const [deleteCategory, { isLoading: isDeleting }] =
+    useDeleteCategoryMutation();
 
   // State for adding a new category
-  const [newCategory, setNewCategory] = useState<Category>({
+  const [newCategory, setNewCategory] = useState<CategoryForm>({
     name: "",
     description: "",
-    image: "",
+    imageFile: undefined,
   });
   const [open, setOpen] = useState(false);
 
   // State for editing an existing category
-  const [editOpen, setEditOpen] = useState(false);
-  const [editCategory, setEditCategory] = useState<Category | null>(null);
+  // const [editOpen, setEditOpen] = useState(false);
+  // const [editCategory, setEditCategory] = useState<Category | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastSeverity, setToastSeverity] = useState<"success" | "error">(
+    "success"
+  );
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   // Upload status states for adding category
-  const [imageUploading, setImageUploading] = useState(false);
+
 
   // Upload status states for editing category
-  const [editImageUploading, setEditImageUploading] = useState(false);
+  // const [editImageUploading, setEditImageUploading] = useState(false);
 
   // Handler for new category image upload
   const handleCategoryImageChange = (
@@ -77,52 +72,73 @@ export default function Category() {
   ) => {
     const file = e.target.files && e.target.files[0];
     if (file) {
-      setImageUploading(true);
       // Simulate async upload delay
       setTimeout(() => {
         setNewCategory((prev) => ({
           ...prev,
           image: URL.createObjectURL(file),
         }));
-        setImageUploading(false);
       }, 1000);
     }
   };
 
   // Handler for editing category image upload
-  const handleEditCategoryImageChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files && e.target.files[0];
-    if (file && editCategory) {
-      setEditImageUploading(true);
-      setTimeout(() => {
-        setEditCategory({ ...editCategory, image: URL.createObjectURL(file) });
-        setEditImageUploading(false);
-      }, 1000);
-    }
-  };
+  // const handleEditCategoryImageChange = (
+  //   e: React.ChangeEvent<HTMLInputElement>
+  // ) => {
+  //   const file = e.target.files && e.target.files[0];
+  //   if (file && editCategory) {
+  //     setEditImageUploading(true);
+  //     setTimeout(() => {
+  //       setEditCategory({ ...editCategory, image: URL.createObjectURL(file) });
+  //       setEditImageUploading(false);
+  //     }, 1000);
+  //   }
+  // };
 
-  const handleAddCategory = () => {
-    setCategories([
-      ...categories,
-      { ...newCategory, id: categories.length + 1 },
-    ]);
-    setOpen(false);
+  const handleAddCategory = async () => {
+    const newCat = {
+      id: categories.length + 1,
+      name: newCategory.name,
+      description: newCategory.description,
+      image: newCategory.imageFile
+        ? URL.createObjectURL(newCategory.imageFile)
+        : undefined,
+    };
+    try {
+      await addCategory(newCat).unwrap();
+      setToastMessage("Category added successfully");
+      setToastSeverity("success");
+      setOpen(false);
+    } catch (error) {
+      console.error("Failed to add category:", error);
+      setToastMessage("Failed to add category");
+      setToastSeverity("error");
+    } finally {
+      setToastOpen(true);
+      setOpen(false);
+    }
+
     // Optionally reset newCategory state
   };
 
-  const handleEditSave = () => {
-    if (!editCategory) return;
-    setCategories(
-      categories.map((cat) => (cat.id === editCategory.id ? editCategory : cat))
-    );
-    setEditOpen(false);
-    setEditCategory(null);
-  };
-
-  const handleDelete = (id: number | undefined) => {
-    setCategories(categories.filter((cat) => cat.id !== id));
+  const handleDelete = async (id: number | undefined) => {
+    if (!id) return;
+    setDeletingId(id);
+    if (id) {
+      try {
+        await deleteCategory(id).unwrap();
+        setToastMessage("Category deleted successfully");
+        setToastSeverity("success");
+      } catch (error) {
+        console.error("Failed to delete category:", error);
+        setToastMessage("Failed to delete category");
+        setToastSeverity("error");
+      } finally {
+        setToastOpen(true);
+        setDeletingId(null);
+      }
+    }
   };
 
   const filteredCategories = categories.filter(
@@ -131,9 +147,41 @@ export default function Category() {
       cat.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  if (isFetching) {
+    return (
+      <Box p={6}>
+        <Box mb={2} display="flex" gap={2}>
+          {[1, 2, 3].map((i) => (
+            <Skeleton variant="rectangular" width="100%" height={80} key={i} />
+          ))}
+        </Box>
+        <Skeleton variant="rectangular" height={40} />
+        <Box mt={2}>
+          {[...Array(5)].map((_, idx) => (
+            <Skeleton
+              key={idx}
+              variant="rectangular"
+              height={40}
+              sx={{ mb: 1 }}
+            />
+          ))}
+        </Box>
+      </Box>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Box p={6}>
+        <Alert severity="error">Failed to load categories</Alert>
+      </Box>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* Dashboard Overview */}
+      {(isAdding || isDeleting) && <LinearProgress />}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardContent>Total Categories: {categories.length}</CardContent>
@@ -203,7 +251,7 @@ export default function Category() {
                     onChange={handleCategoryImageChange}
                   />
                 </Button>
-                {imageUploading ? (
+                {/* {imageUploading ? (
                   <CircularProgress size={24} />
                 ) : newCategory.image ? (
                   <img
@@ -211,13 +259,14 @@ export default function Category() {
                     alt="Category"
                     className="w-[3rem] h-[3rem] rounded-full object-cover"
                   />
-                ) : null}
+                ) : null} */}
               </div>
               <Button
                 variant="contained"
                 color="primary"
                 sx={{ mt: 2, display: "block" }}
                 onClick={handleAddCategory}
+                disabled={isAdding}
               >
                 Save
               </Button>
@@ -225,7 +274,7 @@ export default function Category() {
           </Dialog>
 
           {/* Edit Category Dialog */}
-          <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
+          {/* <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
             <DialogTitle>Edit Category</DialogTitle>
             <DialogContent>
               {editCategory && (
@@ -292,8 +341,24 @@ export default function Category() {
                 </>
               )}
             </DialogContent>
-          </Dialog>
+          </Dialog> */}
         </div>
+
+        {/* Toast */}
+        <Snackbar
+          open={toastOpen}
+          autoHideDuration={3000}
+          onClose={() => setToastOpen(false)}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <Alert
+            onClose={() => setToastOpen(false)}
+            severity={toastSeverity}
+            sx={{ width: "100%" }}
+          >
+            {toastMessage}
+          </Alert>
+        </Snackbar>
 
         {/* Categories Table */}
         <TableContainer component={Paper}>
@@ -302,7 +367,7 @@ export default function Category() {
               <TableRow>
                 <TableCell>Category</TableCell>
                 <TableCell>Description</TableCell>
-                <TableCell>Image</TableCell>
+                {/* <TableCell>Image</TableCell> */}
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -311,7 +376,7 @@ export default function Category() {
                 <TableRow key={cat.id}>
                   <TableCell>{cat.name}</TableCell>
                   <TableCell>{cat.description}</TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     {cat.image && (
                       <img
                         src={cat.image}
@@ -319,9 +384,9 @@ export default function Category() {
                         className="w-[3rem] h-[3rem] rounded-full object-cover"
                       />
                     )}
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell>
-                    <Button
+                    {/* <Button
                       color="secondary"
                       onClick={() => {
                         setEditCategory(cat);
@@ -329,10 +394,17 @@ export default function Category() {
                       }}
                     >
                       Edit
-                    </Button>
-                    <Button color="error" onClick={() => handleDelete(cat.id)}>
-                      Delete
-                    </Button>
+                    </Button> */}
+                    {deletingId === Number(cat.id) ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      <Button
+                        color="error"
+                        onClick={() => handleDelete(Number(cat.id))}
+                      >
+                        Delete
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

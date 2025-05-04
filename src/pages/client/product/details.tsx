@@ -1,64 +1,87 @@
-import React, { useState } from "react";
-import { Link, useSearch } from "react-location";
-import mainPad from "@/assets/images/main-pad.png";
-import pad1 from "@/assets/images/pad1.png";
-import pad2 from "@/assets/images/pad2.png";
-import pad3 from "@/assets/images/pad3.png";
-import pad4 from "@/assets/images/pad4.png";
+import React, { useEffect, useState } from "react";
+import { Link, useMatch, useNavigate } from "react-location";
 import { IoStar } from "react-icons/io5";
-import SizePicker from "./components/size-picker";
-import ColorSelector from "./components/colors-selector";
 import { MdOutlineFavoriteBorder } from "react-icons/md";
 import { TbTruckDelivery } from "react-icons/tb";
 import { GrPowerCycle } from "react-icons/gr";
 import { motion } from "framer-motion";
-import CardCarousel from "../home/components/cards-carousel";
-import { productCards } from "../home";
+import { useGetProductQuery } from "@/redux/features/products/productsApi";
+import { Box, CircularProgress } from "@mui/material";
+import { BASE_URL, CHECKOUT } from "@/constants";
 
 const ProductDetails = () => {
-  const search = useSearch<any>();
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { params } = useMatch();
+  const prodId = Number(params.id);
 
-  const [numberOfItems, setNumberOfItems] = useState(1);
+  const { data: product, isLoading, isError } = useGetProductQuery(prodId);
 
-  const [selectedImage, setSelectedImage] = useState<string>(mainPad);
+  console.log("Product Details", product);
 
-  const handleImageClick = (imageSrc: string) => {
-    setSelectedImage(imageSrc);
-  };
+  const [gallery, setGallery] = useState<string[]>([]);
+  // const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  // const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string>("");
+  const [quantity, setQuantity] = useState<number>(1);
 
-  const images = [
-    {
-      id: 1,
-      src: pad1,
-    },
-    {
-      id: 2,
-      src: pad2,
-    },
-    {
-      id: 3,
-      src: pad3,
-    },
-    {
-      id: 4,
-      src: pad4,
-    },
-  ];
+  // const sizes = product?.available_sizes ?? [];
+  // const colors = product?.available_colors ?? [];
 
-  const sizes = [
-    { name: "XS", value: "XS" },
-    { name: "S", value: "S" },
-    { name: "M", value: "M" },
-    { name: "L", value: "L" },
-    { name: "XL", value: "XL" },
-  ];
+  useEffect(() => {
+    if (!product) return;
+    const imgs: string[] = Array.isArray(product.image)
+      ? product.image
+      : product.image
+      ? [product.image]
+      : [];
+    setGallery(imgs);
+    if (imgs.length) setSelectedImage(imgs[0]);
+  }, [product]);
 
-  const colors = [
-    { name: "bg-[#A0BCE0]", value: "#A0BCE0" },
-    { name: "bg-[#E07575]", value: "#E07575" },
-  ];
+  // const images = [
+  //   {
+  //     id: 1,
+  //     src: pad1,
+  //   },
+  //   {
+  //     id: 2,
+  //     src: pad2,
+  //   },
+  //   {
+  //     id: 3,
+  //     src: pad3,
+  //   },
+  //   {
+  //     id: 4,
+  //     src: pad4,
+  //   },
+  // ];
+
+  // const sizes = [
+  //   { name: "XS", value: "XS" },
+  //   { name: "S", value: "S" },
+  //   { name: "M", value: "M" },
+  //   { name: "L", value: "L" },
+  //   { name: "XL", value: "XL" },
+  // ];
+
+  // const colors = [
+  //   { name: "bg-[#A0BCE0]", value: "#A0BCE0" },
+  //   { name: "bg-[#E07575]", value: "#E07575" },
+  // ];
+
+  if (isLoading) {
+    return (
+      <Box className="p-8 flex justify-center">
+        <CircularProgress />
+      </Box>
+    );
+  }
+  if (isError || !product) {
+    return (
+      <Box className="p-8 text-red-500">Unable to load product #{prodId}.</Box>
+    );
+  }
 
   return (
     <main className="w-full max-w-[80rem] mx-auto">
@@ -70,19 +93,19 @@ const ProductDetails = () => {
       <div className="w-full md:h-[600px] mt-8 flex md:flex-row flex-col gap-8 items-center md:items-stretch">
         {/* Side Images */}
         <div className="md:w-[170px] md:flex md:flex-col w-full  hidden  justify-between gap-4">
-          {images.map((image, index) => (
+          {gallery.map((image, index) => (
             <motion.div
               key={index}
               className="w-full h-full bg-[#F5F5F5] rounded flex justify-center items-center cursor-pointer"
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.9, rotate: -3 }}
               transition={{ type: "spring", stiffness: 300 }}
-              onClick={() => handleImageClick(image.src)}
+              onClick={() => setSelectedImage(image)}
             >
               <img
-                src={image.src}
+                src={`${BASE_URL}${product.image}`}
                 alt={`product-${index}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded"
               />
             </motion.div>
           ))}
@@ -98,15 +121,15 @@ const ProductDetails = () => {
           transition={{ duration: 0.5, ease: "easeInOut" }}
         >
           <img
-            src={selectedImage}
-            alt="main-product"
+            src={`${BASE_URL}${product.image}`}
+            alt={product.name}
             className="md:w-[446px] md:h-[315px] md:object-contain w-[250px]"
           />
         </motion.div>
         <div className="flex-1 px-14 flex flex-col justify-between ">
           <div className="pb-6 border-b border-black ">
             <h2 className="font-semibold md:text-2xl text-lg mb-2">
-              Havic HV G-92 Gamepad
+              {product.name}
             </h2>
             <div className="flex items-center space-x-3 my-2">
               <div className="flex items-center space-x-1.5">
@@ -121,49 +144,52 @@ const ProductDetails = () => {
                 ))}
               </div>
               <p className="font-medium text-base text-gray-400 ">
-                (150 Reviews)
+                ({product.reviews_count ?? 0}Reviews)
               </p>
               <span className="text-gray-400">|</span>
-              <p className="font-medium text-base text-[#00FF66] ">In Stock</p>
+              <p className="font-medium text-base text-[#00FF66] ">
+                {product.in_stock ? "In Stock" : "Out of Stock"}
+              </p>
             </div>
-            <h4 className="md:text-2xl text-xl mb-4">$192.00</h4>
+            <h4 className="md:text-2xl text-xl mb-4">GHC{product.price}</h4>
             <p className="text-sm max-w-[373px]">
-              PlayStation 5 Controller Skin High quality vinyl with air channel
-              adhesive for easy bubble free install & mess free removal Pressure
-              sensitive.
+              {product.description ?? "No description available."}
             </p>
           </div>
           <div className="">
-            <div className="flex items-center gap-4 mb-5">
+            {/* <div className="flex items-center gap-4 mb-5">
               <p className="md:text-xl text-lg">Color:</p>
               <ColorSelector options={colors} onSelect={setSelectedColor} />
-            </div>
-            <div className="flex items-center gap-4 mb-5">
+            </div> */}
+            {/* <div className="flex items-center gap-4 mb-5">
               <p className="md:text-xl text-lg">Size:</p>
               <SizePicker options={sizes} onSelect={setSelectedSize} />
-            </div>
+            </div> */}
             <div className="flex md:flex-row justify-between items-center flex-col gap-6">
               <div className="flex-1 flex items-center select-none w-full">
                 <div
-                  onClick={() =>
-                    numberOfItems > 1 && setNumberOfItems(numberOfItems - 1)
-                  }
+                  onClick={() => quantity > 1 && setQuantity(quantity - 1)}
                   className="w-10 h-11 flex justify-center items-center border border-black rounded-s text-2xl hover:bg-[#DB4444] hover:text-white hover:border-[#DB4444] transition-all duration-150 ease-in-out cursor-pointer"
                 >
                   -
                 </div>
                 <div className="flex-1 h-11 flex justify-center items-center border-y border-black md:text-xl text-lg">
-                  {numberOfItems}
+                  {quantity}
                 </div>
                 <div
-                  onClick={() => setNumberOfItems(numberOfItems + 1)}
+                  onClick={() => setQuantity(quantity + 1)}
                   className="w-10 h-11 flex justify-center items-center border border-black rounded-e text-2xl hover:bg-[#DB4444] hover:text-white hover:border-[#DB4444] transition-all duration-150 ease-in-out cursor-pointer"
                 >
                   +
                 </div>
               </div>
               <div className="flex-1 w-full">
-                <button className="w-full h-11 flex justify-center items-center bg-[#DB4444] text-white rounded-md">
+                <button
+                  className="w-full h-11 flex justify-center items-center bg-[#DB4444] text-white rounded-md"
+                  onClick={() => {
+                    navigate({ to: CHECKOUT });
+                  }} // Add your add to cart logic here
+                >
                   Buy Now
                 </button>
               </div>
@@ -190,7 +216,9 @@ const ProductDetails = () => {
             <div className="flex items-center gap-5 py-5 px-4">
               <GrPowerCycle className="size-10 text-black" />
               <div className="">
-                <h2 className=" font-medium md:text-base text-sm">Return Delivery</h2>
+                <h2 className=" font-medium md:text-base text-sm">
+                  Return Delivery
+                </h2>
                 <p className="text-sm ">
                   Free 30 Days Delivery Returns.{" "}
                   <Link to={"#"} className="underline">

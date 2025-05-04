@@ -20,7 +20,7 @@ const FeaturedChart = ({ salesToday }: FeaturedChartProps) => {
           <CircularProgressbar value={70} text="70%" strokeWidth={4} />
         </div>
         <p className="font-medium text-gray-400">Total Sales made today</p>
-        <p className="text-3xl">${salesToday}</p>
+        <p className="text-3xl">GHC {salesToday}</p>
       </div>
     </div>
   );

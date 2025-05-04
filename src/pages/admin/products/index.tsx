@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, ChangeEvent, useMemo } from "react";
 import {
-  Card,
-  CardContent,
   Table,
   TableBody,
   TableCell,
@@ -20,617 +18,524 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Box,
+  Typography,
+  DialogActions,
+  Divider,
+  Skeleton,
+  LinearProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
-
-import { useNavigate } from "react-location";
-import { useProducts } from "../utils/ProductContext";
-import ShimmerTable from "../components/Shimmer";
-
-interface Product {
-  id: number;
-  name: string;
-  image?: string;
-  additionalImages?: string[];
-  category: string;
-  price: string | number;
-  dateAdded: string;
-  quantity: string | number;
-  stock?: number;
-  sales?: number;
-  revenue?: number;
-}
+import {
+  useAddProductMutation,
+  useGetProductsQuery,
+  useDeleteProductMutation,
+  useUpdateProductMutation,
+} from "@/redux/features/products/productsApi";
+import { useAppSelector } from "@/redux";
+import { RootState } from "@/app/store";
+import { useGetVendorsQuery } from "@/redux/features/vendor/vendorApiSlice";
+import { useGetCategoriesQuery } from "@/redux/features/category/productCategoryApiSlice";
+import { Product } from "@/redux/type";
+import { BASE_URL } from "@/constants";
 
 export default function ProductsPage() {
-  const [loading, setLoading] = useState(true);
-  const globalProduct = useProducts();
-  const [products, setProducts] = useState<Product[]>(globalProduct);
+  // auth user
+  const user = useAppSelector((state: RootState) => state.auth.user);
+  const userType = user?.user_type;
+  const {
+    data: products = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useGetProductsQuery();
+  const [addProduct, { isLoading: adding }] = useAddProductMutation();
+  const { data: categories = [] } = useGetCategoriesQuery();
+  const { data: allVendors = [] } = useGetVendorsQuery();
+  const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+  const [updateProduct, { isLoading: isPublishing }] =
+    useUpdateProductMutation();
 
-  //  available categories for selection
-  const availableCategories = [
-    { id: 1, name: "Electronics" },
-    { id: 2, name: "Clothing" },
-    { id: 3, name: "Accessories" },
-  ];
+  const availableVendors = useMemo(() => {
+    if (userType === "ADMIN") {
+      return allVendors;
+    } else if (userType === "VENDOR") {
+      return allVendors.filter((v) => v.user === user?.id);
+    }
+    return [];
+  }, [userType, allVendors, user]);
 
-  // New state for search/filter
+  // Filter services accordingly
+  const visibleProducts = useMemo(() => {
+    if (userType === "ADMIN") return products;
+    // vendor user sees only own services
+    return products.filter((p) =>
+      availableVendors.some((v) => v.id.toString() === p.vendor.toString())
+    );
+  }, [products, availableVendors, userType]);
+
+  // table/filter state
   const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState<number>(0);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(5);
-  const navigate = useNavigate();
-
-  // State for adding a new product
-  const [newProduct, setNewProduct] = useState<Product>({
-    id: 0,
-    name: "",
-    image: "",
-    additionalImages: [],
-    category: "",
-    price: "",
-    dateAdded: "",
-    quantity: "",
-  });
-  const [open, setOpen] = useState(false);
-
-  // State for editing an existing product
-  const [editOpen, setEditOpen] = useState(false);
-  const [editProduct, setEditProduct] = useState<Product | null>(null);
-
-  const [totalRevenue, setTotalRevenue] = useState(0);
-
-  // Upload status states for adding product
-  const [mainImageUploading, setMainImageUploading] = useState(false);
-  const [additionalImagesUploading, setAdditionalImagesUploading] =
-    useState(false);
-
-  // Upload status states for editing product
-  const [editMainImageUploading, setEditMainImageUploading] = useState(false);
-  const [editAdditionalImagesUploading, setEditAdditionalImagesUploading] =
-    useState(false);
-
-  useEffect(() => {
-    const revenueSum = products.reduce(
-      (sum, product) => sum + (product.revenue ?? 0),
-      0
-    );
-    setTotalRevenue(revenueSum);
-  }, [products]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setLoading(false)
-    },1500)
-  },[])
-
- 
-
-  // --- Handlers for "Add New Product" dialog ---
-  const handleMainImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      setMainImageUploading(true);
-      setTimeout(() => {
-        setNewProduct((prev) => ({
-          ...prev,
-          image: URL.createObjectURL(file),
-        }));
-        setMainImageUploading(false);
-      }, 1000);
-    }
-  };
-
-  const handleAdditionalImagesChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      setAdditionalImagesUploading(true);
-      setTimeout(() => {
-        const urls = Array.from(files)
-          .slice(0, 4)
-          .map((file) => URL.createObjectURL(file));
-        setNewProduct((prev) => ({ ...prev, additionalImages: urls }));
-        setAdditionalImagesUploading(false);
-      }, 1500);
-    }
-  };
-
-  // Handle pagination change
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(rowsPerPage);
-    setPage(0);
-  };
-
-  const handleSave = () => {
-    const quantity = parseFloat(newProduct.quantity.toString()) || 0;
-    const price = parseFloat(newProduct.price.toString()) || 0;
-    setProducts([
-      ...products,
-      {
-        ...newProduct,
-        id: products.length + 1,
-        stock: quantity,
-        sales: 0,
-        revenue: price * quantity,
-      },
-    ]);
-    setOpen(false);
-    // Optionally, reset newProduct state here.
-  };
-
-  // --- Handlers for the "Edit Product" dialog ---
-  const handleEditMainImageChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files && e.target.files[0];
-    if (file && editProduct) {
-      setEditMainImageUploading(true);
-      setTimeout(() => {
-        setEditProduct({ ...editProduct, image: URL.createObjectURL(file) });
-        setEditMainImageUploading(false);
-      }, 1000);
-    }
-  };
-
-  const handleEditAdditionalImagesChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const files = e.target.files;
-    if (files && files.length > 0 && editProduct) {
-      setEditAdditionalImagesUploading(true);
-      setTimeout(() => {
-        const urls = Array.from(files)
-          .slice(0, 4)
-          .map((file) => URL.createObjectURL(file));
-        setEditProduct({ ...editProduct, additionalImages: urls });
-        setEditAdditionalImagesUploading(false);
-      }, 1500);
-    }
-  };
-
-  const handleEditSave = () => {
-    if (!editProduct) return;
-    const quantity = parseFloat(editProduct.quantity.toString()) || 0;
-    const price = parseFloat(editProduct.price.toString()) || 0;
-    setProducts(
-      products.map((product) =>
-        product.id === editProduct.id
-          ? { ...editProduct, stock: quantity, revenue: price * quantity }
-          : product
-      )
-    );
-    setEditOpen(false);
-    setEditProduct(null);
-  };
-
-  // Delete handler remains the same.
-  const handleDelete = (id: number) => {
-    setProducts(products.filter((product) => product.id !== id));
-  };
-
-  // Filter products based on search term (searches in name and category)
-  const filteredProducts = products.filter(
-    (product) =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase())
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastSeverity, setToastSeverity] = useState<"success" | "error">(
+    "success"
   );
 
-  // Determine products to display based on current page and rows per page
-  const paginatedProducts = filteredProducts.slice(
+  const [detailProduct, setDetailProduct] = useState<Product | null>(null);
+
+  // dialog state for "Add Product"
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    price: "",
+    category: "",
+    vendor: "",
+    in_stock: true as boolean,
+    imageFile: null as File | null,
+  });
+
+  // upload spinner
+  const [uploading, setUploading] = useState(false);
+
+  // filter + paginate
+  const filtered = visibleProducts.filter(
+    (p) =>
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(p.category).toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const paginated = filtered.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
 
-  return (
-    <div className="p-6 space-y-6">
-      {/* Dashboard Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent>Total Products: {products.length}</CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            In Stock: {products.reduce((sum, p) => sum + (p.stock ?? 0), 0)}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            Total Sales: {products.reduce((sum, p) => sum + (p.sales ?? 0), 0)}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>Total Revenue: ${totalRevenue}</CardContent>
-        </Card>
-      </div>
+  // handlers
+  const handleChangePage = (_: any, newPage: number) => setPage(newPage);
+  const handleChangeRowsPerPage = (e: ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(+e.target.value);
+    setPage(0);
+  };
 
-      {/* Product Management Table */}
-      <div className="bg-white shadow rounded p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Manage Products</h2>
-          <div className="flex gap-2 flex-wrap">
-            <TextField
-              variant="outlined"
-              size="small"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setForm((f) => ({ ...f, imageFile: e.target.files![0] }));
+    }
+  };
+
+  const handleSave = async () => {
+    const fd = new FormData();
+    fd.append("name", form.name);
+    fd.append("description", form.description);
+    fd.append("price", form.price);
+    fd.append("category", form.category);
+    if (userType === "ADMIN") fd.append("vendor", form.vendor);
+    else fd.append("vendor", availableVendors[0].id.toString());
+    fd.append("in_stock", String(form.in_stock));
+    if (form.imageFile) {
+      setUploading(true);
+      fd.append("image", form.imageFile);
+    }
+
+    try {
+      await addProduct(fd).unwrap();
+      setOpen(false);
+      setToastMessage("Product created successfully");
+      setToastSeverity("success");
+      setForm({
+        name: "",
+        description: "",
+        price: "",
+        vendor: "",
+        category: "",
+        in_stock: true,
+        imageFile: null,
+      });
+      refetch();
+    } catch (err) {
+      console.error(err);
+      setToastMessage("Failed to add product");
+      setToastSeverity("error");
+    } finally {
+      setUploading(false);
+      setToastOpen(true);
+    }
+  };
+
+  const handleDelete = async (id?: number) => {
+    if (!id) return;
+    setDeletingId(id);
+    try {
+      await deleteProduct(id).unwrap();
+      setToastMessage("Service deleted");
+      setToastSeverity("success");
+    } catch (err: any) {
+      setToastMessage(err.data.message || "Delete failed");
+      setToastSeverity("error");
+    } finally {
+      setDeletingId(null);
+      setToastOpen(true);
+    }
+  };
+
+  const handlePublish = async (p: Product) => {
+    const form = new FormData();
+    form.append("is_published", String(true));
+    form.append("product_id", String(p.id));
+    try {
+      await updateProduct(form).unwrap();
+      setToastMessage("Product published successfully");
+      setToastSeverity("success");
+      refetch();
+      setDetailProduct(null);
+    } catch (err) {
+      console.error(err);
+      setToastMessage("Failed to publish product");
+      setToastSeverity("error");
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Box p={6}>
+        <Box mb={2} display="flex" gap={2}>
+          {[1, 2].map((i) => (
+            <Skeleton variant="rectangular" width="100%" height={80} key={i} />
+          ))}
+        </Box>
+        <Skeleton variant="rectangular" height={40} />
+        <Box mt={2}>
+          {[...Array(5)].map((_, idx) => (
+            <Skeleton
+              key={idx}
+              variant="rectangular"
+              height={40}
+              sx={{ mb: 1 }}
             />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setOpen(true)}
-            >
-              Add New Product
-            </Button>
-          </div>
+          ))}
+        </Box>
+      </Box>
+    );
+  }
+  if (isError)
+    return (
+      <Box p={4} color="error.main">
+        Error loading products
+      </Box>
+    );
 
-          {/* Add New Product Dialog */}
-          <Dialog open={open} onClose={() => setOpen(false)}>
-            <DialogTitle>Add New Product</DialogTitle>
-            <DialogContent>
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Product Name"
-                variant="outlined"
+  return (
+    <Box p={6}>
+      {/* Header + Add button */}
+      {(adding || isDeleting) && <LinearProgress />}
+      <Box display="flex" justifyContent="space-between" mb={2}>
+        <TextField
+          size="small"
+          placeholder="Search products…"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <Button variant="contained" onClick={() => setOpen(true)}>
+          Add New Product
+        </Button>
+      </Box>
+
+      {/* Add‐product dialog */}
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Add New Product</DialogTitle>
+        <DialogContent>
+          <Box display="flex" flexDirection="column" gap={2} mt={1}>
+            <TextField
+              label="Name"
+              fullWidth
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            />
+            <TextField
+              label="Description"
+              fullWidth
+              value={form.description}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, description: e.target.value }))
+              }
+            />
+            <TextField
+              label="Price"
+              fullWidth
+              type="number"
+              value={form.price}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, price: e.target.value }))
+              }
+            />
+            <FormControl fullWidth>
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={form.category}
+                label="Category"
                 onChange={(e) =>
-                  setNewProduct({ ...newProduct, name: e.target.value })
+                  setForm((f) => ({ ...f, category: e.target.value as string }))
                 }
+              >
+                {categories?.map((c) => (
+                  <MenuItem key={c.id} value={String(c.id)}>
+                    {c.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Button component="label">
+              Upload Image
+              <input
+                hidden
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
               />
-              {/* Category Dropdown */}
-              <FormControl fullWidth margin="dense">
-                <InputLabel id="category-label">Category</InputLabel>
+            </Button>
+            {uploading ? (
+              <CircularProgress size={24} />
+            ) : (
+              form.imageFile && <span>{form.imageFile.name}</span>
+            )}
+            {userType === "ADMIN" && (
+              <FormControl fullWidth>
+                <InputLabel>Vendor</InputLabel>
                 <Select
-                  labelId="category-label"
-                  label="Category"
-                  value={newProduct.category || ""}
+                  value={form.vendor}
                   onChange={(e) =>
-                    setNewProduct({ ...newProduct, category: e.target.value })
+                    setForm((f) => ({ ...f, vendor: e.target.value }))
                   }
                 >
-                  {availableCategories.map((cat) => (
-                    <MenuItem key={cat.id} value={cat.name}>
-                      {cat.name}
+                  {availableVendors?.map((v) => (
+                    <MenuItem key={v.id} value={v.id}>
+                      {v.vendor_name}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Price"
-                variant="outlined"
-                type="number"
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, price: e.target.value })
-                }
-              />
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Date Added"
-                variant="outlined"
-                type="date"
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, dateAdded: e.target.value })
-                }
-              />
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Quantity"
-                variant="outlined"
-                type="number"
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, quantity: e.target.value })
-                }
-              />
-              <div
-                style={{
-                  marginTop: 16,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 16,
-                }}
-              >
-                <Button variant="contained" component="label">
-                  Upload Main Image
-                  <input
-                    hidden
-                    type="file"
-                    accept="image/*"
-                    onChange={handleMainImageChange}
-                  />
-                </Button>
-                {mainImageUploading ? (
-                  <CircularProgress size={24} />
-                ) : newProduct.image ? (
-                  <img
-                    src={newProduct.image}
-                    alt="Uploaded"
-                    width="50"
-                    height="50"
-                  />
-                ) : null}
-              </div>
-              <div
-                style={{
-                  marginTop: 16,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 16,
-                }}
-              >
-                <Button variant="contained" component="label">
-                  Upload Additional Images
-                  <input
-                    hidden
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleAdditionalImagesChange}
-                  />
-                </Button>
-                {additionalImagesUploading ? (
-                  <CircularProgress size={24} />
-                ) : (newProduct.additionalImages ?? []).length > 0 ? (
-                  (newProduct.additionalImages ?? []).map((img, idx) => (
-                    <img
-                      key={idx}
-                      src={img}
-                      alt={`Uploaded ${idx}`}
-                      width="50"
-                      height="50"
-                    />
-                  ))
-                ) : null}
-              </div>
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ mt: 2, display: "block" }}
-                onClick={handleSave}
-              >
-                Save
-              </Button>
-            </DialogContent>
-          </Dialog>
+            )}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSave}
+              disabled={adding || uploading}
+            >
+              {adding || uploading ? "Saving…" : "Save"}
+            </Button>
+          </Box>
+        </DialogContent>
+      </Dialog>
 
-          {/* Edit Product Dialog */}
-          <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
-            <DialogTitle>Edit Product</DialogTitle>
-            <DialogContent>
-              {editProduct && (
-                <>
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Product Name"
-                    variant="outlined"
-                    value={editProduct.name}
-                    onChange={(e) =>
-                      setEditProduct({ ...editProduct, name: e.target.value })
+      {/* Details Page */}
+      <Dialog
+        open={!!detailProduct}
+        onClose={() => setDetailProduct(null)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>
+          <Typography variant="h6">{detailProduct?.name}</Typography>
+        </DialogTitle>
+        <Divider />
+        <DialogContent dividers>
+          <Box display="flex" flexDirection="column" gap={2}>
+            {/* Image */}
+            {detailProduct?.image && (
+              <Box
+                component="img"
+                src={`${BASE_URL}${detailProduct.image}`}
+                alt={detailProduct.name}
+                sx={{
+                  width: "100%",
+                  height: 200,
+                  objectFit: "cover",
+                  borderRadius: 1,
+                }}
+              />
+            )}
+
+            {/* Details Grid */}
+            <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
+              <Box>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Price
+                </Typography>
+                <Typography>${detailProduct?.price}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" color="textSecondary">
+                  In Stock
+                </Typography>
+                <Typography>
+                  {detailProduct?.in_stock ? "Yes" : "No"}
+                </Typography>
+              </Box>
+              <Box gridColumn="1 / -1">
+                <Typography variant="subtitle2" color="textSecondary">
+                  Description
+                </Typography>
+                <Typography>{detailProduct?.description}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Category
+                </Typography>
+                <Typography>
+                  {
+                    categories?.find(
+                      (c) => String(c.id) === String(detailProduct?.category)
+                    )?.name
+                  }
+                </Typography>
+              </Box>
+              {userType === "ADMIN" && (
+                <Box>
+                  <Typography variant="subtitle2" color="textSecondary">
+                    Vendor
+                  </Typography>
+                  <Typography>
+                    {
+                      availableVendors.find(
+                        (v) => String(v.id) === String(detailProduct?.vendor)
+                      )?.vendor_name
                     }
-                  />
-                  {/* Category Dropdown for Edit */}
-                  <FormControl fullWidth margin="dense">
-                    <InputLabel id="edit-category-label">Category</InputLabel>
-                    <Select
-                      labelId="edit-category-label"
-                      label="Category"
-                      value={editProduct.category || ""}
-                      onChange={(e) =>
-                        setEditProduct({
-                          ...editProduct,
-                          category: e.target.value,
-                        })
-                      }
-                    >
-                      {availableCategories.map((cat) => (
-                        <MenuItem key={cat.id} value={cat.name}>
-                          {cat.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Price"
-                    variant="outlined"
-                    type="number"
-                    value={editProduct.price}
-                    onChange={(e) =>
-                      setEditProduct({ ...editProduct, price: e.target.value })
-                    }
-                  />
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Date Added"
-                    variant="outlined"
-                    type="date"
-                    value={editProduct.dateAdded}
-                    onChange={(e) =>
-                      setEditProduct({
-                        ...editProduct,
-                        dateAdded: e.target.value,
-                      })
-                    }
-                  />
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Quantity"
-                    variant="outlined"
-                    type="number"
-                    value={editProduct.quantity}
-                    onChange={(e) =>
-                      setEditProduct({
-                        ...editProduct,
-                        quantity: e.target.value,
-                      })
-                    }
-                  />
-                  <div
-                    style={{
-                      marginTop: 16,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 16,
-                    }}
-                  >
-                    <Button variant="contained" component="label">
-                      Upload Main Image
-                      <input
-                        hidden
-                        type="file"
-                        accept="image/*"
-                        onChange={handleEditMainImageChange}
-                      />
-                    </Button>
-                    {editMainImageUploading ? (
-                      <CircularProgress size={24} />
-                    ) : editProduct.image ? (
-                      <img
-                        src={editProduct.image}
-                        alt="Uploaded"
-                        width="50"
-                        height="50"
-                      />
-                    ) : null}
-                  </div>
-                  <div
-                    style={{
-                      marginTop: 16,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 16,
-                    }}
-                  >
-                    <Button variant="contained" component="label">
-                      Upload Additional Images
-                      <input
-                        hidden
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleEditAdditionalImagesChange}
-                      />
-                    </Button>
-                    {editAdditionalImagesUploading ? (
-                      <CircularProgress size={24} />
-                    ) : editProduct.additionalImages &&
-                      editProduct.additionalImages.length > 0 ? (
-                      editProduct.additionalImages.map((img, idx) => (
-                        <img
-                          key={idx}
-                          src={img}
-                          alt={`Uploaded ${idx}`}
-                          width="50"
-                          height="50"
-                        />
-                      ))
-                    ) : null}
-                  </div>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    sx={{ mt: 2, display: "block" }}
-                    onClick={handleEditSave}
-                  >
-                    Save Changes
-                  </Button>
-                </>
+                  </Typography>
+                </Box>
               )}
-            </DialogContent>
-          </Dialog>
-        </div>
-        <TableContainer component={Paper}>
-          {loading ? (
-            <ShimmerTable />
-          ) : (
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Product</TableCell>
-                  <TableCell>Category</TableCell>
-                  <TableCell>Price ($)</TableCell>
-                  <TableCell>Date Added</TableCell>
-                  <TableCell>Quantity</TableCell>
-                  <TableCell>Stock</TableCell>
-                  <TableCell>Sales</TableCell>
-                  {/* <TableCell>Revenue ($)</TableCell> */}
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {paginatedProducts.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell
-                      style={{ display: "flex", alignItems: "center" }}
-                    >
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        style={{ marginRight: 10 }}
-                        className="w-[3rem] h-[3rem] object-cover rounded-full"
-                      />
-                      {product.name}
-                    </TableCell>
-                    <TableCell>{product.category}</TableCell>
-                    <TableCell>{product.price}</TableCell>
-                    <TableCell>{product.dateAdded}</TableCell>
-                    <TableCell>{product.quantity}</TableCell>
-                    <TableCell>{product.stock}</TableCell>
-                    <TableCell>{product.sales}</TableCell>
-                    {/* <TableCell>{product.revenue}</TableCell> */}
-                    <TableCell>
-                      <Button
-                        color="primary"
-                        onClick={() =>
-                          navigate({ to: `/products/${product.id}` })
-                        }
-                      >
-                        View
-                      </Button>
-                      <Button
-                        color="secondary"
-                        onClick={() => {
-                          setEditProduct(product);
-                          setEditOpen(true);
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        color="error"
-                        onClick={() => handleDelete(product.id)}
-                      >
-                        Delete
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+              <Box>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Published
+                </Typography>
+                <Typography>
+                  {detailProduct?.is_published ? "Yes" : "No"}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={() => setDetailProduct(null)}>Close</Button>
+          {userType === "ADMIN" && !detailProduct?.is_published && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => handlePublish(detailProduct!)}
+              disabled={isPublishing}
+            >
+              {isPublishing ? "Publishing…" : "Publish"}
+            </Button>
           )}
-        </TableContainer>
-        {/* Pagination */}
-        <TablePagination
-          component="div"
-          count={filteredProducts.length}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </div>
+        </DialogActions>
+      </Dialog>
 
+      {/* Products table */}
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Product</TableCell>
+              {userType === "ADMIN" && <TableCell>Vendor</TableCell>}
+              <TableCell>Category</TableCell>
+              <TableCell>Price</TableCell>
+              <TableCell>Stock</TableCell>
+              <TableCell>Published</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginated.map((p) => (
+              <TableRow key={p.id}>
+                <TableCell>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    {/* <img
+                      src={p.image}
+                      width={40}
+                      height={40}
+                      style={{ objectFit: "cover" }}
+                      alt={p.name}
+                    /> */}
+                    {p.name}
+                  </Box>
+                </TableCell>
+                {userType === "ADMIN" && (
+                  <TableCell>
+                    {
+                      availableVendors.find(
+                        (v) => String(v.id) === String(p.vendor)
+                      )?.vendor_name
+                    }
+                  </TableCell>
+                )}
 
-    </div>
+                <TableCell>
+                  {
+                    categories?.find((c) => String(c.id) === String(p.category))
+                      ?.name
+                  }
+                </TableCell>
+
+                {/* <TableCell>{p.vendor}</TableCell> */}
+                <TableCell>GHC{p.price}</TableCell>
+                <TableCell>{p.in_stock ? "Yes" : "No"}</TableCell>
+                <TableCell>{p.is_published ? "✅" : "⏳"}</TableCell>
+                <TableCell>
+                  <Button size="small" onClick={() => setDetailProduct(p)}>
+                    View
+                  </Button>
+                </TableCell>
+                <TableCell>
+                  {deletingId === Number(p.id) ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    <Button
+                      color="error"
+                      onClick={() => handleDelete(Number(p.id))}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Toast */}
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={3000}
+        onClose={() => setToastOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setToastOpen(false)}
+          severity={toastSeverity}
+          sx={{ width: "100%" }}
+        >
+          {toastMessage}
+        </Alert>
+      </Snackbar>
+
+      {/* Pagination */}
+      <TablePagination
+        component="div"
+        count={filtered.length}
+        page={page}
+        onPageChange={handleChangePage}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
+    </Box>
   );
 }

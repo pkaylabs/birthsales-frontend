@@ -1,5 +1,5 @@
 // src/pages/ServicesPage.tsx
-import React, {  useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -26,7 +26,6 @@ import {
   CircularProgress,
   Skeleton,
 } from "@mui/material";
-import { useNavigate } from "react-location";
 import {
   useGetServicesQuery,
   useAddServiceMutation,
@@ -40,7 +39,6 @@ import { RootState } from "@/app/store";
 import { ServiceForm } from "@/redux/type";
 
 export default function ServicesPage() {
-  const navigate = useNavigate();
   const {
     data: services = [],
     isLoading,
@@ -67,8 +65,6 @@ export default function ServicesPage() {
     }
     return [];
   }, [userType, allVendors, user]);
-
-  console.log("availableVendors", availableVendors);
 
   // Filter services accordingly
   const visibleServices = useMemo(() => {
@@ -98,20 +94,6 @@ export default function ServicesPage() {
   const [toastSeverity, setToastSeverity] = useState<"success" | "error">(
     "success"
   );
-  // const availableCategories = [
-  //   "Electronics",
-  //   "Clothing",
-  //   "Accessories",
-  //   "Beauty",
-  //   "Wellness",
-  // ];
-
-  // sync initial provider selection when availableProviders load
-  // useEffect(() => {
-  //   if (!editService) {
-  //     setForm((f) => ({ ...f, vendor_id: availableVendors[0]?.id |}));
-  //   }
-  // }, [availableVendors, editService]);
 
   const filtered = visibleServices.filter(
     (s) =>
@@ -141,7 +123,7 @@ export default function ServicesPage() {
     }
     try {
       await addService(fd as any).unwrap();
-      setToastMessage("Service added");
+      setToastMessage("Service created successfully");
       setToastSeverity("success");
       setOpenAdd(false);
     } catch (err) {
@@ -447,7 +429,7 @@ export default function ServicesPage() {
               <TableRow>
                 <TableCell align="left">Name</TableCell>
                 <TableCell align="left">Description</TableCell>
-                <TableCell align="right">Price</TableCell>
+                <TableCell>Price</TableCell>
                 {/* <TableCell>Category</TableCell> */}
                 {userType === "ADMIN" && (
                   <TableCell align="left">Vendor</TableCell>
@@ -461,7 +443,7 @@ export default function ServicesPage() {
                 <TableRow key={s.id} hover>
                   <TableCell align="left">{s.name}</TableCell>
                   <TableCell align="left">{s.description}</TableCell>
-                  <TableCell align="right">{s.price}</TableCell>
+                  <TableCell>GHC{s.price}</TableCell>
                   {/* <TableCell>{s.category}</TableCell> */}
 
                   {userType === "ADMIN" && (
@@ -481,7 +463,7 @@ export default function ServicesPage() {
                         handleEdit(s);
                       }}
                     >
-                      Edit
+                      View
                     </Button>
                   </TableCell>
                   <TableCell>

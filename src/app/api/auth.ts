@@ -19,11 +19,15 @@ export const api = createApi({
   tagTypes: [
     "Service",
     "Vendor",
-    "Product",
+    "Products",
+    "Category",
     "Plan",
     "User",
     "Booking",
     "Dashboard",
+    "HomePage",
+    "Orders",
+    "Search",
   ],
   endpoints: () => ({}),
 });

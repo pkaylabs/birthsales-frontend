@@ -1,40 +1,20 @@
-import { CONFIRM_ORDER } from "@/constants";
+import { BASE_URL, CONFIRM_ORDER } from "@/constants";
+import { useAppSelector } from "@/redux";
 import React, { useState } from "react";
 import { useNavigate } from "react-location";
 
-interface Product {
-  id: number;
-  name: string;
-  image: string;
-  price: number;
-}
-
-const products: Product[] = [
-  {
-    id: 1,
-    name: "LCD Monitor",
-    image:
-      "https://plus.unsplash.com/premium_photo-1681816189679-fa02d1acd1de?q=80&w=1777&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    price: 100,
-  },
-  {
-    id: 2,
-    name: "H1 GamePad",
-    image:
-      "https://images.unsplash.com/photo-1606318801954-d46d46d3360a?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    price: 650,
-  },
-];
-
 const Checkout = () => {
+  const items = useAppSelector((state) => state.cart.items);
+
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState("");
   const [network, setNetwork] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
 
-  const subTotal = products.reduce((sum, product) => {
-    return sum + product.price;
-  }, 0);
+  const subTotal = items.reduce(
+    (sum, { product, quantity }) => sum + product.price * quantity,
+    0
+  );
 
   return (
     <div className="max-w-[75rem]  slide-up  mb-[10rem] mx-5 md:mx-5 lg:mx-auto ">
@@ -46,7 +26,7 @@ const Checkout = () => {
         <span className="text-base md:text-lg">/</span>
         <p className="text-base md:text-lg">Product</p>
         <span className="text-base md:text-lg">/</span>
-        <p className="text-base md:text-lg">Cart</p>
+        <p className="text-base md:text-lg cursor-pointer" onClick={() => navigate({to: '/cart'})}>Cart</p>
         <span className="text-base md:text-lg">/</span>
         <p className="text-black text-base md:text-lg">Checkout</p>
       </div>
@@ -127,18 +107,18 @@ const Checkout = () => {
 
         <div className="rounded  md:p-5 flex flex-col justify-between gap-5 mt-[3rem] flex-1 ">
           <div className="flex flex-col justify-between gap-2  overflow-y-auto flex-shrink-0 max-h-[150px] pr-2">
-            {products.map((product) => {
+            {items.map((item) => {
               return (
                 <div className="flex justify-between items-center">
                   <div className="flex items-center justify-start gap-2 ">
                     <img
-                      src={product.image}
-                      alt=""
+                      src={`${BASE_URL}${item.product.image}`}
+                      alt={item.product.name}
                       className="hidden md:flex lg:flex object-cover w-10 h-10 rounded-full"
                     />
-                    <p className="">{product.name}</p>
+                    <p className="">{item.product.name}</p>
                   </div>
-                  <p className="">${product.price}</p>
+                  <p className="">GHC{Math.round(item.product.price)}</p>
                 </div>
               );
             })}
@@ -147,7 +127,7 @@ const Checkout = () => {
           <div className="flex flex-col justify-between gap-3">
             <div className="flex justify-between text-[12px] md:text-base">
               <p>Subtotal:</p>
-              <p>${subTotal}</p>
+              <p>GHC{Math.round(subTotal)}</p>
             </div>
             <div className=" border border-gray-300" />
             <div className="flex justify-between text-[12px] md:text-base">
@@ -157,7 +137,7 @@ const Checkout = () => {
             <div className=" border border-gray-300" />
             <div className="flex justify-between text-[12px] md:text-base">
               <p>GrandTotal:</p>
-              <p className="font-bold pulse mx-2">${subTotal}</p>
+              <p className="font-bold pulse mx-2">GHC{Math.round(subTotal)}</p>
             </div>
           </div>
           <div className="flex items-center justify-center">
