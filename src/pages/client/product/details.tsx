@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useMatch } from "react-location";
+import { Link, useMatch, useNavigate } from "react-location";
 import { IoStar } from "react-icons/io5";
 import { MdOutlineFavoriteBorder } from "react-icons/md";
 import { TbTruckDelivery } from "react-icons/tb";
@@ -7,9 +7,10 @@ import { GrPowerCycle } from "react-icons/gr";
 import { motion } from "framer-motion";
 import { useGetProductQuery } from "@/redux/features/products/productsApi";
 import { Box, CircularProgress } from "@mui/material";
-import { BASE_URL } from "@/constants";
+import { BASE_URL, CHECKOUT } from "@/constants";
 
 const ProductDetails = () => {
+  const navigate = useNavigate();
   const { params } = useMatch();
   const prodId = Number(params.id);
 
@@ -102,7 +103,7 @@ const ProductDetails = () => {
               onClick={() => setSelectedImage(image)}
             >
               <img
-                src={`${BASE_URL}${product.image}`} 
+                src={`${BASE_URL}${product.image}`}
                 alt={`product-${index}`}
                 className="w-full h-full object-cover rounded"
               />
@@ -150,7 +151,7 @@ const ProductDetails = () => {
                 {product.in_stock ? "In Stock" : "Out of Stock"}
               </p>
             </div>
-            <h4 className="md:text-2xl text-xl mb-4">${product.price}</h4>
+            <h4 className="md:text-2xl text-xl mb-4">GHC{product.price}</h4>
             <p className="text-sm max-w-[373px]">
               {product.description ?? "No description available."}
             </p>
@@ -185,7 +186,9 @@ const ProductDetails = () => {
               <div className="flex-1 w-full">
                 <button
                   className="w-full h-11 flex justify-center items-center bg-[#DB4444] text-white rounded-md"
-                  onClick={() => {}}
+                  onClick={() => {
+                    navigate({ to: CHECKOUT });
+                  }} // Add your add to cart logic here
                 >
                   Buy Now
                 </button>

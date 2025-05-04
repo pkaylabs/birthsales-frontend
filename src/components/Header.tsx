@@ -1,18 +1,26 @@
 import React, { useState } from "react";
-import { FaShoppingCart, FaHeart, FaUser, FaBars, FaTimes } from "react-icons/fa";
+import {
+  FaShoppingCart,
+  FaHeart,
+  FaUser,
+  FaBars,
+  FaTimes,
+} from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "@/assets/images/logo.jpg";
 import { Link } from "react-location";
 import { SIGN_UP_ROLE } from "@/constants";
+import { useAppSelector } from "@/redux";
 
 const menuVariants = {
   hidden: { height: 0, opacity: 0 },
-  visible: { height: 'auto', opacity: 1, transition: { duration: 0.3 } },
+  visible: { height: "auto", opacity: 1, transition: { duration: 0.3 } },
   exit: { height: 0, opacity: 0, transition: { duration: 0.2 } },
 };
 
 const Header: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const items = useAppSelector((state) => state.cart.items);
 
   return (
     <header className="bg-white/80 backdrop-blur-md fixed w-full z-50 shadow-sm">
@@ -28,23 +36,36 @@ const Header: React.FC = () => {
                 whileHover={{ scale: 1.1 }}
               />
             </Link>
-            <Link to="/" className="ml-3 text-2xl font-bold text-gray-800 hover:text-rose-500 transition">
+            <Link
+              to="/"
+              className="ml-3 text-2xl font-bold text-gray-800 hover:text-rose-500 transition"
+            >
               BirthNon
             </Link>
           </div>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center space-x-6">
-            {['/', '/services', '/about', SIGN_UP_ROLE].map((path, idx) => (
-              <Link
-                key={idx}
-                to={path}
-                className="text-gray-700 hover:text-rose-500 transition"
-              >
-                {path === '/' ? 'Home' : path.replace('/', '').charAt(0).toUpperCase() + path.slice(2)}
-              </Link>
-            ))}
-          </nav>
+          {/* Desktop Nav + Search */}
+          <div className="hidden md:flex md:items-center md:space-x-6">
+            <nav className="flex items-center space-x-6">
+              {["Home", "Services", "About", "Sign Up"].map((label) => {
+                const to =
+                  label === "Home"
+                    ? "/"
+                    : label === "Sign Up"
+                    ? SIGN_UP_ROLE
+                    : `/${label.toLowerCase()}`;
+                return (
+                  <Link
+                    key={label}
+                    to={to}
+                    className="text-gray-700 hover:text-rose-500 transition"
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
 
           {/* Icons + Mobile Menu Button */}
           <div className="flex items-center space-x-4">
@@ -54,7 +75,7 @@ const Header: React.FC = () => {
             <Link to="/cart" className="hidden md:block relative">
               <FaShoppingCart className="text-xl text-gray-700 hover:text-rose-500 transition" />
               <span className="absolute -top-1 -right-2 bg-rose-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
-                2
+                {items.length}
               </span>
             </Link>
             <Link to="/account" className="hidden md:block">
@@ -81,20 +102,33 @@ const Header: React.FC = () => {
             variants={menuVariants}
             className="md:hidden bg-white overflow-hidden shadow-inner"
           >
-            <div className="px-4 pt-4 pb-2 space-y-2">
-              {['Home', 'Services', 'About', 'Sign Up', 'Cart', 'Wishlist'].map((label, i) => {
-                const to = label === 'Home' ? '/' : `/${label.toLowerCase().replace(' ', '-')}`;
-                return (
-                  <Link
-                    key={i}
-                    to={to === '/sign up' ? SIGN_UP_ROLE : to}
-                    onClick={() => setMenuOpen(false)}
-                    className="block text-lg text-gray-700 hover:text-rose-500 transition py-2"
-                  >
-                    {label}
-                  </Link>
-                );
-              })}
+            <div className="px-4 pt-4 pb-2 space-y-4">
+              {/* Mobile Links */}
+              {["Home", "Services", "About", "Sign Up", "Cart", "Wishlist"].map(
+                (label) => {
+                  let to = "/";
+                  switch (label) {
+                    case "Home":
+                      to = "/";
+                      break;
+                    case "Sign Up":
+                      to = SIGN_UP_ROLE;
+                      break;
+                    default:
+                      to = `/${label.toLowerCase().replace(" ", "-")}`;
+                  }
+                  return (
+                    <Link
+                      key={label}
+                      to={to}
+                      onClick={() => setMenuOpen(false)}
+                      className="block text-lg text-gray-700 hover:text-rose-500 transition py-2"
+                    >
+                      {label}
+                    </Link>
+                  );
+                }
+              )}
             </div>
           </motion.nav>
         )}
@@ -104,4 +138,3 @@ const Header: React.FC = () => {
 };
 
 export default Header;
-

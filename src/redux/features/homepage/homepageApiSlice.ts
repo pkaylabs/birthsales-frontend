@@ -1,5 +1,5 @@
 import { api } from "@/app/api/auth";
-import { HomePageData } from "@/redux/type";
+import { HomePageData, Product } from "@/redux/type";
 
 export const homeApiSlice = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -9,8 +9,14 @@ export const homeApiSlice = api.injectEndpoints({
       }),
       providesTags: [{ type: "HomePage", id: "LIST" }],
     }),
+    searchProducts: builder.query<Product[], string>({
+      query: (searchTerm) => ({
+        url: `searchproducts/?query=${encodeURIComponent(searchTerm)}`,
+      }),
+      providesTags: [{ type: "Search", id: "LIST" }],
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetHomePageDataQuery } = homeApiSlice;
+export const { useGetHomePageDataQuery, useSearchProductsQuery } = homeApiSlice;

@@ -1,12 +1,14 @@
 import React from "react";
 import { GrFavorite } from "react-icons/gr";
 import { LuEye } from "react-icons/lu";
-import pad from "@/assets/images/pad.png";
 import { motion } from "framer-motion";
 import { IoStar } from "react-icons/io5";
 import { useNavigate } from "react-location";
 import { Product } from "@/redux/type";
 import { BASE_URL } from "@/constants";
+import { useAppDispatch } from "@/redux";
+import { addToCart } from "@/redux/features/cart/cartSlice";
+import { toast } from "react-toastify";
 
 interface ProductCardProps {
   product: Product;
@@ -20,11 +22,11 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({
   product,
-  onView,
   onFavorite,
   onAddToCart,
 }) => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const {
     id,
     name,
@@ -37,6 +39,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
   } = product;
   const handleView = (id: number) => {
     navigate({ to: `/product-details/${id}` });
+  };
+
+  const handleAddToCart = () => {
+    if (onAddToCart) {
+      return onAddToCart(Number(id));
+    }
+    dispatch(addToCart({ product, quantity: 1 }));
+    toast.success(`Added "${product.name}" to cart`)
   };
 
   return (
@@ -95,7 +105,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           animate={{ y: "100%", opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.3 }}
-          onClick={() => onAddToCart?.(Number(id))}
+          onClick={handleAddToCart}
         >
           <p className="font-medium text-white text-base mobile:text-[12px] tablet:text-sm desktop:text-base">
             Add To Cart
