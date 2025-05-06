@@ -61,9 +61,9 @@ const UserDetails = lazy(() => import("@/pages/admin/users/UserDetails"));
 const ProductsPage = lazy(() => import("@/pages/admin/products"));
 const Category = lazy(() => import("@/pages/admin/category"));
 const ServicesPage = lazy(() => import("@/pages/admin/services"));
-const AdminServiceDetails = lazy(
-  () => import("@/pages/admin/services/AdminServiceDetails")
-);
+// const AdminServiceDetails = lazy(
+//   () => import("@/pages/admin/services/AdminServiceDetails")
+// );
 
 const SubscriptionPlansPage = lazy(
   () => import("@/pages/admin/plans/SubscriptionPlansPage")
@@ -237,15 +237,15 @@ const routes: RouteProps[] = [
         ),
         meta: { layout: "Admin" },
       },
-      {
-        path: "/:id",
-        element: (
-          <Suspense fallback={<div>Loading...</div>}>
-            <AdminServiceDetails />
-          </Suspense>
-        ),
-        meta: { layout: "Admin" },
-      },
+      // {
+      //   path: "/:id",
+      //   element: (
+      //     <Suspense fallback={<div>Loading...</div>}>
+      //       <AdminServiceDetails />
+      //     </Suspense>
+      //   ),
+      //   meta: { layout: "Admin" },
+      // },
     ],
   },
 
