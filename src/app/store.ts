@@ -18,7 +18,7 @@ import { logoutMiddleware } from "./middleware/logout";
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["auth", "cart"], // only auth slice will be persisted
+  whitelist: ["auth", "cart"], // only auth and cart slice will be persisted
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

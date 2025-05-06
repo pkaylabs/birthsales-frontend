@@ -43,7 +43,6 @@ import { BASE_URL } from "@/constants";
 export default function ProductsPage() {
   // auth user
   const user = useAppSelector((state: RootState) => state.auth.user);
-  const userType = user?.user_type;
   const {
     data: products = [],
     isLoading,
@@ -57,23 +56,24 @@ export default function ProductsPage() {
   const [updateProduct, { isLoading: isPublishing }] =
     useUpdateProductMutation();
 
-  const availableVendors = useMemo(() => {
-    if (userType === "ADMIN") {
-      return allVendors;
-    } else if (userType === "VENDOR") {
-      return allVendors.filter((v) => v.user === user?.id);
-    }
-    return [];
-  }, [userType, allVendors, user]);
 
   // Filter services accordingly
+  // const visibleProducts = useMemo(() => {
+  //   if (user?.is_staff || user?.is_superuser || user?.user_type === "ADMIN")
+  //     return products;
+  //   // vendor user sees only own services
+  //   else if (!user?.is_staff || !user.is_superuser)
+  //     return products.filter((p) =>
+  //       availableVendors.some((v) => v.id.toString() === p.vendor.toString())
+  //     );
+  // }, [products, availableVendors, user]);
   const visibleProducts = useMemo(() => {
-    if (userType === "ADMIN") return products;
+    if (user?.is_staff || user?.is_superuser || user?.user_type === "ADMIN")
+      return products;
     // vendor user sees only own services
-    return products.filter((p) =>
-      availableVendors.some((v) => v.id.toString() === p.vendor.toString())
-    );
-  }, [products, availableVendors, userType]);
+    else if (!user?.is_staff || !user.is_superuser)
+      return products.filter((p) => Number(p.vendor) === user?.id);
+  }, [products, user]);
 
   // table/filter state
   const [searchTerm, setSearchTerm] = useState("");
@@ -98,21 +98,24 @@ export default function ProductsPage() {
     vendor: "",
     in_stock: true as boolean,
     imageFile: null as File | null,
+    imagePreview: "",
   });
 
   // upload spinner
   const [uploading, setUploading] = useState(false);
 
   // filter + paginate
-  const filtered = visibleProducts.filter(
+  const filtered = visibleProducts?.filter(
     (p) =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       String(p.category).toLowerCase().includes(searchTerm.toLowerCase())
   );
-  const paginated = filtered.slice(
+  const paginated = filtered?.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
+
+  console.log(paginated);
 
   // handlers
   const handleChangePage = (_: any, newPage: number) => setPage(newPage);
@@ -122,8 +125,14 @@ export default function ProductsPage() {
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setForm((f) => ({ ...f, imageFile: e.target.files![0] }));
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      setUploading(true);
+      setTimeout(() => {
+        const objectUrl = URL.createObjectURL(file);
+        setForm((f) => ({ ...f, imageFile: file, imagePreview: objectUrl }));
+        setUploading(false);
+      }, 1000);
     }
   };
 
@@ -133,8 +142,9 @@ export default function ProductsPage() {
     fd.append("description", form.description);
     fd.append("price", form.price);
     fd.append("category", form.category);
-    if (userType === "ADMIN") fd.append("vendor", form.vendor);
-    else fd.append("vendor", availableVendors[0].id.toString());
+    if (user?.is_superuser || user?.is_staff || user?.user_type === "ADMIN")
+      fd.append("vendor", form.vendor);
+    else fd.append("vendor", user?.id.toString() || "");
     fd.append("in_stock", String(form.in_stock));
     if (form.imageFile) {
       setUploading(true);
@@ -154,6 +164,7 @@ export default function ProductsPage() {
         category: "",
         in_stock: true,
         imageFile: null,
+        imagePreview: "",
       });
       refetch();
     } catch (err) {
@@ -171,7 +182,7 @@ export default function ProductsPage() {
     setDeletingId(id);
     try {
       await deleteProduct(id).unwrap();
-      setToastMessage("Service deleted");
+      setToastMessage("Product deleted");
       setToastSeverity("success");
     } catch (err: any) {
       setToastMessage(err.data.message || "Delete failed");
@@ -190,6 +201,7 @@ export default function ProductsPage() {
       await updateProduct(form).unwrap();
       setToastMessage("Product published successfully");
       setToastSeverity("success");
+      setToastOpen(true);
       refetch();
       setDetailProduct(null);
     } catch (err) {
@@ -294,7 +306,7 @@ export default function ProductsPage() {
               </Select>
             </FormControl>
             <Button component="label">
-              Upload Image
+              {uploading ? "Uploading" : "Upload Image"}
               <input
                 hidden
                 type="file"
@@ -305,9 +317,17 @@ export default function ProductsPage() {
             {uploading ? (
               <CircularProgress size={24} />
             ) : (
-              form.imageFile && <span>{form.imageFile.name}</span>
+              form.imagePreview && (
+                <img
+                  className="w-[3rem] h-[3rem] rounded-full object-cover"
+                  src={form.imagePreview}
+                  alt="Product image"
+                />
+              )
             )}
-            {userType === "ADMIN" && (
+            {(user?.is_staff ||
+              user?.is_superuser ||
+              user?.user_type === "ADMIN") && (
               <FormControl fullWidth>
                 <InputLabel>Vendor</InputLabel>
                 <Select
@@ -316,8 +336,8 @@ export default function ProductsPage() {
                     setForm((f) => ({ ...f, vendor: e.target.value }))
                   }
                 >
-                  {availableVendors?.map((v) => (
-                    <MenuItem key={v.id} value={v.id}>
+                  {allVendors?.map((v) => (
+                    <MenuItem key={v.id} value={v.user}>
                       {v.vendor_name}
                     </MenuItem>
                   ))}
@@ -398,14 +418,16 @@ export default function ProductsPage() {
                   }
                 </Typography>
               </Box>
-              {userType === "ADMIN" && (
+              {(user?.is_staff ||
+                user?.is_superuser ||
+                user?.user_type === "ADMIN") && (
                 <Box>
                   <Typography variant="subtitle2" color="textSecondary">
                     Vendor
                   </Typography>
                   <Typography>
                     {
-                      availableVendors.find(
+                      allVendors.find(
                         (v) => String(v.id) === String(detailProduct?.vendor)
                       )?.vendor_name
                     }
@@ -425,92 +447,125 @@ export default function ProductsPage() {
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
           <Button onClick={() => setDetailProduct(null)}>Close</Button>
-          {userType === "ADMIN" && !detailProduct?.is_published && (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => handlePublish(detailProduct!)}
-              disabled={isPublishing}
-            >
-              {isPublishing ? "Publishing…" : "Publish"}
-            </Button>
-          )}
+          {(user?.is_staff ||
+            user?.is_superuser ||
+            user?.user_type === "ADMIN") &&
+            !detailProduct?.is_published && (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => handlePublish(detailProduct!)}
+                disabled={isPublishing}
+              >
+                {isPublishing ? "Publishing…" : "Publish"}
+              </Button>
+            )}
         </DialogActions>
       </Dialog>
 
       {/* Products table */}
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Product</TableCell>
-              {userType === "ADMIN" && <TableCell>Vendor</TableCell>}
-              <TableCell>Category</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Stock</TableCell>
-              <TableCell>Published</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginated.map((p) => (
-              <TableRow key={p.id}>
-                <TableCell>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    {/* <img
-                      src={p.image}
-                      width={40}
-                      height={40}
-                      style={{ objectFit: "cover" }}
-                      alt={p.name}
-                    /> */}
-                    {p.name}
-                  </Box>
-                </TableCell>
-                {userType === "ADMIN" && (
+      {!filtered || filtered.length === 0 ? (
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          p={8}
+          m={4}
+          borderRadius={2}
+          boxShadow={3}
+          bgcolor="background.paper"
+        >
+          <Box mb={2}>
+            <Typography variant="h1" color="text.disabled">
+              🛒
+            </Typography>
+          </Box>
+          <Typography variant="h6" gutterBottom>
+            No Products Found
+          </Typography>
+          <Typography color="text.secondary" mb={2}>
+            There are no products to display right now.
+          </Typography>
+        </Box>
+      ) : (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Product</TableCell>
+                {(user?.is_staff ||
+                  user?.is_superuser ||
+                  user?.user_type === "ADMIN") && <TableCell>Vendor</TableCell>}
+                <TableCell>Category</TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell>Stock</TableCell>
+                <TableCell>Published</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginated?.map((p) => (
+                <TableRow key={p.id}>
+                  <TableCell>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      {/* <img
+                    src={p.image}
+                    width={40}
+                    height={40}
+                    style={{ objectFit: "cover" }}
+                    alt={p.name}
+                  /> */}
+                      {p.name}
+                    </Box>
+                  </TableCell>
+                  {(user?.is_staff ||
+                    user?.is_superuser ||
+                    user?.user_type === "ADMIN") && (
+                    <TableCell>
+                      {
+                        allVendors.find(
+                          (v) => String(v.id) === String(p.vendor)
+                        )?.vendor_name
+                      }
+                    </TableCell>
+                  )}
+
                   <TableCell>
                     {
-                      availableVendors.find(
-                        (v) => String(v.id) === String(p.vendor)
-                      )?.vendor_name
+                      categories?.find(
+                        (c) => String(c.id) === String(p.category)
+                      )?.name
                     }
                   </TableCell>
-                )}
 
-                <TableCell>
-                  {
-                    categories?.find((c) => String(c.id) === String(p.category))
-                      ?.name
-                  }
-                </TableCell>
-
-                {/* <TableCell>{p.vendor}</TableCell> */}
-                <TableCell>GHC{p.price}</TableCell>
-                <TableCell>{p.in_stock ? "Yes" : "No"}</TableCell>
-                <TableCell>{p.is_published ? "✅" : "⏳"}</TableCell>
-                <TableCell>
-                  <Button size="small" onClick={() => setDetailProduct(p)}>
-                    View
-                  </Button>
-                </TableCell>
-                <TableCell>
-                  {deletingId === Number(p.id) ? (
-                    <CircularProgress size={24} />
-                  ) : (
-                    <Button
-                      color="error"
-                      onClick={() => handleDelete(Number(p.id))}
-                    >
-                      Delete
+                  {/* <TableCell>{p.vendor}</TableCell> */}
+                  <TableCell>GHC{p.price}</TableCell>
+                  <TableCell>{p.in_stock ? "Yes" : "No"}</TableCell>
+                  <TableCell>{p.is_published ? "✅" : "⏳"}</TableCell>
+                  <TableCell>
+                    <Button size="small" onClick={() => setDetailProduct(p)}>
+                      View
                     </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
+                  </TableCell>
+                  <TableCell>
+                    {deletingId === Number(p.id) ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      <Button
+                        color="error"
+                        onClick={() => handleDelete(Number(p.id))}
+                      >
+                        Delete
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
       {/* Toast */}
       <Snackbar
         open={toastOpen}
@@ -530,7 +585,7 @@ export default function ProductsPage() {
       {/* Pagination */}
       <TablePagination
         component="div"
-        count={filtered.length}
+        count={filtered?.length || 0}
         page={page}
         onPageChange={handleChangePage}
         rowsPerPage={rowsPerPage}

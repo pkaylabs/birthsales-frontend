@@ -3,8 +3,12 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Link, useNavigate } from "react-location";
 import { HOME, LOGIN, LOGIN_BG } from "@/constants";
-import { useRegisterMutation, type AuthCredentials } from "@/redux/features/auth/authApiSlice";
+import {
+  useRegisterMutation,
+  type AuthCredentials,
+} from "@/redux/features/auth/authApiSlice";
 import { CircularProgress } from "@mui/material";
+import { toast } from "react-toastify";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -21,7 +25,9 @@ const SignUp = () => {
     },
     validationSchema: Yup.object({
       name: Yup.string().min(2).max(50).required("Name is required"),
-      email: Yup.string().email("Enter a valid email").required("Email is required"),
+      email: Yup.string()
+        .email("Enter a valid email")
+        .required("Email is required"),
       password: Yup.string().min(8).required("Password is required"),
       phone: Yup.string().min(10).required("Phone is required"),
       address: Yup.string().min(5).required("Address is required"),
@@ -29,9 +35,11 @@ const SignUp = () => {
     onSubmit: async (vals) => {
       try {
         await register(vals).unwrap();
+        toast.success("Login Successful");
         navigate({ to: HOME, replace: true });
-      } catch {
-        // error for display
+      } catch (err: any) {
+        const errMessage = err?.data?.detail || "Login Failed";
+        toast.error(errMessage);
       }
     },
   });
@@ -39,7 +47,7 @@ const SignUp = () => {
   return (
     <div
       className="min-h-screen flex items-center justify-center bg-gray-50 animate-fade-in"
-      style={{ backgroundImage: `url(${LOGIN_BG})`, backgroundSize: 'cover' }}
+      style={{ backgroundImage: `url(${LOGIN_BG})`, backgroundSize: "cover" }}
     >
       <div className="relative bg-white/90 backdrop-blur-lg rounded-xl shadow-lg max-w-md w-full p-8">
         {isLoading && (
@@ -53,7 +61,12 @@ const SignUp = () => {
         <form onSubmit={formik.handleSubmit} className="space-y-5">
           {/** Name */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Name
+            </label>
             <input
               id="name"
               name="name"
@@ -72,7 +85,12 @@ const SignUp = () => {
 
           {/** Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Email
+            </label>
             <input
               id="email"
               name="email"
@@ -85,13 +103,20 @@ const SignUp = () => {
               placeholder="you@example.com"
             />
             {formik.touched.email && formik.errors.email && (
-              <p className="mt-1 text-xs text-rose-500">{formik.errors.email}</p>
+              <p className="mt-1 text-xs text-rose-500">
+                {formik.errors.email}
+              </p>
             )}
           </div>
 
           {/** Phone */}
           <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+            <label
+              htmlFor="phone"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Phone
+            </label>
             <input
               id="phone"
               name="phone"
@@ -104,13 +129,20 @@ const SignUp = () => {
               placeholder="123-456-7890"
             />
             {formik.touched.phone && formik.errors.phone && (
-              <p className="mt-1 text-xs text-rose-500">{formik.errors.phone}</p>
+              <p className="mt-1 text-xs text-rose-500">
+                {formik.errors.phone}
+              </p>
             )}
           </div>
 
           {/** Address */}
           <div>
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+            <label
+              htmlFor="address"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Address
+            </label>
             <input
               id="address"
               name="address"
@@ -123,13 +155,20 @@ const SignUp = () => {
               placeholder="Your address"
             />
             {formik.touched.address && formik.errors.address && (
-              <p className="mt-1 text-xs text-rose-500">{formik.errors.address}</p>
+              <p className="mt-1 text-xs text-rose-500">
+                {formik.errors.address}
+              </p>
             )}
           </div>
 
           {/** Password */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Password
+            </label>
             <input
               id="password"
               name="password"
@@ -142,7 +181,9 @@ const SignUp = () => {
               placeholder="••••••••"
             />
             {formik.touched.password && formik.errors.password && (
-              <p className="mt-1 text-xs text-rose-500">{formik.errors.password}</p>
+              <p className="mt-1 text-xs text-rose-500">
+                {formik.errors.password}
+              </p>
             )}
           </div>
 
@@ -152,7 +193,11 @@ const SignUp = () => {
             disabled={isLoading}
             className="w-full flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white font-medium py-2 rounded-lg transition-colors"
           >
-            {isLoading ? <CircularProgress size={24} color="inherit" /> : "Sign Up"}
+            {isLoading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "Sign Up"
+            )}
           </button>
 
           {error && (
@@ -162,7 +207,7 @@ const SignUp = () => {
           )}
 
           <div className="text-center text-sm">
-            Already have an account?{' '}
+            Already have an account?{" "}
             <Link to={LOGIN} className="text-rose-500 hover:underline">
               Log in
             </Link>

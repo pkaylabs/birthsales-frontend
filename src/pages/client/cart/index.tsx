@@ -19,14 +19,15 @@ const CartPage = () => {
     toast.success("Removed item from cart");
   };
 
-  const handleQuantityChange = (productId: number, quantity: number) => {
-    dispatch(updateQuantity({ productId, quantity }));
-    toast.info(`Quantity updated to ${quantity}`);
+  const handleQuantityChange = (productId: number, qty: number) => {
+    if (qty < 0) return;
+    dispatch(updateQuantity({ productId, quantity: qty }));
+    toast.info(`Quantity updated to ${qty}`);
   };
 
   const handleClearCart = () => {
     dispatch(clearCart());
-    toast.success("Removed all items from cart");
+    toast.success("Cleared cart");
   };
 
   const subTotal = items.reduce(
@@ -35,57 +36,57 @@ const CartPage = () => {
   );
 
   return (
-    <div className="max-w-[80rem] mx-auto p-4 slide-up">
+    <div className="max-w-4xl mx-auto p-4 md:p-6">
       {/* Breadcrumb */}
-      <div className="flex items-center space-x-2 text-gray-400 mb-4">
-        <p className="cursor-pointer" onClick={() => navigate({ to: "/" })}>
+      <nav className="text-gray-500 text-sm flex flex-wrap gap-1 mb-4">
+        <span
+          className="hover:underline cursor-pointer"
+          onClick={() => navigate({ to: "/" })}
+        >
           Home
-        </p>
+        </span>
         <span>/</span>
-        <p className="text-black font-semibold">Cart</p>
-      </div>
+        <span className="font-semibold">Cart</span>
+      </nav>
 
-      {/* make table scrollable on xs */}
+      {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full table-fixed border-separate border-spacing-y-8">
+        <table className="w-full table-fixed border-separate border-spacing-y-4">
           <thead>
-            <tr className="rounded-md shadow-md text-base md:text-lg">
-              <th className="p-6 text-start">Product</th>
-              <th className="p-6 text-end">Price</th>
-              <th className="p-6 text-center">Quantity</th>
-              <th className="p-6 text-end">Subtotal</th>
-              <th className="p-6 text-center">Remove</th>
+            <tr className="bg-gray-100">
+              <th className="p-3 text-left">Product</th>
+              <th className="p-3 text-right hidden sm:table-cell">Price</th>
+              <th className="p-3 text-center">Quantity</th>
+              <th className="p-3 text-right">Subtotal</th>
+              <th className="p-3 text-center">Remove</th>
             </tr>
           </thead>
           <tbody>
-            {items.map(({ product, quantity }) => (
-              <tr
-                key={product.id}
-                className="rounded-md shadow-md text-[12px] md:text-base"
-              >
-                <td className="p-6 text-start">
-                  <div className="flex items-center gap-2">
-                    <img
-                      src={`${BASE_URL}${product.image}`}
-                      alt={product.name}
-                      className="w-10 h-10 object-cover rounded-full hidden md:block"
-                    />
-                    <span>{product.name}</span>
-                  </div>
+            {items.length ? items.map(({ product, quantity }) => (
+              <tr key={product.id} className="even:bg-gray-50">
+                <td className="p-3 flex items-center gap-2">
+                  <img
+                    src={`${BASE_URL}${product.image}`}
+                    alt={product.name}
+                    className="w-10 h-10 rounded-full object-cover hidden sm:block"
+                  />
+                  <span>{product.name}</span>
                 </td>
-                <td className="p-6 text-end">GHC{Math.round(product.price)}</td>
-                <td className="p-6 text-center">
-                  <div className="inline-flex items-center border border-gray-400 rounded-md overflow-hidden">
+                <td className="p-3 text-right hidden sm:table-cell">
+                  GHC{Math.round(product.price)}
+                </td>
+                <td className="p-3 text-center">
+                  <div className="inline-flex items-center border border-gray-300 rounded">
                     <button
                       onClick={() =>
                         handleQuantityChange(Number(product.id), quantity - 1)
                       }
-                      className="px-2 py-1 hover:bg-gray-200 disabled:opacity-50"
                       disabled={quantity === 0}
+                      className="px-2 py-1 hover:bg-gray-200 disabled:opacity-50"
                     >
-                      –
+                      −
                     </button>
-                    <span className="px-4">{quantity}</span>
+                    <span className="px-3">{quantity}</span>
                     <button
                       onClick={() =>
                         handleQuantityChange(Number(product.id), quantity + 1)
@@ -96,23 +97,21 @@ const CartPage = () => {
                     </button>
                   </div>
                 </td>
-                <td className="p-6 text-end">
+                <td className="p-3 text-right">
                   GHC{Math.round(product.price * quantity)}
                 </td>
-                <td className="p-6 text-center">
+                <td className="p-3 text-center">
                   <button
-                    className="p-2 rounded-full hover:bg-red-100 focus:outline-none"
-                    aria-label="Remove from cart"
                     onClick={() => handleRemove(Number(product.id))}
+                    className="p-1 rounded-full hover:bg-red-100"
                   >
-                    <FaTrash className="text-red-600" size={18} />
+                    <FaTrash className="text-red-600" />
                   </button>
                 </td>
               </tr>
-            ))}
-            {items.length === 0 && (
+            )) : (
               <tr>
-                <td colSpan={5} className="p-6 text-center">
+                <td colSpan={5} className="p-6 text-center text-gray-500">
                   Your cart is empty.
                 </td>
               </tr>
@@ -122,64 +121,50 @@ const CartPage = () => {
       </div>
 
       {/* Actions */}
-      <div className="flex flex-col md:flex-row justify-between mt-6 gap-4">
+      <div className="mt-6 flex flex-col sm:flex-row justify-between gap-4">
         <button
-          className="w-32 h-10 rounded-md border border-gray-400 hover:bg-black hover:text-white transition"
           onClick={() => navigate({ to: "/" })}
+          className="px-4 py-2 border border-gray-400 rounded hover:bg-gray-800 hover:text-white transition"
         >
           Return to Shop
         </button>
         <button
-          className="w-32 h-10 rounded-md border border-gray-400 hover:bg-black hover:text-white transition"
           onClick={handleClearCart}
+          className="px-4 py-2 border border-gray-400 rounded hover:bg-gray-800 hover:text-white transition"
         >
           Clear Cart
         </button>
       </div>
 
-      {/* Totals */}
-      <div className="mt-8 flex flex-col md:flex-row justify-between gap-6">
-        {/* Coupon */}
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Coupon Code"
-            className="w-32 md:w-48 h-10 rounded-md border border-gray-500 px-3"
-          />
-          <button className="bg-[#DB4444] text-white h-10 w-32 md:w-48 rounded-md hover:opacity-80 transition">
-            Apply Coupon
-          </button>
-        </div>
-
-        {/* Summary Box */}
-        <div className="w-full md:w-[470px] border-2 border-gray-600 rounded-md p-5 flex flex-col gap-4">
-          <h2 className="font-medium text-lg">Cart Total</h2>
-          <div className="flex justify-between text-base">
+      {/* Totals & Checkout */}
+      <div className="mt-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <div className="w-full lg:w-1/2 border-2 border-gray-300 rounded p-4">
+          <h3 className="font-semibold mb-3">Cart Total</h3>
+          <div className="flex justify-between mb-2">
             <span>Subtotal:</span>
             <span>GHC{Math.round(subTotal)}</span>
           </div>
-          <div className="border-t border-gray-300" />
-          <div className="flex justify-between text-base">
-            <span>Shipping:</span>
-            <span>Free</span>
-          </div>
-          <div className="border-t border-gray-300" />
-          <div className="flex justify-between text-base font-semibold">
+          <div className="border-t border-gray-300 my-2" />
+          <div className="flex justify-between font-semibold">
             <span>Total:</span>
             <span>GHC{Math.round(subTotal)}</span>
           </div>
-          <button
-            className="bg-[#DB4444] text-white py-2 rounded-md hover:opacity-80 transition"
-            onClick={() =>
-              navigate({ to: CHECKOUT, search: { total: subTotal } })
-            }
-          >
-            Proceed to Checkout
-          </button>
         </div>
+        <button
+          onClick={() => navigate({ to: CHECKOUT, search: { total: subTotal } })}
+          disabled={!items.length}
+          className={`w-full lg:w-1/3 py-2 rounded text-white ${
+            items.length
+              ? "bg-[#DB4444] hover:bg-[#c33]"
+              : "bg-gray-400 cursor-not-allowed"
+          } transition`}
+        >
+          Proceed to Checkout
+        </button>
       </div>
     </div>
   );
 };
 
 export default CartPage;
+

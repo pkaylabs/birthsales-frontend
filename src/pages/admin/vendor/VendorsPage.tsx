@@ -17,10 +17,6 @@ import {
   TablePagination,
   Snackbar,
   Alert,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Select,
 } from "@mui/material";
 
 import {
@@ -201,7 +197,7 @@ export default function VendorsPage() {
         <DialogTitle>{editMode ? "Edit Vendor" : "Add Vendor"}</DialogTitle>
         <DialogContent>
           <Box display="flex" flexDirection="column" gap={2} mt={1}>
-            {users && (
+            {/* {users && (
               <FormControl fullWidth>
                 <InputLabel>User Type</InputLabel>
                 <Select
@@ -219,7 +215,7 @@ export default function VendorsPage() {
                   ))}
                 </Select>
               </FormControl>
-            )}
+            )} */}
             <TextField
               label="Name"
               value={current.vendor_name}

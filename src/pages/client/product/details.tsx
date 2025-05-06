@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useMatch, useNavigate } from "react-location";
+import { Link, useMatch } from "react-location";
 import { IoStar } from "react-icons/io5";
 import { MdOutlineFavoriteBorder } from "react-icons/md";
 import { TbTruckDelivery } from "react-icons/tb";
@@ -7,26 +7,21 @@ import { GrPowerCycle } from "react-icons/gr";
 import { motion } from "framer-motion";
 import { useGetProductQuery } from "@/redux/features/products/productsApi";
 import { Box, CircularProgress } from "@mui/material";
-import { BASE_URL, CHECKOUT } from "@/constants";
+import { BASE_URL } from "@/constants";
+import { useAppDispatch } from "@/redux";
+import { addToCart } from "@/redux/features/cart/cartSlice";
+import { toast } from "react-toastify";
 
 const ProductDetails = () => {
-  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const { params } = useMatch();
   const prodId = Number(params.id);
 
   const { data: product, isLoading, isError } = useGetProductQuery(prodId);
 
-  console.log("Product Details", product);
-
   const [gallery, setGallery] = useState<string[]>([]);
-  // const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  // const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>("");
-  const [quantity, setQuantity] = useState<number>(1);
-
-  // const sizes = product?.available_sizes ?? [];
-  // const colors = product?.available_colors ?? [];
-
+  // const [quantity, setQuantity] = useState<number>(1);
   useEffect(() => {
     if (!product) return;
     const imgs: string[] = Array.isArray(product.image)
@@ -38,37 +33,15 @@ const ProductDetails = () => {
     if (imgs.length) setSelectedImage(imgs[0]);
   }, [product]);
 
-  // const images = [
-  //   {
-  //     id: 1,
-  //     src: pad1,
-  //   },
-  //   {
-  //     id: 2,
-  //     src: pad2,
-  //   },
-  //   {
-  //     id: 3,
-  //     src: pad3,
-  //   },
-  //   {
-  //     id: 4,
-  //     src: pad4,
-  //   },
-  // ];
+  const handleAddToCart = () => {
+    if (product) {
+      dispatch(addToCart({ product, quantity: 1 }));
+    } else {
+      toast.error("Product is not available.");
+    }
+    toast.success(`Added "${product?.name}" to cart`);
+  };
 
-  // const sizes = [
-  //   { name: "XS", value: "XS" },
-  //   { name: "S", value: "S" },
-  //   { name: "M", value: "M" },
-  //   { name: "L", value: "L" },
-  //   { name: "XL", value: "XL" },
-  // ];
-
-  // const colors = [
-  //   { name: "bg-[#A0BCE0]", value: "#A0BCE0" },
-  //   { name: "bg-[#E07575]", value: "#E07575" },
-  // ];
 
   if (isLoading) {
     return (
@@ -166,9 +139,9 @@ const ProductDetails = () => {
               <SizePicker options={sizes} onSelect={setSelectedSize} />
             </div> */}
             <div className="flex md:flex-row justify-between items-center flex-col gap-6">
-              <div className="flex-1 flex items-center select-none w-full">
+              {/* <div className="flex-1 flex items-center select-none w-full">
                 <div
-                  onClick={() => quantity > 1 && setQuantity(quantity - 1)}
+                  onClick={() => handleQuantityChange(Number(product.id), quantity - 1)}
                   className="w-10 h-11 flex justify-center items-center border border-black rounded-s text-2xl hover:bg-[#DB4444] hover:text-white hover:border-[#DB4444] transition-all duration-150 ease-in-out cursor-pointer"
                 >
                   -
@@ -182,15 +155,13 @@ const ProductDetails = () => {
                 >
                   +
                 </div>
-              </div>
+              </div> */}
               <div className="flex-1 w-full">
                 <button
                   className="w-full h-11 flex justify-center items-center bg-[#DB4444] text-white rounded-md"
-                  onClick={() => {
-                    navigate({ to: CHECKOUT });
-                  }} // Add your add to cart logic here
+                  onClick={handleAddToCart} // Add your add to cart logic here
                 >
-                  Buy Now
+                  Add To Cart
                 </button>
               </div>
               <div className="w-10 h-11 md:flex items-center justify-center border border-black rounded cursor-pointer hidden">

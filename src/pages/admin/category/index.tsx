@@ -22,6 +22,7 @@ import {
   LinearProgress,
   Snackbar,
   Alert,
+  Typography,
 } from "@mui/material";
 import {
   useAddCategoryMutation,
@@ -29,8 +30,12 @@ import {
   useGetCategoriesQuery,
 } from "@/redux/features/category/productCategoryApiSlice";
 import { CategoryForm } from "@/redux/type";
+import { useAppSelector } from "@/redux";
 
 export default function Category() {
+  const user = useAppSelector((state) => state.auth.user);
+  const isAdmin =
+    user?.is_staff || user?.is_superuser || user?.user_type === "ADMIN";
   const {
     data: categories = [],
     isLoading: isFetching,
@@ -44,14 +49,12 @@ export default function Category() {
   const [newCategory, setNewCategory] = useState<CategoryForm>({
     name: "",
     description: "",
-    imageFile: undefined,
+    imageFile: null,
+    imagePreview: "",
   });
   const [open, setOpen] = useState(false);
 
-  // State for editing an existing category
-  // const [editOpen, setEditOpen] = useState(false);
-  // const [editCategory, setEditCategory] = useState<Category | null>(null);
-
+  const [imageUploading, setImageUploading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -60,59 +63,41 @@ export default function Category() {
   );
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  // Upload status states for adding category
-
-
-  // Upload status states for editing category
-  // const [editImageUploading, setEditImageUploading] = useState(false);
-
   // Handler for new category image upload
   const handleCategoryImageChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = e.target.files && e.target.files[0];
     if (file) {
+      setImageUploading(true);
       // Simulate async upload delay
       setTimeout(() => {
+        const objectUrl = URL.createObjectURL(file);
         setNewCategory((prev) => ({
           ...prev,
-          image: URL.createObjectURL(file),
+          imageFile: file,
+          imagePreview: objectUrl,
         }));
+        setImageUploading(false);
       }, 1000);
     }
   };
-
-  // Handler for editing category image upload
-  // const handleEditCategoryImageChange = (
-  //   e: React.ChangeEvent<HTMLInputElement>
-  // ) => {
-  //   const file = e.target.files && e.target.files[0];
-  //   if (file && editCategory) {
-  //     setEditImageUploading(true);
-  //     setTimeout(() => {
-  //       setEditCategory({ ...editCategory, image: URL.createObjectURL(file) });
-  //       setEditImageUploading(false);
-  //     }, 1000);
-  //   }
-  // };
 
   const handleAddCategory = async () => {
     const newCat = {
       id: categories.length + 1,
       name: newCategory.name,
       description: newCategory.description,
-      image: newCategory.imageFile
-        ? URL.createObjectURL(newCategory.imageFile)
-        : undefined,
+      image: newCategory.imageFile,
     };
     try {
       await addCategory(newCat).unwrap();
       setToastMessage("Category added successfully");
       setToastSeverity("success");
       setOpen(false);
-    } catch (error) {
-      console.error("Failed to add category:", error);
-      setToastMessage("Failed to add category");
+    } catch (err: any) {
+      const errMsg = err.data.message;
+      setToastMessage(errMsg || "Failed to add category");
       setToastSeverity("error");
     } finally {
       setToastOpen(true);
@@ -130,9 +115,8 @@ export default function Category() {
         await deleteCategory(id).unwrap();
         setToastMessage("Category deleted successfully");
         setToastSeverity("success");
-      } catch (error) {
-        console.error("Failed to delete category:", error);
-        setToastMessage("Failed to delete category");
+      } catch (err: any) {
+        setToastMessage(err.data.message || "Failed to delete category");
         setToastSeverity("error");
       } finally {
         setToastOpen(true);
@@ -200,148 +184,88 @@ export default function Category() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setOpen(true)}
-            >
-              Add New Category
-            </Button>
-          </div>
-
-          {/* Add New Category Dialog */}
-          <Dialog open={open} onClose={() => setOpen(false)}>
-            <DialogTitle>Add New Category</DialogTitle>
-            <DialogContent>
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Category Name"
-                variant="outlined"
-                onChange={(e) =>
-                  setNewCategory({ ...newCategory, name: e.target.value })
-                }
-              />
-              <TextField
-                fullWidth
-                margin="dense"
-                label="Description"
-                variant="outlined"
-                onChange={(e) =>
-                  setNewCategory({
-                    ...newCategory,
-                    description: e.target.value,
-                  })
-                }
-              />
-              <div
-                style={{
-                  marginTop: 16,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 16,
-                }}
-              >
-                <Button variant="contained" component="label">
-                  Upload Image
-                  <input
-                    hidden
-                    type="file"
-                    accept="image/*"
-                    onChange={handleCategoryImageChange}
-                  />
-                </Button>
-                {/* {imageUploading ? (
-                  <CircularProgress size={24} />
-                ) : newCategory.image ? (
-                  <img
-                    src={newCategory.image}
-                    alt="Category"
-                    className="w-[3rem] h-[3rem] rounded-full object-cover"
-                  />
-                ) : null} */}
-              </div>
+            {isAdmin && (
               <Button
                 variant="contained"
                 color="primary"
-                sx={{ mt: 2, display: "block" }}
-                onClick={handleAddCategory}
-                disabled={isAdding}
+                onClick={() => setOpen(true)}
               >
-                Save
+                Add New Category
               </Button>
-            </DialogContent>
-          </Dialog>
+            )}
+          </div>
 
-          {/* Edit Category Dialog */}
-          {/* <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
-            <DialogTitle>Edit Category</DialogTitle>
-            <DialogContent>
-              {editCategory && (
-                <>
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Category Name"
-                    variant="outlined"
-                    value={editCategory.name}
-                    onChange={(e) =>
-                      setEditCategory({ ...editCategory, name: e.target.value })
-                    }
-                  />
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Description"
-                    variant="outlined"
-                    value={editCategory.description}
-                    onChange={(e) =>
-                      setEditCategory({
-                        ...editCategory,
-                        description: e.target.value,
-                      })
-                    }
-                  />
-                  <div
-                    style={{
-                      marginTop: 16,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 16,
-                    }}
-                  >
-                    <Button variant="contained" component="label">
-                      Upload Image
-                      <input
-                        hidden
-                        type="file"
-                        accept="image/*"
-                        onChange={handleEditCategoryImageChange}
-                      />
-                    </Button>
-                    {editImageUploading ? (
-                      <CircularProgress size={24} />
-                    ) : editCategory.image ? (
-                      <img
-                        src={editCategory.image}
-                        alt="Category"
-                        width="50"
-                        height="50"
-                      />
-                    ) : null}
-                  </div>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    sx={{ mt: 2, display: "block" }}
-                    onClick={handleEditSave}
-                  >
-                    Save Changes
-                  </Button>
-                </>
+          {/* Add New Category Dialog */}
+          {isAdmin && (
+            <Dialog open={open} onClose={() => setOpen(false)}>
+              {isAdmin ? (
+                <DialogTitle>Add New Category</DialogTitle>
+              ) : (
+                <Box sx={{ height: 0, visibility: "hidden" }} />
               )}
-            </DialogContent>
-          </Dialog> */}
+              <DialogContent>
+                <TextField
+                  fullWidth
+                  margin="dense"
+                  label="Category Name"
+                  variant="outlined"
+                  onChange={(e) =>
+                    setNewCategory({ ...newCategory, name: e.target.value })
+                  }
+                />
+                <TextField
+                  fullWidth
+                  margin="dense"
+                  label="Description"
+                  variant="outlined"
+                  onChange={(e) =>
+                    setNewCategory({
+                      ...newCategory,
+                      description: e.target.value,
+                    })
+                  }
+                />
+                <div
+                  style={{
+                    marginTop: 16,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 16,
+                  }}
+                >
+                  <Button variant="contained" component="label">
+                    Upload Image
+                    <input
+                      hidden
+                      type="file"
+                      accept="image/*"
+                      onChange={handleCategoryImageChange}
+                    />
+                  </Button>
+                  {imageUploading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    newCategory.imagePreview && (
+                      <img
+                        className="w-[3rem] h-[3rem] rounded-full object-cover"
+                        src={newCategory.imagePreview}
+                        alt="Category preview"
+                      />
+                    )
+                  )}
+                </div>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ mt: 2, display: "block" }}
+                  onClick={handleAddCategory}
+                  disabled={isAdding}
+                >
+                  Save
+                </Button>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
 
         {/* Toast */}
@@ -361,56 +285,64 @@ export default function Category() {
         </Snackbar>
 
         {/* Categories Table */}
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Category</TableCell>
-                <TableCell>Description</TableCell>
-                {/* <TableCell>Image</TableCell> */}
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredCategories.map((cat) => (
-                <TableRow key={cat.id}>
-                  <TableCell>{cat.name}</TableCell>
-                  <TableCell>{cat.description}</TableCell>
-                  {/* <TableCell>
-                    {cat.image && (
-                      <img
-                        src={cat.image}
-                        alt={cat.name}
-                        className="w-[3rem] h-[3rem] rounded-full object-cover"
-                      />
-                    )}
-                  </TableCell> */}
-                  <TableCell>
-                    {/* <Button
-                      color="secondary"
-                      onClick={() => {
-                        setEditCategory(cat);
-                        setEditOpen(true);
-                      }}
-                    >
-                      Edit
-                    </Button> */}
-                    {deletingId === Number(cat.id) ? (
-                      <CircularProgress size={24} />
-                    ) : (
-                      <Button
-                        color="error"
-                        onClick={() => handleDelete(Number(cat.id))}
-                      >
-                        Delete
-                      </Button>
-                    )}
-                  </TableCell>
+        {!filteredCategories || filteredCategories.length === 0 ? (
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            p={8}
+            m={4}
+            borderRadius={2}
+            boxShadow={3}
+            bgcolor="background.paper"
+          >
+            <Box mb={2}>
+              <Typography variant="h1" color="text.disabled">
+                🛒
+              </Typography>
+            </Box>
+            <Typography variant="h6" gutterBottom>
+              No Categories Found
+            </Typography>
+            <Typography color="text.secondary" mb={2}>
+              There are no categories to display right now.
+            </Typography>
+          </Box>
+        ) : (
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Category</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {filteredCategories.map((cat) => (
+                  <TableRow key={cat.id}>
+                    <TableCell>{cat.name}</TableCell>
+                    <TableCell>{cat.description}</TableCell>
+
+                    <TableCell>
+                      {deletingId === Number(cat.id) ? (
+                        <CircularProgress size={24} />
+                      ) : (
+                        <Button
+                          color="error"
+                          onClick={() => handleDelete(Number(cat.id))}
+                        >
+                          Delete
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
       </div>
     </div>
   );

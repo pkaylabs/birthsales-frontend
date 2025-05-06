@@ -1,23 +1,45 @@
 import { api } from "@/app/api/auth";
-import { PlaceOrderResponse } from "@/redux/type";
+import type { Order } from "@/redux/type";
 
+export interface NewOrderItem {
+  product: number;
+  quantity: number;
+}
 export interface PlaceOrderRequest {
-    items: { product: number; quantity: number }[];
-    payment_method: "mobile_money";
-    mobile_number: string;
-  }
+  items: NewOrderItem[];
+}
 
-export const orderApi = api.injectEndpoints({
-    endpoints: (builder) => ({
-      placeOrder: builder.mutation<PlaceOrderResponse, PlaceOrderRequest>({
-        query: (body) => ({
-          url: `placeorder/`,
-          method: "POST",
-          body,
-        }),
-        invalidatesTags: ["Orders"],
+export interface OrderResponse {
+  message: string;
+  data: Order;
+}
+
+export const ordersApi = api.injectEndpoints({
+  endpoints: (builder) => ({
+    getOrders: builder.query<Order[], void>({
+      query: () => ({
+        url: `orders/`,
+        method: "GET",
       }),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: "Orders" as const, id })),
+              { type: "Orders", id: "LIST" },
+            ]
+          : [{ type: "Orders", id: "LIST" }],
     }),
-  });
+    placeOrder: builder.mutation<OrderResponse, PlaceOrderRequest>({
+      query: (body) => ({
+        url: `placeorder/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "Orders", id: "LIST" }],
+    }),
+  }),
+  overrideExisting: false,
+});
 
-  export const { usePlaceOrderMutation } = orderApi;
+export const { useGetOrdersQuery, usePlaceOrderMutation } =
+  ordersApi;

@@ -23,7 +23,7 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({
   product,
   onFavorite,
-  onAddToCart,
+  // onAddToCart,
 }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -42,9 +42,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   const handleAddToCart = () => {
-    if (onAddToCart) {
-      return onAddToCart(Number(id));
-    }
+    // if (onAddToCart) {
+    //   return onAddToCart(Number(id));
+    // }
     dispatch(addToCart({ product, quantity: 1 }));
     toast.success(`Added "${product.name}" to cart`)
   };

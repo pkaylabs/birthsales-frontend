@@ -125,7 +125,7 @@ export default function AdminLayout() {
   // Build navigation, adding Subscriptions only for admins
   const navigation = [...baseNavigation];
 
-  if (userType === "ADMIN") {
+  if (userType === "ADMIN" || user?.is_staff || user?.is_superuser) {
     navigation.push(
       {
         name: "Subscription Packages",
