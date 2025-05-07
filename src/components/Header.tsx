@@ -104,7 +104,7 @@ const Header: React.FC = () => {
           >
             <div className="px-4 pt-4 pb-2 space-y-4">
               {/* Mobile Links */}
-              {["Home", "Services", "About", "Sign Up", "Cart", "Wishlist"].map(
+              {["Home", "Services", "About", "Sign Up", "Cart", "Wishlist", "Account"].map(
                 (label) => {
                   let to = "/";
                   switch (label) {

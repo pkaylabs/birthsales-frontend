@@ -25,20 +25,25 @@ import {
   LinearProgress,
   CircularProgress,
   Skeleton,
+  Typography,
+  Divider,
 } from "@mui/material";
 import {
   useGetServicesQuery,
   useAddServiceMutation,
-  // useUpdateServiceMutation,
   useDeleteServiceMutation,
-  ServiceDto,
 } from "@/redux/features/services/servicesApi";
 import { useGetVendorsQuery } from "@/redux/features/vendor/vendorApiSlice";
 import { useAppSelector } from "@/redux";
 import { RootState } from "@/app/store";
-import { ServiceForm } from "@/redux/type";
+import { Service, ServiceForm } from "@/redux/type";
+import { BASE_URL } from "@/constants";
 
 export default function ServicesPage() {
+  // auth user
+  const user = useAppSelector((state: RootState) => state.auth.user);
+  const userType =
+    user?.is_superuser || user?.is_staff || user?.user_type === "ADMIN";
   const {
     data: services = [],
     isLoading,
@@ -46,47 +51,32 @@ export default function ServicesPage() {
     // refetch,
   } = useGetServicesQuery();
   const [addService, { isLoading: isAdding }] = useAddServiceMutation();
-  // const [updateService] = useUpdateServiceMutation();
   const [deleteService, { isLoading: isDeleting }] = useDeleteServiceMutation();
 
   // vendors list for admin
-  const { data: allVendors = [] } = useGetVendorsQuery();
+  const { data: allVendors = [] } = useGetVendorsQuery(undefined, {
+    skip: !userType,
+  });
 
-  // auth user
-  const user = useAppSelector((state: RootState) => state.auth.user);
-  const userType = user?.user_type;
-
-  // compute available providers
-  const availableVendors = useMemo(() => {
-    if (userType === "ADMIN") {
-      return allVendors;
-    } else if (userType === "VENDOR") {
-      return allVendors.filter((v) => v.user === user?.id);
-    }
-    return [];
-  }, [userType, allVendors, user]);
-
-  // Filter services accordingly
   const visibleServices = useMemo(() => {
-    if (userType === "ADMIN") return services;
+    if (userType) return services;
     // vendor user sees only own services
-    return services.filter((s) =>
-      availableVendors.some((v) => v.vendor_id === s.vendor.vendor_id)
-    );
-  }, [services, availableVendors, userType]);
+    else return services.filter((s) => s.vendor.user === user?.id);
+  }, [services, userType, user]);
 
   // Local state for dialogs & form
   const [openAdd, setOpenAdd] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [openEdit, setOpenEdit] = useState(false);
-  // const [editService, setEditService] = useState<ServiceDto | null>(null);
+  const [detailService, setDetailService] = useState<Service | null>(null);
   const [form, setForm] = useState<ServiceForm>({
     name: "",
     description: "",
-    price: 0,
+    price: "",
     // category: "",
     vendor_id: "",
-    imageFile: undefined,
+    imageFile: null,
+    imagePreview: "",
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [toastOpen, setToastOpen] = useState(false);
@@ -103,9 +93,14 @@ export default function ServicesPage() {
   );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files && e.target.files?.[0];
     if (file) {
-      setForm((f) => ({ ...f, imageFile: file }));
+      setUploading(true);
+      setTimeout(() => {
+        const objectUrl = URL.createObjectURL(file);
+        setForm((f) => ({ ...f, imageFile: file, imagePreview: objectUrl }));
+        setUploading(false);
+      }, 1000);
     }
   };
 
@@ -115,9 +110,8 @@ export default function ServicesPage() {
     fd.append("name", form.name);
     fd.append("description", form.description);
     fd.append("price", form.price.toString());
-    // fd.append("category", form.category);
-    if (userType === "ADMIN") fd.append("vendor_id", form.vendor_id);
-    else fd.append("vendor_id", availableVendors[0].vendor_id);
+    if (userType) fd.append("vendor_id", form.vendor_id);
+    else fd.append("vendor_id", user?.id?.toString() || "");
     if (form.imageFile) {
       fd.append("image", form.imageFile);
     }
@@ -134,28 +128,6 @@ export default function ServicesPage() {
       setToastOpen(true);
     }
   };
-
-  const handleEdit = (service: ServiceDto) => {
-    // setEditService(service);
-    setForm(service);
-    setOpenEdit(true);
-  };
-
-  // const handleSaveEdit = async () => {
-  //   if (!editService) return;
-  //   try {
-  //     await updateService(form).unwrap();
-  //     setToastMessage("Service updated");
-  //     setToastSeverity("success");
-  //     setOpenEdit(false);
-  //   } catch (err) {
-  //     console.error(err);
-  //     setToastMessage("Update failed");
-  //     setToastSeverity("error");
-  //   } finally {
-  //     setToastOpen(true);
-  //   }
-  // };
 
   const handleDelete = async (id?: number) => {
     if (!id) return;
@@ -262,12 +234,12 @@ export default function ServicesPage() {
                 type="number"
                 value={form.price}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, price: Number(e.target.value) }))
+                  setForm((f) => ({ ...f, price: e.target.value }))
                 }
                 fullWidth
               />
               <Button component="label" variant="outlined">
-                Upload Image
+                {uploading ? "Uploading" : "Upload Image"}
                 <input
                   type="file"
                   hidden
@@ -275,29 +247,19 @@ export default function ServicesPage() {
                   onChange={handleFileChange}
                 />
               </Button>
-              {form.imageFile && <span>{form.imageFile.name}</span>}
-              {/* <FormControl fullWidth>
-                <InputLabel>Category</InputLabel>
-                <Select
-                  value={form.category}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, category: e.target.value }))
-                  }
-                >
-                  {[
-                    "Electronics",
-                    "Clothing",
-                    "Accessories",
-                    "Beauty",
-                    "Wellness",
-                  ].map((cat) => (
-                    <MenuItem key={cat} value={cat}>
-                      {cat}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl> */}
-              {userType === "ADMIN" && (
+              {uploading ? (
+                <CircularProgress size={24} />
+              ) : (
+                form.imagePreview && (
+                  <img
+                    className="w-[3rem] h-[3rem] rounded-full object-cover"
+                    src={form.imagePreview}
+                    alt="Service image"
+                  />
+                )
+              )}
+
+              {userType && (
                 <FormControl fullWidth>
                   <InputLabel>Vendor</InputLabel>
                   <Select
@@ -306,15 +268,14 @@ export default function ServicesPage() {
                       setForm((f) => ({ ...f, vendor_id: e.target.value }))
                     }
                   >
-                    {availableVendors?.map((v) => (
-                      <MenuItem key={v.id} value={v.vendor_id}>
+                    {allVendors?.map((v) => (
+                      <MenuItem key={v.id} value={v.user}>
                         {v.vendor_name}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
               )}
-              {/* Optionally allow setting bookings on creation */}
               <Button
                 variant="contained"
                 onClick={handleAdd}
@@ -325,87 +286,6 @@ export default function ServicesPage() {
             </Box>
           </DialogContent>
         </Dialog>
-
-        {/* Edit Dialog */}
-        <Dialog
-          open={openEdit}
-          onClose={() => setOpenEdit(false)}
-          fullWidth
-          maxWidth="sm"
-        >
-          <DialogTitle>Edit Service</DialogTitle>
-          <DialogContent>
-            <Box display="flex" flexDirection="column" gap={2}>
-              <TextField
-                label="Name"
-                value={form.name}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, name: e.target.value }))
-                }
-                fullWidth
-              />
-              <TextField
-                label="Description"
-                value={form.description}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, description: e.target.value }))
-                }
-                fullWidth
-              />
-              <TextField
-                label="Price"
-                type="number"
-                value={form.price}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, price: Number(e.target.value) }))
-                }
-                fullWidth
-              />
-              {/* <FormControl fullWidth>
-                <InputLabel>Category</InputLabel>
-                <Select
-                  value={form.category}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, category: e.target.value }))
-                  }
-                >
-                  {[
-                    "Electronics",
-                    "Clothing",
-                    "Accessories",
-                    "Beauty",
-                    "Wellness",
-                  ].map((cat) => (
-                    <MenuItem key={cat} value={cat}>
-                      {cat}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl> */}
-              {userType === "ADMIN" && (
-                <FormControl fullWidth>
-                  <InputLabel>Vendor</InputLabel>
-                  <Select
-                    value={form.vendor_id}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, vendor_id: e.target.value }))
-                    }
-                  >
-                    {availableVendors?.map((v) => (
-                      <MenuItem key={v.id} value={v.vendor_id}>
-                        {v.vendor_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              )}
-              {/* <Button variant="contained" onClick={handleSaveEdit}>
-                Save Changes
-              </Button> */}
-            </Box>
-          </DialogContent>
-        </Dialog>
-
         {/* Toast */}
         <Snackbar
           open={toastOpen}
@@ -423,67 +303,157 @@ export default function ServicesPage() {
         </Snackbar>
 
         {/* Table */}
-        <TableContainer component={Paper} sx={{ width: "100%" }}>
-          <Table sx={{ minWidth: 650 }} aria-label="services table">
-            <TableHead>
-              <TableRow>
-                <TableCell align="left">Name</TableCell>
-                <TableCell align="left">Description</TableCell>
-                <TableCell>Price</TableCell>
-                {/* <TableCell>Category</TableCell> */}
-                {userType === "ADMIN" && (
-                  <TableCell align="left">Vendor</TableCell>
-                )}
-                <TableCell align="center">Bookings</TableCell>
-                <TableCell align="center">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filtered.map((s) => (
-                <TableRow key={s.id} hover>
-                  <TableCell align="left">{s.name}</TableCell>
-                  <TableCell align="left">{s.description}</TableCell>
-                  <TableCell>GHC{s.price}</TableCell>
-                  {/* <TableCell>{s.category}</TableCell> */}
+        {!filtered || filtered.length === 0 ? (
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            p={8}
+            m={4}
+            borderRadius={2}
+            boxShadow={3}
+            bgcolor="background.paper"
+          >
+            <Box mb={2}>
+              <Typography variant="h1" color="text.disabled">
+                🛒
+              </Typography>
+            </Box>
+            <Typography variant="h6" gutterBottom>
+              No Services Found
+            </Typography>
+            <Typography color="text.secondary" mb={2}>
+              There are no services to display right now.
+            </Typography>
+          </Box>
+        ) : (
+          <TableContainer component={Paper} sx={{ width: "100%" }}>
+            <Table sx={{ minWidth: 650 }} aria-label="services table">
+              <TableHead>
+                <TableRow>
+                  <TableCell align="left">Name</TableCell>
+                  {userType && <TableCell align="left">Vendor</TableCell>}
+                  <TableCell align="left">Description</TableCell>
+                  <TableCell>Price</TableCell>
+                  {/* <TableCell>Category</TableCell> */}
 
-                  {userType === "ADMIN" && (
-                    <TableCell align="left">
-                      {
-                        availableVendors.find(
-                          (v) => v.vendor_id === s.vendor.vendor_id
-                        )?.vendor_name
-                      }
-                    </TableCell>
-                  )}
-
-                  <TableCell align="center">{s.bookings}</TableCell>
-                  <TableCell align="center">
-                    <Button
-                      onClick={() => {
-                        handleEdit(s);
-                      }}
-                    >
-                      View
-                    </Button>
-                  </TableCell>
-                  <TableCell>
-                    {deletingId === s.id ? (
-                      <CircularProgress size={24} />
-                    ) : (
-                      <Button
-                        color="error"
-                        onClick={() => handleDelete(Number(s.id))}
-                      >
-                        Delete
-                      </Button>
-                    )}
-                  </TableCell>
+                  <TableCell align="center">Bookings</TableCell>
+                  <TableCell align="center">Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {filtered.map((s) => (
+                  <TableRow key={s.id} hover>
+                    <TableCell align="left">{s.name}</TableCell>
+                    {userType && (
+                      <TableCell align="left">
+                        {
+                          allVendors.find(
+                            (v) => v.vendor_id === s.vendor.vendor_id
+                          )?.vendor_name
+                        }
+                      </TableCell>
+                    )}
+                    <TableCell align="left">{s.description}</TableCell>
+                    <TableCell>GHC{s.price}</TableCell>
+                    {/* <TableCell>{s.category}</TableCell> */}
+
+                    <TableCell align="center">{s.bookings}</TableCell>
+                    <TableCell align="center">
+                      <Button
+                        onClick={() => {
+                          setDetailService(s);
+                        }}
+                      >
+                        View
+                      </Button>
+                    </TableCell>
+                    <TableCell>
+                      {deletingId === s.id ? (
+                        <CircularProgress size={24} />
+                      ) : (
+                        <Button
+                          color="error"
+                          onClick={() => handleDelete(Number(s.id))}
+                        >
+                          Delete
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
       </div>
+      <Dialog
+        open={!!detailService}
+        onClose={() => setDetailService(null)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>
+          <Typography variant="h6">{detailService?.name}</Typography>
+        </DialogTitle>
+        <Divider />
+        <DialogContent dividers>
+          <Box display="flex" flexDirection="column" gap={2}>
+            {/* Image */}
+            {detailService?.image && (
+              <Box
+                component="img"
+                src={`${BASE_URL}${detailService.image}`}
+                alt={detailService.name}
+                sx={{
+                  width: "100%",
+                  height: 200,
+                  objectFit: "cover",
+                  borderRadius: 1,
+                }}
+              />
+            )}
+
+            {/* Details Grid */}
+            <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
+              <Box>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Price
+                </Typography>
+                <Typography>${detailService?.price}</Typography>
+              </Box>
+              <Box></Box>
+              <Box gridColumn="1 / -1">
+                <Typography variant="subtitle2" color="textSecondary">
+                  Description
+                </Typography>
+                <Typography>{detailService?.description}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Bookings
+                </Typography>
+                <Typography>{detailService?.bookings}</Typography>
+              </Box>
+              {userType && (
+                <Box>
+                  <Typography variant="subtitle2" color="textSecondary">
+                    Vendor
+                  </Typography>
+                  <Typography>
+                    {
+                      allVendors.find(
+                        (v) => v.vendor_id === detailService?.vendor.vendor_id
+                      )?.vendor_name
+                    }
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 import type { User } from "@/redux/type";
 
+
 interface AuthResponse {
   token: string | null;
   user: User | null;
@@ -24,6 +25,7 @@ const authSlice = createSlice({
     logout: (state) => {
       state.token = null;
       state.user = null;
+      
     },
   },
 });

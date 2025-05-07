@@ -23,12 +23,11 @@ import {
   Alert,
 } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material/Select";
-import { Add, Edit, Delete } from "@mui/icons-material";
+import { Add, Delete, Info } from "@mui/icons-material";
 
 import {
   useGetPlansQuery,
   useAddPlanMutation,
-  useUpdatePlanMutation,
   useDeletePlanMutation,
 } from "@/redux/features/plans/plansApi";
 
@@ -45,7 +44,6 @@ export default function SubscriptionPlansPage() {
     isError,
   } = useGetPlansQuery();
   const [addPlan, { isLoading: isAdding }] = useAddPlanMutation();
-  const [updatePlan, { isLoading: isUpdating }] = useUpdatePlanMutation();
   const [deletePlan, { isLoading: isDeleting }] = useDeletePlanMutation();
 
   // Delete confirmation dialog state
@@ -60,7 +58,7 @@ export default function SubscriptionPlansPage() {
 
   // Dialog state and form state
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
+  const [viewingPlan, setViewingPlan] = useState<Plan | null>(null);
   const [form, setForm] = useState<Omit<Plan, "id">>({
     name: "",
     price: "0",
@@ -70,19 +68,7 @@ export default function SubscriptionPlansPage() {
 
   // Handlers
   const openAdd = () => {
-    setEditingPlan(null);
     setForm({ name: "", price: "0", interval: "month", description: "" });
-    setDialogOpen(true);
-  };
-
-  const openEdit = (plan: Plan) => {
-    setEditingPlan(plan);
-    setForm({
-      name: plan.name,
-      price: plan.price,
-      interval: plan.interval,
-      description: plan.description,
-    });
     setDialogOpen(true);
   };
 
@@ -106,13 +92,8 @@ export default function SubscriptionPlansPage() {
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      if (editingPlan) {
-        await updatePlan({ id: editingPlan.id, ...form }).unwrap();
-        setToastMessage("Plan updated successfully!");
-      } else {
-        await addPlan(form).unwrap();
-        setToastMessage("Plan added successfully!");
-      }
+      await addPlan(form).unwrap();
+      setToastMessage("Plan added successfully!");
       setToastSeverity("success");
       setToastOpen(true);
       close();
@@ -146,7 +127,7 @@ export default function SubscriptionPlansPage() {
     }
   };
 
-  const loadingOverlay = isFetching || isAdding || isUpdating || isDeleting;
+  const loadingOverlay = isFetching || isAdding || isDeleting;
 
   return (
     <Box p={4}>
@@ -168,6 +149,30 @@ export default function SubscriptionPlansPage() {
         <Box display="flex" justifyContent="center" mt={4}>
           <CircularProgress />
         </Box>
+      ) : !plans || plans.length === 0 ? (
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          p={8}
+          m={4}
+          borderRadius={2}
+          boxShadow={3}
+          bgcolor="background.paper"
+        >
+          <Box mb={2}>
+            <Typography variant="h1" color="text.disabled">
+              🛒
+            </Typography>
+          </Box>
+          <Typography variant="h6" gutterBottom>
+            No Packages Found
+          </Typography>
+          <Typography color="text.secondary" mb={2}>
+            There are no packages to display right now.
+          </Typography>
+        </Box>
       ) : (
         <Table>
           <TableHead>
@@ -187,8 +192,8 @@ export default function SubscriptionPlansPage() {
                 <TableCell>{plan.interval}</TableCell>
                 <TableCell>{plan.description}</TableCell>
                 <TableCell align="right">
-                  <IconButton onClick={() => openEdit(plan)}>
-                    <Edit />
+                  <IconButton onClick={() => setViewingPlan(plan)}>
+                    <Info />
                   </IconButton>
                   <IconButton onClick={() => requestDelete(plan)}>
                     <Delete />
@@ -200,9 +205,9 @@ export default function SubscriptionPlansPage() {
         </Table>
       )}
 
-      {/* Add/Edit Dialog */}
+      {/* Add Dialog */}
       <Dialog open={dialogOpen} onClose={close} fullWidth maxWidth="sm">
-        <DialogTitle>{editingPlan ? "Edit Plan" : "Add Plan"}</DialogTitle>
+        <DialogTitle>{"Add Plan"}</DialogTitle>
         <form onSubmit={onSubmit}>
           <DialogContent dividers>
             <Box display={"flex"} flexDirection={"column"} gap={2}>
@@ -248,10 +253,39 @@ export default function SubscriptionPlansPage() {
           <DialogActions>
             <Button onClick={close}>Cancel</Button>
             <Button type="submit" variant="contained">
-              {editingPlan ? "Save Changes" : "Create Plan"}
+              {isAdding ? "Creating..." : "Create Plan"}
             </Button>
           </DialogActions>
         </form>
+      </Dialog>
+      {/* Plan details */}
+      <Dialog
+        open={!!viewingPlan}
+        onClose={() => setViewingPlan(null)}
+        fullWidth
+      >
+        <DialogTitle>Plan Details</DialogTitle>
+        <DialogContent dividers>
+          {viewingPlan && (
+            <Box display="flex" flexDirection="column" gap={2}>
+              <Typography>
+                <strong>Name:</strong> {viewingPlan.name}
+              </Typography>
+              <Typography>
+                <strong>Price:</strong> GHC{viewingPlan.price}
+              </Typography>
+              <Typography>
+                <strong>Interval:</strong> {viewingPlan.interval}
+              </Typography>
+              <Typography>
+                <strong>Description:</strong> {viewingPlan.description}
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewingPlan(null)}>Close</Button>
+        </DialogActions>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
@@ -277,7 +311,7 @@ export default function SubscriptionPlansPage() {
         open={toastOpen}
         autoHideDuration={3000}
         onClose={() => setToastOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
           onClose={() => setToastOpen(false)}

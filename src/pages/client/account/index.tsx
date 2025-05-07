@@ -1,6 +1,21 @@
+import { useAppDispatch, useAppSelector } from "@/redux";
+import { logout } from "@/redux/features/auth/authSlice";
 import React from "react";
+import { useNavigate } from "react-location";
+import { toast } from "react-toastify";
+
 
 const Account = () => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    toast.success("Logout Successful")
+    navigate({ to: "/login", replace: true });
+  };
+
   return (
     <main className="w-full max-w-[80rem] mx-auto slide-up">
       <div className="mt-6 flex items-center justify-between">
@@ -9,7 +24,7 @@ const Account = () => {
           <p className="text-black">My Account</p>
         </div>
         <div className="text-black">
-          Welcome! <span className="text-[#DB4444]">Jamal Nasir</span>
+          Welcome! <span className="text-[#DB4444]">{user?.name}</span>
         </div>
       </div>
 
@@ -45,6 +60,12 @@ const Account = () => {
               <h1 className="font-medium text-base">My WishList</h1>
               <div className=" px-3"></div>
             </div>
+            <button
+              onClick={handleLogout}
+              className="mt-6 w-full bg-rose-500 text-white text-center py-2 rounded hover:bg-red-600 transition"
+            >
+              Logout
+            </button>
           </div>
         </div>
         <div className="flex-1 flex flex-col gap-3 justify-between shadow-lg rounded px-5 py-10">

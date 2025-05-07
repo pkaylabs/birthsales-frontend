@@ -30,17 +30,6 @@ export const serviceApi = api.injectEndpoints({
       query: (service) => ({ url: "services/", method: "POST", body: service }),
       invalidatesTags: [{ type: "Service", id: "LIST" }],
     }),
-    updateService: builder.mutation<
-      Service,
-      Partial<Service> & Pick<Service, "id">
-    >({
-      query: ({ id }) => ({
-        url: `services/`,
-        method: "PATCH",
-        body: { service: Number(id) },
-      }),
-      invalidatesTags: (result, error, { id }) => [{ type: "Service", id }],
-    }),
     deleteService: builder.mutation<{ success: boolean; id: number }, number>({
       query: (id) => ({
         url: `services/`,
@@ -57,6 +46,5 @@ export const {
   useGetServicesQuery,
   useGetServiceQuery,
   useAddServiceMutation,
-  useUpdateServiceMutation,
   useDeleteServiceMutation,
 } = serviceApi;

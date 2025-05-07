@@ -1,181 +1,160 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
-  Card,
-  CardContent,
+  Box,
+  Paper,
   Typography,
-  Button,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  TextField,
+  Button,
   Dialog,
-  DialogActions,
-  DialogContent,
   DialogTitle,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  Grid,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Skeleton,
 } from "@mui/material";
-import { SelectChangeEvent } from "@mui/material/Select";
-
-interface Order {
-  orderId: string;
-  customer: string;
-  paymentMethod: string;
-  Amount: number;
-  orderDate: string;
-  deliveryDate: string;
-}
-
-type ChangeEventType =
-  | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  | SelectChangeEvent<string>;
-
-const initialOrders: Order[] = [
-  {
-    orderId: "ORD001",
-    customer: "John Doe",
-    paymentMethod: "Credit Card",
-    Amount: 30,
-    orderDate: "2025-02-01",
-    deliveryDate: "2025-02-05",
-  },
-  {
-    orderId: "ORD002",
-    customer: "Jane Smith",
-    paymentMethod: "PayPal",
-    Amount: 20,
-    orderDate: "2025-02-02",
-    deliveryDate: "2025-02-06",
-  },
-];
+import { useGetOrdersQuery } from "@/redux/features/orders/orderApiSlice";
+import { Order } from "@/redux/type";
+import { useAppSelector } from "@/redux";
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>(initialOrders);
-  const [search, setSearch] = useState("");
-  const [newOrder, setNewOrder] = useState<Order>({
-    orderId: "",
-    customer: "",
-    paymentMethod: "",
-    Amount: 0,
-    orderDate: new Date().toISOString().split("T")[0],
-    deliveryDate: "",
-  });
-  const [open, setOpen] = useState(false);
+  const { data: orders = [], isLoading, isError } = useGetOrdersQuery();
+  const user = useAppSelector((user) => user.auth.user);
+  const [selected, setSelected] = useState<Order | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const handleChange = (e: ChangeEventType) => {
-    const { name, value } = e.target;
-    if (name) {
-      setNewOrder((prevState) => ({ ...prevState, [name]: value }));
-    }
-  };
-
-  const handleAddOrder = () => {
-    if (
-      !newOrder.orderId ||
-      !newOrder.customer ||
-      !newOrder.paymentMethod ||
-      !newOrder.deliveryDate
-    )
-      return;
-    setOrders((prevOrders) => [...prevOrders, newOrder]);
-    setNewOrder({
-      orderId: "",
-      customer: "",
-      paymentMethod: "",
-      Amount: 0,
-      orderDate: new Date().toISOString().split("T")[0],
-      deliveryDate: "",
+  const filtered = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (term === "") return orders;
+    return orders.filter((o) => {
+      return (
+        o.id.toString().includes(term) ||
+        o.status.toLowerCase().includes(term) ||
+        o.payment_status.toLowerCase().includes(term) ||
+        o.vendor_id.toLowerCase().includes(term)
+      );
     });
-    setOpen(false);
-  };
+  }, [orders, searchTerm]);
 
-  const handleDeleteOrder = (orderId: string) => {
-    setOrders((prevOrders) =>
-      prevOrders.filter((order) => order.orderId !== orderId)
+  if (isLoading) {
+    return (
+      <Box p={6}>
+        <Box mb={2} display="flex" gap={2}>
+          {[1, 2].map((i) => (
+            <Skeleton variant="rectangular" width="100%" height={80} key={i} />
+          ))}
+        </Box>
+        <Skeleton variant="rectangular" height={40} />
+        <Box mt={2}>
+          {[...Array(5)].map((_, idx) => (
+            <Skeleton
+              key={idx}
+              variant="rectangular"
+              height={40}
+              sx={{ mb: 1 }}
+            />
+          ))}
+        </Box>
+      </Box>
     );
-  };
-
-  const handleViewOrder = (order: Order) => {
-    alert(
-      `Order Details:\nOrder ID: ${order.orderId}\nCustomer: ${order.customer}\nPayment Method: ${order.paymentMethod}\nOrder Date: ${order.orderDate}\nDelivery Date: ${order.deliveryDate}`
+  }
+  if (isError)
+    return (
+      <Box p={4} color="error.main">
+        Error loading Orders
+      </Box>
     );
-  };
 
-  const filteredOrders = orders.filter(
-    (order) =>
-      order.orderId.toLowerCase().includes(search.toLowerCase()) ||
-      order.customer.toLowerCase().includes(search.toLowerCase())
-  );
+  if (!filtered || filtered.length === 0) {
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        p={8}
+        m={4}
+        borderRadius={2}
+        boxShadow={3}
+        bgcolor="background.paper"
+      >
+        <Box mb={2}>
+          <Typography variant="h1" color="text.disabled">
+            🛒
+          </Typography>
+        </Box>
+        <Typography variant="h6" gutterBottom>
+          No Orders Found
+        </Typography>
+        <Typography color="text.secondary" mb={2}>
+          There are no orders to display right now.
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
-    <div style={{ padding: "2rem" }}>
+    <Box p={4}>
       <Typography variant="h4" gutterBottom>
         Orders Management
       </Typography>
-      <Grid container spacing={2} style={{ marginBottom: "1rem" }}>
-        <Grid item xs={12} sm={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Total Orders</Typography>
-              <Typography variant="h5">{orders.length}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: "1rem",
-        }}
-      >
+
+      <Box mb={2}>
         <TextField
-          label="Search Orders"
-          variant="outlined"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          fullWidth
+          placeholder="Filter by ID, status, vendor or payment…"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => setOpen(true)}
-        >
-          Add Order
-        </Button>
-      </div>
-      <TableContainer component={Paper}>
+      </Box>
+
+      <TableContainer component={Paper} elevation={2}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Order ID</TableCell>
-              <TableCell>Customer</TableCell>
-              <TableCell>Payment Method</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Order Date</TableCell>
-              <TableCell>Delivery Date</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>
+                <strong>Order ID</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Items Count</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Total (GHC)</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Status</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Payment Status</strong>
+              </TableCell>
+              <TableCell>
+                <strong>User</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Placed At</strong>
+              </TableCell>
+              <TableCell align="right">
+                <strong>Actions</strong>
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredOrders.map((order) => (
-              <TableRow key={order.orderId}>
-                <TableCell>{order.orderId}</TableCell>
-                <TableCell>{order.customer}</TableCell>
-                <TableCell>{order.paymentMethod}</TableCell>
-                <TableCell>GHC{order.Amount}</TableCell>
-                <TableCell>{order.orderDate}</TableCell>
-                <TableCell>{order.deliveryDate}</TableCell>
-                <TableCell>
-                  <Button onClick={() => handleViewOrder(order)}>View</Button>
-                  <Button onClick={() => handleDeleteOrder(order.orderId)}>
-                    Delete
+            {filtered.map((o) => (
+              <TableRow key={o.id} hover>
+                <TableCell>{o.id}</TableCell>
+                <TableCell>{o.items.length}</TableCell>
+                <TableCell>{o.total_price.toFixed(2)}</TableCell>
+                <TableCell>{o.status}</TableCell>
+                <TableCell>{o.payment_status}</TableCell>
+                <TableCell>{o.user === user?.id && user?.name}</TableCell>
+                <TableCell>{new Date(o.created_at).toDateString()}</TableCell>
+                <TableCell align="right">
+                  <Button size="small" onClick={() => setSelected(o)}>
+                    View
                   </Button>
                 </TableCell>
               </TableRow>
@@ -183,60 +162,62 @@ export default function OrdersPage() {
           </TableBody>
         </Table>
       </TableContainer>
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>Add New Order</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Order ID"
-            name="orderId"
-            fullWidth
-            margin="dense"
-            onChange={handleChange}
-          />
-          <TextField
-            label="Customer Name"
-            name="customer"
-            fullWidth
-            margin="dense"
-            onChange={handleChange}
-          />
-          <FormControl fullWidth margin="dense">
-            <InputLabel>Payment Method</InputLabel>
-            <Select
-              name="paymentMethod"
-              value={newOrder.paymentMethod}
-              onChange={handleChange}
-            >
-              <MenuItem value="Mobile Money">Mobile Money</MenuItem>
-              <MenuItem value="Cash on Delivery">Cash on Delivery</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            label="Order Date"
-            name="orderDate"
-            type="date"
-            fullWidth
-            margin="dense"
-            InputLabelProps={{ shrink: true }}
-            onChange={handleChange}
-          />
-          <TextField
-            label="Delivery Date"
-            name="deliveryDate"
-            type="date"
-            fullWidth
-            margin="dense"
-            InputLabelProps={{ shrink: true }}
-            onChange={handleChange}
-          />
+
+      {/* Detail Dialog */}
+      <Dialog
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Order {selected?.id} — {selected?.status}
+        </DialogTitle>
+        <DialogContent dividers>
+          {selected && (
+            <Box>
+              <Typography variant="subtitle2">
+                User: {selected.user === user?.id && user?.name}
+              </Typography>
+              <Typography variant="subtitle2">
+                Placed: {new Date(selected.created_at).toLocaleString()}
+              </Typography>
+              <Typography variant="subtitle2">
+                Total: GHC{selected.total_price.toFixed(2)}
+              </Typography>
+              <Typography variant="subtitle2">
+                Payment: {selected.payment_status}
+              </Typography>
+              <Typography variant="h6" sx={{ mt: 2 }}>
+                Items
+              </Typography>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Item ID</TableCell>
+                    <TableCell>Product ID</TableCell>
+                    <TableCell>Qty</TableCell>
+                    <TableCell>Price (GHC)</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {selected.items.map((it) => (
+                    <TableRow key={it.id}>
+                      <TableCell>{it.id}</TableCell>
+                      <TableCell>{it.product}</TableCell>
+                      <TableCell>{it.quantity}</TableCell>
+                      <TableCell>{Math.round(it.price)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={handleAddOrder} color="primary">
-            Add
-          </Button>
+          <Button onClick={() => setSelected(null)}>Close</Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Box>
   );
 }

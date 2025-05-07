@@ -9,6 +9,7 @@ import {
   TableBody,
   CircularProgress,
   TextField,
+  Typography,
 } from "@mui/material";
 
 import { useGetSubscriptionsQuery } from "@/redux/features/subscriptions/subscriptionSlice";
@@ -27,23 +28,6 @@ export default function Subscriptions() {
       sub.package_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       sub.vendor_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  // Dialog state and form state
-  //   const [dialogOpen, setDialogOpen] = useState(false);
-  //   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
-
-  console.log("Subscriptions data", subscriptions);
-
-  //   const openEdit = (plan: Plan) => {
-  //     setEditingPlan(plan);
-  //     setForm({
-  //       name: plan.name,
-  //       price: plan.price,
-  //       interval: plan.interval,
-  //       description: plan.description,
-  //     });
-  //     setDialogOpen(true);
-  //   };
 
   if (SubscriptionError) {
     return (
@@ -71,6 +55,30 @@ export default function Subscriptions() {
         {loadingOverlay ? (
           <Box display="flex" justifyContent="center" mt={4}>
             <CircularProgress />
+          </Box>
+        ) : !subscriptions || subscriptions.length === 0 ? (
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            p={8}
+            m={4}
+            borderRadius={2}
+            boxShadow={3}
+            bgcolor="background.paper"
+          >
+            <Box mb={2}>
+              <Typography variant="h1" color="text.disabled">
+                🛒
+              </Typography>
+            </Box>
+            <Typography variant="h6" gutterBottom>
+              No Subscriptions Found
+            </Typography>
+            <Typography color="text.secondary" mb={2}>
+              There are no subscriptions to display right now.
+            </Typography>
           </Box>
         ) : (
           <Table>

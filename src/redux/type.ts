@@ -127,9 +127,10 @@ export interface DashboardData {
 export interface ServiceForm {
   name: string;
   description: string;
-  price: number;
+  price: string;
   vendor_id: string;
-  imageFile?: File;
+  imageFile?: File | null;
+  imagePreview?: string;
 }
 
 export interface Banner {
@@ -149,8 +150,9 @@ export interface Category {
 
 export interface CategoryForm {
   name: string;
-  imageFile?: File;
+  imageFile?: File | null;
   description?: string;
+  imagePreview?: string;
 }
 
 
@@ -198,7 +200,7 @@ export interface OrderItem {
   price: number;
 }
 
-export interface OrderData {
+export interface Order {
   id: number;
   items: OrderItem[];
   payment_status: string;
@@ -210,10 +212,6 @@ export interface OrderData {
   user: number;
 }
 
-export interface PlaceOrderResponse {
-  message: string;
-  data: OrderData;
-}
 
 export interface Subscriptions {
   id: number,

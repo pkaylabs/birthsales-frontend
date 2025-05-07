@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import CardCarousel from "./components/cards-carousel";
 import CategoryCard from "./components/cards/category";
@@ -33,9 +32,11 @@ const Home = () => {
       </Box>
     );
   }
-  if (isError || !data) {
+  if (isError) {
     return <Box className="p-8 text-red-500">Error loading home page.</Box>;
   }
+
+  if (!data) return <div>No data found</div>;
 
   const renderCarousel = (title: string, items: Product[]) => (
     <CardCarousel

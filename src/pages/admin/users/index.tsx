@@ -39,7 +39,6 @@ export default function Users() {
   const { data: users = [], isLoading, isError } = useGetUsersQuery();
   const [addUser] = useAddUserMutation();
   const [updateUser] = useUpdateUserMutation();
-  // const [deleteUser] = useDeleteUserMutation();
 
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
@@ -143,19 +142,6 @@ export default function Users() {
     }
   };
 
-  // const handleDelete = async (id: number) => {
-  //   try {
-  //     await deleteUser(id).unwrap();
-  //     setToastMessage("User deleted successfully");
-  //     setToastSeverity("success");
-  //   } catch (err: any) {
-  //     // console.error("Delete error", err.data.message);
-  //     setToastMessage(err.data.message || "Deletion failed");
-  //     setToastSeverity("error");
-  //   } finally {
-  //     setToastOpen(true);
-  //   }
-  // };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
