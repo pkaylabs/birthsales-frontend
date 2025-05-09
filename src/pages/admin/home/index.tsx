@@ -4,10 +4,13 @@ import FeaturedChart from "../components/featuredChart/FeaturedChart";
 import Tables from "../components/table/Table";
 import Widget from "../components/widgets/Widget";
 import { useGetDashboardQuery } from "@/redux/features/dashboard/dashboardApiSlice";
-import { Box, Skeleton } from "@mui/material";
+import { Box, Button, Skeleton } from "@mui/material";
+import CashoutModal from "../components/CashoutModal";
+import { useState } from "react";
 
 const AdminHomePage = () => {
   const { data, isLoading, isError } = useGetDashboardQuery();
+   const [cashoutOpen, setCashoutOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -68,6 +71,17 @@ const AdminHomePage = () => {
         <Widget type="products" count={data.products} path={ADMIN_PRODUCT} />
         <Widget type="orders" count={data.orders} path={ADMIN_ORDERS} />
         <Widget type="balance" amount={data.balance} path="" />
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => setCashoutOpen(true)}
+        >
+          Cash Out
+        </Button>
+        <CashoutModal
+          open={cashoutOpen}
+          onClose={() => setCashoutOpen(false)}
+        />
       </div>
       {/* Charts */}
       <div className="flex gap-5 py-2 ">
@@ -79,7 +93,17 @@ const AdminHomePage = () => {
         <div className="font-medium mb-4 text-gray-400">
           Latest Transactions
         </div>
-        <Tables rows={data.latest_transactions} />
+        <Tables
+          rows={data.latest_transactions.map((transaction) => ({
+            payment_id: transaction.id.toString(),
+            customer_name: transaction.customer,
+            created_at: transaction.date,
+            what_was_paid_for: transaction.product,
+            amount: transaction.amount,
+            payment_method: transaction.method,
+            status: transaction.status,
+          }))}
+        />
       </div>
     </div>
   );

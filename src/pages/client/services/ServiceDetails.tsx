@@ -1,158 +1,142 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useMatch, useNavigate } from "react-location";
-// import { IoStar } from "react-icons/io5";
-import { TbTruckDelivery } from "react-icons/tb";
-import { GrPowerCycle } from "react-icons/gr";
-import { motion } from "framer-motion";
 import { LocationGenerics } from "@/router/location";
 import { BASE_URL, CONFIRM_ORDER } from "@/constants";
 import { useGetServicesQuery } from "@/redux/features/services/servicesApi";
+import { TbTruckDelivery } from "react-icons/tb";
+// import { GrPowerCycle } from "react-icons/gr";
+import { motion } from "framer-motion";
 
-const ServiceDetails = () => {
+const ServiceDetails: React.FC = () => {
   const { params } = useMatch<LocationGenerics>();
-  const { data: services, isLoading, isError } = useGetServicesQuery();
-
-  const service = services?.find((service) => service.id === Number(params.id));
-
-  console.log("params", params);
-
   const navigate = useNavigate();
+  const { data: services = [], isLoading, isError } = useGetServicesQuery();
+  const service = services.find((s) => s.id === Number(params.id));
 
-  const [selectedImage, setSelectedImage] = useState<string | undefined>(
-    `${BASE_URL}${service?.image}`
+  const [mainImage, setMainImage] = useState<string | undefined>(
+    service ? `${BASE_URL}${service.image}` : undefined
   );
 
-  const handleImageClick = (imageSrc: string | undefined) => {
-    setSelectedImage(imageSrc);
-  };
+  // If service loads after query
+  useEffect(() => {
+    if (service) setMainImage(`${BASE_URL}${service.image}`);
+  }, [service]);
 
-  if (isLoading) {
-    return <div className="text-center">Loading...</div>;
-  }
-  if (isError) {
-    return <div className="text-center">Error loading service details</div>;
-  }
-  if (!service) {
-    return <div className="text-center">Service not found</div>;
-  }
+  if (isLoading) return <p className="py-12 text-center">Loading…</p>;
+  if (isError)
+    return (
+      <p className="py-12 text-center text-red-500">Error loading details.</p>
+    );
+  if (!service) return <p className="py-12 text-center">Service not found.</p>;
 
   return (
-    <main className="max-w-[80rem] mx-5 md:mx-5 lg:mx-auto slide-up">
-      {/* Breadcrum */}
-      <div className="mt-6 flex flex-row items-center  space-x-2 text-gray-400">
-        <p className="text-base md:text-lg">Home</p>
-        <span className="text-base md:text-lg">/</span>
-        <p
-          className="text-base md:text-lg cursor-pointer"
-          onClick={() => navigate({ to: "/services" })}
-        >
-          Service
-        </p>
-        <span className="text-base md:text-lg">/</span>
-        <p className="text-black text-xl md:text-xl">Service Detail</p>
-      </div>
+    <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Breadcrumb */}
+      <nav className="text-gray-500 text-sm mb-6" aria-label="Breadcrumb">
+        <ol className="flex space-x-2">
+          <li>
+            <button
+              onClick={() => navigate({ to: "/" })}
+              className="hover:underline"
+            >
+              Home
+            </button>
+          </li>
+          <li>/</li>
+          <li>
+            <button
+              onClick={() => navigate({ to: "/services" })}
+              className="hover:underline"
+            >
+              Services
+            </button>
+          </li>
+          <li>/</li>
+          <li className="text-gray-900 font-medium">{service.name}</li>
+        </ol>
+      </nav>
 
-      <div className="w-full md:h-[600px] mt-8 flex gap-8 md:flex-row flex-col">
-        {/* Side Images */}
-        <div className="md:w-[170px] md:flex md:flex-col  hidden  justify-between md:gap-4">
-          <motion.div
-            className="w-full aspect-square overflow-hidden rounded-lg  bg-gray-100 flex justify-center items-center cursor-pointer"
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.9, rotate: -3 }}
-            transition={{ type: "spring", stiffness: 300 }}
-            onClick={() => handleImageClick(`${BASE_URL}${service?.image}`)}
-          >
-            <img
-              src={`${BASE_URL}${service?.image}`}
-              alt={`product-${service?.id}`}
-              className="max-w-full max-h-full object-contain"
-            />
-          </motion.div>
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Thumbnails (hidden on small) */}
+        <div className="hidden lg:flex flex-col gap-4 w-24">
+          <motion.img
+            src={`${BASE_URL}${service.image}`}
+            alt={service.name}
+            className="w-full h-24 object-cover rounded cursor-pointer border-2 border-gray-200"
+            whileHover={{ scale: 1.05 }}
+            onClick={() => setMainImage(`${BASE_URL}${service.image}`)}
+          />
+          {/* repeat if multiple images */}
         </div>
 
         {/* Main Image */}
         <motion.div
-          className="flex-1 aspect-[4/3] overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center"
-          key={selectedImage}
-          initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          exit={{ opacity: 0, scale: 0.8, rotate: 10 }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="flex-shrink-0 w-full lg:w-2/5 bg-gray-100 rounded-lg overflow-hidden"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
         >
           <img
-            src={`${BASE_URL}${service?.image}`}
-            alt="main-product"
-            className="max-w-full max-h-full object-contain"
+            src={mainImage}
+            alt={service.name}
+            className="w-full h-auto object-contain"
           />
         </motion.div>
-        <div className="md:flex-1 px-14 flex flex-col w-full justify-between">
-          <div className="pb-10 border-b border-black ">
-            <h2 className="font-semibold md:text-2xl text-lg mb-2">
-              {service?.name}
-            </h2>
-            {/* <div className="flex items-center space-x-3 my-2">
-              <div className="flex items-center space-x-1.5">
-                {[1, 2, 3, 4, 5].map((_, index) => (
-                  <IoStar
-                    key={index}
-                    className={`size-5  ${
-                      index === 4 ? "text-gray-400 " : "text-[#FFAD33]"
-                    }`}
-                    aria-hidden="true"
-                  />
-                ))}
-              </div>
-              <p className="font-medium text-base text-gray-400 ">
-                (150 Reviews)
-              </p>
-            </div> */}
-            <h4 className="md:text-2xl text-xl mb-4">${service?.price} </h4>
-            <p className="text-sm max-w-[373px]">{service?.description}</p>
+
+        {/* Details */}
+        <div className="flex-1 flex flex-col justify-between">
+          <div className="space-y-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+              {service.name}
+            </h1>
+            <p className="text-rose-600 text-xl font-semibold">
+              GHC{Number(service.price)}
+            </p>
+            <p className="text-gray-600 leading-relaxed">
+              {service.description}
+            </p>
           </div>
-          <div className="">
-            <div className="flex justify-between items-center ">
-              <div className="flex-1 ">
-                <button
-                  onClick={() => navigate({ to: CONFIRM_ORDER })}
-                  className="w-full h-11 flex justify-center items-center bg-[#DB4444] text-white rounded-md"
-                >
-                  Book Now
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="border border-[#1C1B1F] rounded md:mt-0 mt-5">
-            <div className="flex items-center gap-5 border-b border-[#1C1B1F] py-5 px-4">
-              <TbTruckDelivery className="size-10 text-black" />
-              <div className="">
-                <h2 className=" font-medium text-base">
-                  FREE AND FAST SERVICE DELIVERY
-                </h2>
-                <p className="text-sm underline">
-                  Enter your postal code for Delivery Availability
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-5 py-5 px-4">
-              <GrPowerCycle className="size-10 text-black" />
-              <div className="">
-                <h2 className=" font-medium text-base">Return Delivery</h2>
-                <p className="text-sm ">
-                  Free 30 Days Delivery Returns.{" "}
-                  <Link to={"#"} className="underline">
-                    Details
-                  </Link>
-                </p>
-              </div>
-            </div>
+
+          {/* Actions */}
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button
+              onClick={() => navigate({ to: CONFIRM_ORDER })}
+              className="w-full py-3 bg-rose-600 text-white rounded-md hover:bg-rose-700 transition"
+            >
+              Book Now
+            </button>
+            <Link
+              to="#"
+              className="w-full py-3 flex items-center justify-center border border-gray-300 rounded-md hover:bg-gray-100 transition"
+            >
+              <span className="mr-2">
+                <TbTruckDelivery size={20} />
+              </span>
+              Delivery Info
+            </Link>
           </div>
         </div>
       </div>
 
-      <section className="mt-20">
-        <h1 className="font-semibold text-2xl mb-2">Related Services</h1>
-        <div className="flex items-center gap-4"></div>
-      </section>
+      {/* Extras */}
+      {/* <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="flex items-start space-x-4 p-4 border rounded-lg">
+          <TbTruckDelivery size={24} className="text-gray-700" />
+          <div>
+            <h2 className="font-semibold">Free & Fast Delivery</h2>
+            <p className="text-sm text-gray-600">Check availability by postal code.</p>
+          </div>
+        </div>
+        <div className="flex items-start space-x-4 p-4 border rounded-lg">
+          <GrPowerCycle size={24} className="text-gray-700" />
+          <div>
+            <h2 className="font-semibold">30-Day Returns</h2>
+            <p className="text-sm text-gray-600">
+              Easy returns within 30 days. <Link to="#" className="underline">Learn more</Link>
+            </p>
+          </div>
+        </div>
+      </div> */}
     </main>
   );
 };

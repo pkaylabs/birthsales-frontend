@@ -7,16 +7,14 @@ import {
 } from "@/redux/features/business/businessApiSlice";
 import { useGetPlansQuery } from "@/redux/features/plans/plansApi";
 import { ADMIN_HOME } from "@/constants";
-import type { Plan, User } from "@/redux/type";
+import type { Plan } from "@/redux/type";
 import { useAppSelector } from "@/redux";
 import { RootState } from "@/app/store";
 import { toast } from "react-toastify";
 import { CircularProgress } from "@mui/material";
+import { useMobilePaymentMutation } from "@/redux/features/orders/orderApiSlice";
 
 const VendorAccount: React.FC = () => {
-  const authUser: User | null = useAppSelector(
-    (state: RootState) => state.auth.user
-  );
   const token = useAppSelector((state: RootState) => state.auth.token);
   const [step, setStep] = useState(1);
   const [accountData, setAccountData] = useState({
@@ -35,22 +33,24 @@ const VendorAccount: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [paymentMethod, setPaymentMethod] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
+  const [network, setNetwork] = useState("");
 
   const [accountError, setAccountError] = useState<string | null>(null);
   const [businessError, setBusinessError] = useState<string | null>(null);
   const [subscribeError, setSubscribeError] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [subscriptionId, setSubscriptionId] = useState<number | null>(null);
 
-  const [register, { isLoading: regLoading, }] =
-    useRegisterMutation();
-  const [createBusiness, { isLoading: bizLoading,  }] =
+  const [register, { isLoading: regLoading }] = useRegisterMutation();
+  const [createBusiness, { isLoading: bizLoading }] =
     useCreateBusinessMutation();
   const {
     data: plans = [],
     isLoading: plansLoading,
     error: plansError,
   } = useGetPlansQuery(undefined, { skip: !token || step < 3 });
-  const [subscribePlan, { isLoading: subLoading,  }] =
-    useSubscribePlanMutation();
+  const [subscribePlan, { isLoading: subLoading }] = useSubscribePlanMutation();
+  const [makePayment, { isLoading: payLoading }] = useMobilePaymentMutation();
 
   const handleAccountChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -72,6 +72,7 @@ const VendorAccount: React.FC = () => {
         password: accountData.password,
         user_type: "VENDOR",
       }).unwrap();
+      toast.success("Success: Proceed to create business profile");
       setStep(2);
     } catch (err: any) {
       const msg =
@@ -86,6 +87,7 @@ const VendorAccount: React.FC = () => {
     setBusinessError(null);
     try {
       await createBusiness(vendorData).unwrap();
+      toast.success("Success: Select a subscription plan");
       setStep(3);
     } catch (err: any) {
       const msg =
@@ -100,8 +102,10 @@ const VendorAccount: React.FC = () => {
     setSubscribeError(null);
     if (!selectedPlan) return;
     try {
-      await subscribePlan({ package: selectedPlan.id }).unwrap();
-      setStep(5);
+      const res = await subscribePlan({ package: selectedPlan.id }).unwrap();
+      setSubscriptionId(res.id);
+      toast.success("Proceed to make payment");
+      setStep(4);
     } catch (err: any) {
       const msg =
         err?.data?.error_message || err?.data?.detail || "Subscription Failed";
@@ -110,7 +114,36 @@ const VendorAccount: React.FC = () => {
     }
   };
 
-  if (step === 5) return <Navigate to={ADMIN_HOME} />;
+  const handlePayment = async () => {
+    setPaymentError(null);
+    if (!selectedPlan) {
+      setPaymentError("No plan selected");
+      return;
+    }
+    if (!paymentMethod) {
+      setPaymentError("Please select a payment method");
+      return;
+    }
+    if (paymentMethod === "mobile_money" && !mobileNumber) {
+      setPaymentError("Please enter your mobile number");
+    }
+    try {
+      await makePayment({
+        subscription: subscriptionId ?? undefined,
+        network,
+        phone: mobileNumber,
+      }).unwrap();
+      toast.success("Payment successful");
+      setStep(5);
+    } catch (err: any) {
+      const msg =
+        err?.data?.error_message || err?.data?.message || "Payment failed";
+      setPaymentError(msg);
+      toast.error(msg);
+    }
+  };
+
+  if (step === 5) return <Navigate to={ADMIN_HOME} replace />;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
@@ -245,6 +278,9 @@ const VendorAccount: React.FC = () => {
                     </button>
                   </div>
                 ))}
+              {subscribeError && (
+                <p className="text-red-600 text-sm">{subscribeError}</p>
+              )}
               <div className="flex justify-between">
                 <button
                   onClick={() => setStep(2)}
@@ -253,16 +289,16 @@ const VendorAccount: React.FC = () => {
                   Back
                 </button>
                 <button
-                  onClick={() => setStep(4)}
-                  disabled={!selectedPlan}
+                  onClick={handlePlanSubscribe}
+                  disabled={!selectedPlan || subLoading}
                   className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                 >
-                  Proceed
+                  {subLoading ? <CircularProgress size={15} /> : "Next"}
                 </button>
               </div>
             </div>
           )}
-          {step === 4 && selectedPlan && (
+          {step === 4 && (
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -280,6 +316,23 @@ const VendorAccount: React.FC = () => {
               {paymentMethod === "mobile_money" && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
+                    Network
+                  </label>
+                  <select
+                    value={network}
+                    onChange={(e) => setNetwork(e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  >
+                    <option value="">Select</option>
+                    <option value="MTN">MTN</option>
+                    <option value="VOD">TELECEL</option>
+                    <option value="AIR">AIRTELTIGO</option>
+                  </select>
+                </div>
+              )}
+              {paymentMethod === "mobile_money" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
                     Mobile Number
                   </label>
                   <input
@@ -289,6 +342,9 @@ const VendorAccount: React.FC = () => {
                   />
                 </div>
               )}
+              {paymentError && (
+                <p className="text-red-600 text-sm">{paymentError}</p>
+              )}
               <div className="flex justify-between">
                 <button
                   onClick={() => setStep(3)}
@@ -297,16 +353,13 @@ const VendorAccount: React.FC = () => {
                   Back
                 </button>
                 <button
-                  onClick={handlePlanSubscribe}
-                  disabled={subLoading || !paymentMethod || !mobileNumber}
+                  onClick={handlePayment}
+                  disabled={payLoading || !paymentMethod || !mobileNumber}
                   className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                 >
-                  {subLoading ? <CircularProgress size={15} /> : "Pay & Finish"}
+                  {payLoading ? <CircularProgress size={15} /> : "Pay & Finish"}
                 </button>
               </div>
-              {subscribeError && (
-                <p className="text-red-600 text-sm">{subscribeError}</p>
-              )}
             </div>
           )}
         </div>

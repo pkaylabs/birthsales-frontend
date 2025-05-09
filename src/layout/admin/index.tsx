@@ -86,7 +86,6 @@ const baseNavigation = [
     icon: ShoppingBagIcon,
     current: false,
   },
-  { name: "Category", href: "/categories", icon: TagIcon, current: false },
 
   {
     name: "Services",
@@ -106,13 +105,13 @@ const baseNavigation = [
     icon: CalendarDaysIcon,
     current: false,
   },
-  {
-    name: "Carts",
-    href: "/admin-carts",
-    icon: ShoppingCartIcon,
-    current: false,
-  },
-  { name: "Ads", href: "/admin-ads", icon: MegaphoneIcon, current: false },
+  // {
+  //   name: "Carts",
+  //   href: "/admin-carts",
+  //   icon: ShoppingCartIcon,
+  //   current: false,
+  // },
+  // { name: "Ads", href: "/admin-ads", icon: MegaphoneIcon, current: false },
 ];
 
 export default function AdminLayout() {
@@ -140,7 +139,13 @@ export default function AdminLayout() {
         current: false,
       },
       { name: "Users", href: "/users", icon: UserGroupIcon, current: false },
-      { name: "Vendors", href: "/vendors", icon: UserGroupIcon, current: false }
+      {
+        name: "Vendors",
+        href: "/vendors",
+        icon: UserGroupIcon,
+        current: false,
+      },
+      { name: "Category", href: "/categories", icon: TagIcon, current: false }
     );
   }
 

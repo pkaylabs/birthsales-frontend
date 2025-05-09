@@ -5,26 +5,23 @@ import { useNavigate } from "react-location";
 
 interface ServiceCardProps {
   service: Service;
-  /** Navigate to detail view */
 }
 
 const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {
   const navigate = useNavigate();
 
-  const handleServiceClick = (id: number) => {
-    navigate({
-      to: `/services/${id}`,
-    });
-  };
-
   return (
     <div
-      onClick={() => handleServiceClick(Number(service.id))}
-      className="w-full   
-                 flex flex-col justify-between mb-6 rounded-xl relative 
-                 hover:scale-90 transform transition-transform duration-500 ease-in-out shadow-lg"
+      onClick={() => navigate({ to: `/services/${service.id}` })}
+      className="
+        cursor-pointer
+        transform hover:-translate-y-1 hover:shadow-2xl transition
+        duration-300 ease-in-out
+        flex flex-col bg-white rounded-lg overflow-hidden shadow-md
+      "
     >
-      <div className="w-full h-48 overflow-hidden rounded-t-xl flex items-center justify-center bg-gray-100">
+      {/* Image */}
+      <div className="bg-gray-100 flex items-center justify-center h-48 sm:h-56 md:h-64">
         <img
           src={`${BASE_URL}${service.image}`}
           alt={service.name}
@@ -32,17 +29,21 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {
         />
       </div>
 
-      <div className="p-2">
-        <h1 className="font-medium text-2xl text-gray-800">{service.name}</h1>
-        <p className="font-normal mobile:text-sm tablet:text-base desktop:text-base large-screen:text-lg desktop-up:text-base text-gray-400">
+      {/* Content */}
+      <div className="p-4 flex-1 flex flex-col justify-between">
+        <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-2">
+          {service.name}
+        </h2>
+        <p className="text-sm md:text-base text-gray-600 mb-4 line-clamp-3">
           {service.description}
         </p>
-        <p className="font-medium mobile:text-base tablet:text-lg desktop:text-lg large-screen:text-xl desktop-up:text-lg">
-          ${service.price}
-        </p>
+        <span className="mt-auto text-lg md:text-xl font-bold text-rose-600">
+          GHC{Math.round(service.price)}
+        </span>
       </div>
     </div>
   );
 };
 
 export default ServiceCard;
+

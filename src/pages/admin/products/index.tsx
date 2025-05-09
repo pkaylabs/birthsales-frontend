@@ -57,23 +57,6 @@ export default function ProductsPage() {
     useUpdateProductMutation();
 
 
-  // Filter services accordingly
-  // const visibleProducts = useMemo(() => {
-  //   if (user?.is_staff || user?.is_superuser || user?.user_type === "ADMIN")
-  //     return products;
-  //   // vendor user sees only own services
-  //   else if (!user?.is_staff || !user.is_superuser)
-  //     return products.filter((p) =>
-  //       availableVendors.some((v) => v.id.toString() === p.vendor.toString())
-  //     );
-  // }, [products, availableVendors, user]);
-  const visibleProducts = useMemo(() => {
-    if (user?.is_staff || user?.is_superuser || user?.user_type === "ADMIN")
-      return products;
-    // vendor user sees only own services
-    else if (!user?.is_staff || !user.is_superuser)
-      return products.filter((p) => Number(p.vendor) === user?.id);
-  }, [products, user]);
 
   // table/filter state
   const [searchTerm, setSearchTerm] = useState("");
@@ -105,7 +88,7 @@ export default function ProductsPage() {
   const [uploading, setUploading] = useState(false);
 
   // filter + paginate
-  const filtered = visibleProducts?.filter(
+  const filtered = products?.filter(
     (p) =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       String(p.category).toLowerCase().includes(searchTerm.toLowerCase())
@@ -144,7 +127,6 @@ export default function ProductsPage() {
     fd.append("category", form.category);
     if (user?.is_superuser || user?.is_staff || user?.user_type === "ADMIN")
       fd.append("vendor", form.vendor);
-    else fd.append("vendor", user?.id.toString() || "");
     fd.append("in_stock", String(form.in_stock));
     if (form.imageFile) {
       setUploading(true);
@@ -156,16 +138,16 @@ export default function ProductsPage() {
       setOpen(false);
       setToastMessage("Product created successfully");
       setToastSeverity("success");
-      setForm({
-        name: "",
-        description: "",
-        price: "",
-        vendor: "",
-        category: "",
-        in_stock: true,
-        imageFile: null,
-        imagePreview: "",
-      });
+      // setForm({
+      //   name: "",
+      //   description: "",
+      //   price: "",
+      //   vendor: "",
+      //   category: "",
+      //   in_stock: true,
+      //   imageFile: null,
+      //   imagePreview: "",
+      // });
       refetch();
     } catch (err) {
       console.error(err);
@@ -390,7 +372,7 @@ export default function ProductsPage() {
                 <Typography variant="subtitle2" color="textSecondary">
                   Price
                 </Typography>
-                <Typography>${detailProduct?.price}</Typography>
+                <Typography>GHC{detailProduct?.price}</Typography>
               </Box>
               <Box>
                 <Typography variant="subtitle2" color="textSecondary">

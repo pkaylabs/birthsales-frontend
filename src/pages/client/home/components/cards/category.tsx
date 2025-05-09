@@ -1,46 +1,66 @@
-import { Category } from "@/redux/type";
+// src/components/cards/CategoryCard.tsx
 import React from "react";
+import { useNavigate } from "react-location";
 import { IoPhonePortraitOutline } from "react-icons/io5";
-// import { IoPhonePortraitOutline } from "react-icons/io5";
+import { Category } from "@/redux/type";
 
-interface CategoryCardProps extends Category {
-  onClick?: (id: number) => void;
-}
+interface CategoryCardProps extends Category {}
 
-const CategoryCard: React.FC<CategoryCardProps> = ({
-  id,
-  name,
-  image,
-  onClick,
-}) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({ id, name, image }) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    // navigate({ to: `/categories/${id}` });
+    navigate({ to: `/` });
+  };
+
   return (
     <div
-      onClick={() => onClick?.(Number(id))}
-      className="group w-full h-full border border-gray-300 rounded-md transition-all duration-150 ease-in-out cursor-pointer
-      flex flex-col items-center justify-center p-4 hover:bg-[#DB4444] hover:border-transparent"
+      onClick={handleClick}
+      className="
+        group 
+        cursor-pointer 
+        border border-gray-300 rounded-lg 
+        p-4 sm:p-6 md:p-8 
+        flex flex-col items-center justify-center 
+        transition-transform transform hover:-translate-y-1 hover:shadow-lg
+        bg-white
+      "
     >
-      {/* <IoPhonePortraitOutline
-        className="transition-all duration-150 ease-in-out text-gray-700 group-hover:text-white text-5xl
-          mobile:text-2xl tablets:text-4xl desktop:text-5xl"
-        aria-hidden="true"
-      /> */}
       {image ? (
         <img
           src={image}
           alt={name}
-          className="w-16 h-16 object-contain mb-2 group-hover:opacity-90"
+          className="
+            mb-4 
+            w-12 h-12 
+            sm:w-16 sm:h-16 
+            md:w-20 md:h-20
+            object-contain
+            group-hover:opacity-90
+          "
         />
       ) : (
-        // <div className="w-16 h-16 bg-gray-100 mb-2 rounded-full" />
         <IoPhonePortraitOutline
-          className="transition-all duration-150 ease-in-out text-gray-700 group-hover:text-white text-5xl
-          mobile:text-2xl tablets:text-4xl desktop:text-5xl"
-          aria-hidden="true"
+          className="
+            mb-4 
+            text-gray-500 
+            text-3xl 
+            sm:text-4xl 
+            md:text-5xl
+            group-hover:text-rose-500
+            transition-colors
+          "
         />
       )}
       <span
-        className="mt-2 text-center transition-all duration-150 ease-in-out text-gray-700 group-hover:text-white
-          mobile:text-sm tablets:text-base desktop:text-lg"
+        className="
+        text-gray-800 
+        text-sm sm:text-base md:text-lg 
+        text-center 
+        group-hover:text-rose-500
+        transition-colors
+      "
       >
         {name}
       </span>
