@@ -25,16 +25,16 @@ const CashoutModal: React.FC<CashoutModalProps> = ({ open, onClose }) => {
   const [phone, setPhone] = useState("");
   const [amount, setAmount] = useState<number>(0);
 
-  const [cashOut, { isLoading }] = useCashoutMutation()
+  const [cashOut, { isLoading }] = useCashoutMutation();
 
   const handleSubmit = async () => {
     try {
       const res = await cashOut({ network, phone, amount }).unwrap();
       if (res.status === "success") {
-        toast.success(res.message);
+        toast.success(res?.transaction?.status);
         onClose();
       } else {
-        toast.error(res.message);
+        toast.error("Transaction failed");
       }
     } catch (err: any) {
       toast.error(err.data?.message || "Cash-out failed");

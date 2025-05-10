@@ -53,6 +53,7 @@ const ServiceDetails: React.FC = () => {
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to book");
     }
+    
   };
 
   if (isLoading) return <p className="py-12 text-center">Loading…</p>;
@@ -116,7 +117,7 @@ const ServiceDetails: React.FC = () => {
         </motion.div>
 
         {/* Details */}
-        <div className="flex-1 flex flex-col justify-between">
+        <div className="flex-1 flex flex-col justify-between w-full">
           <div className="space-y-4">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
               {service.name}
@@ -151,7 +152,7 @@ const ServiceDetails: React.FC = () => {
           </div>
 
           {/* Actions */}
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="mt-6 grid grid-cols-1  gap-4 w-full">
             <button
               onClick={handleBooking}
               disabled={booking}
@@ -159,7 +160,7 @@ const ServiceDetails: React.FC = () => {
             >
               {booking ? "Booking…" : "Book & Pay"}
             </button>
-            <Link
+            {/* <Link
               to="#"
               className="w-full py-3 flex items-center justify-center border border-gray-300 rounded-md hover:bg-gray-100 transition"
             >
@@ -167,7 +168,7 @@ const ServiceDetails: React.FC = () => {
                 <TbTruckDelivery size={20} />
               </span>
               Delivery Info
-            </Link>
+            </Link> */}
           </div>
         </div>
       </div>

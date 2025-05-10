@@ -20,10 +20,14 @@ export interface OrderResponse {
   data: Order;
 }
 
+interface TransType {
+  status: string;
+}
+
 export interface PaymentResponse {
   message: string;
   status: string;
-  transaction: null;
+  transaction: null | TransType;
 }
 
 export interface PaymentRequest {
@@ -65,7 +69,7 @@ export const ordersApi = api.injectEndpoints({
       }),
     }),
     cashout: builder.mutation<
-      { message: string; status: string },
+      { status: string; transaction: TransType },
       CashoutRequest
     >({
       query: (body) => ({
@@ -73,6 +77,7 @@ export const ordersApi = api.injectEndpoints({
         method: "POST",
         body,
       }),
+      invalidatesTags: [{ type: "Dashboard", id: "STATUS" }],
     }),
   }),
   overrideExisting: false,
@@ -82,5 +87,5 @@ export const {
   useGetOrdersQuery,
   usePlaceOrderMutation,
   useMobilePaymentMutation,
-  useCashoutMutation
+  useCashoutMutation,
 } = ordersApi;

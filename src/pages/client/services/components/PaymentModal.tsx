@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import { toast } from "react-toastify";
 import { useMobilePaymentMutation } from "@/redux/features/orders/orderApiSlice";
+import { useNavigate } from "react-location";
 
 interface PaymentModalProps {
   open: boolean;
@@ -26,6 +27,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   onClose,
   bookingId,
 }) => {
+  const navigate = useNavigate();
   const [network, setNetwork] = useState("MTN");
   const [phone, setPhone] = useState("");
   const [payBooking, { isLoading }] = useMobilePaymentMutation();
@@ -40,6 +42,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       if (res.status === "success") {
         toast.success(res.message);
         onClose();
+        navigate({ to: "/" });
       } else {
         toast.error(res.message);
       }
