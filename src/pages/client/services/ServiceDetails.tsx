@@ -1,26 +1,59 @@
 import React, { useState, useEffect } from "react";
 import { Link, useMatch, useNavigate } from "react-location";
 import { LocationGenerics } from "@/router/location";
-import { BASE_URL, CONFIRM_ORDER } from "@/constants";
-import { useGetServicesQuery } from "@/redux/features/services/servicesApi";
+import { BASE_URL } from "@/constants";
+import {
+  useBookServiceMutation,
+  useGetServicesQuery,
+} from "@/redux/features/services/servicesApi";
 import { TbTruckDelivery } from "react-icons/tb";
-// import { GrPowerCycle } from "react-icons/gr";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
+import { TextField } from "@mui/material";
+import PaymentModal from "./components/PaymentModal";
 
 const ServiceDetails: React.FC = () => {
   const { params } = useMatch<LocationGenerics>();
   const navigate = useNavigate();
   const { data: services = [], isLoading, isError } = useGetServicesQuery();
+  const [bookService, { isLoading: booking }] = useBookServiceMutation();
   const service = services.find((s) => s.id === Number(params.id));
+
+  const [bookingId, setBookingId] = useState<number | null>(null);
+  const [payOpen, setPayOpen] = useState(false);
+
+  // default to today
+  const today = new Date().toISOString().split("T")[0];
+  const [date, setDate] = useState(today);
+  const [time, setTime] = useState("08:30");
 
   const [mainImage, setMainImage] = useState<string | undefined>(
     service ? `${BASE_URL}${service.image}` : undefined
   );
 
-  // If service loads after query
+  // refresh mainImage if service loads later
   useEffect(() => {
     if (service) setMainImage(`${BASE_URL}${service.image}`);
   }, [service]);
+
+  const handleBooking = async () => {
+    if (!date || !time) {
+      toast.error("Please select date and time");
+      return;
+    }
+    try {
+      const res = await bookService({
+        service: Number(service?.id),
+        date,
+        time,
+      }).unwrap();
+      setBookingId(res.data.id);
+      toast.success(res.message);
+      setPayOpen(true);
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to book");
+    }
+  };
 
   if (isLoading) return <p className="py-12 text-center">Loading…</p>;
   if (isError)
@@ -66,7 +99,6 @@ const ServiceDetails: React.FC = () => {
             whileHover={{ scale: 1.05 }}
             onClick={() => setMainImage(`${BASE_URL}${service.image}`)}
           />
-          {/* repeat if multiple images */}
         </div>
 
         {/* Main Image */}
@@ -97,13 +129,35 @@ const ServiceDetails: React.FC = () => {
             </p>
           </div>
 
+          {/* Date & Time Pickers */}
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <TextField
+              label="Booking Date"
+              type="date"
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+            <TextField
+              label="Booking Time"
+              type="time"
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              inputProps={{ step: 300 }}
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+            />
+          </div>
+
           {/* Actions */}
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <button
-              onClick={() => navigate({ to: CONFIRM_ORDER })}
+              onClick={handleBooking}
+              disabled={booking}
               className="w-full py-3 bg-rose-600 text-white rounded-md hover:bg-rose-700 transition"
             >
-              Book Now
+              {booking ? "Booking…" : "Book & Pay"}
             </button>
             <Link
               to="#"
@@ -118,25 +172,14 @@ const ServiceDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* Extras */}
-      {/* <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="flex items-start space-x-4 p-4 border rounded-lg">
-          <TbTruckDelivery size={24} className="text-gray-700" />
-          <div>
-            <h2 className="font-semibold">Free & Fast Delivery</h2>
-            <p className="text-sm text-gray-600">Check availability by postal code.</p>
-          </div>
-        </div>
-        <div className="flex items-start space-x-4 p-4 border rounded-lg">
-          <GrPowerCycle size={24} className="text-gray-700" />
-          <div>
-            <h2 className="font-semibold">30-Day Returns</h2>
-            <p className="text-sm text-gray-600">
-              Easy returns within 30 days. <Link to="#" className="underline">Learn more</Link>
-            </p>
-          </div>
-        </div>
-      </div> */}
+      {/* Payment modal when booking succeeds */}
+      {bookingId && (
+        <PaymentModal
+          open={payOpen}
+          bookingId={bookingId}
+          onClose={() => setPayOpen(false)}
+        />
+      )}
     </main>
   );
 };

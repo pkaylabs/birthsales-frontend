@@ -10,8 +10,7 @@ import { useState } from "react";
 
 const AdminHomePage = () => {
   const { data, isLoading, isError } = useGetDashboardQuery();
-   const [cashoutOpen, setCashoutOpen] = useState(false);
-
+  const [cashoutOpen, setCashoutOpen] = useState(false);
   if (isLoading) {
     return (
       <Box className="p-8 space-y-6">
@@ -93,17 +92,7 @@ const AdminHomePage = () => {
         <div className="font-medium mb-4 text-gray-400">
           Latest Transactions
         </div>
-        <Tables
-          rows={data.latest_transactions.map((transaction) => ({
-            payment_id: transaction.id.toString(),
-            customer_name: transaction.customer,
-            created_at: transaction.date,
-            what_was_paid_for: transaction.product,
-            amount: transaction.amount,
-            payment_method: transaction.method,
-            status: transaction.status,
-          }))}
-        />
+        <Tables rows={data.latest_transactions} />
       </div>
     </div>
   );

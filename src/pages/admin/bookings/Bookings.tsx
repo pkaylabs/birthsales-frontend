@@ -1,8 +1,7 @@
-import React from "react";
-import { RootState } from "@/app/store";
+// import React from "react";
+import { useAppSelector } from "@/redux";
 import {
   useGetBookingsQuery,
-  useGetVendorBookingsQuery,
   useUpdateBookingMutation,
 } from "@/redux/features/bookings/bookingsApiSlice";
 import {
@@ -21,36 +20,17 @@ import {
   Typography,
   Skeleton,
 } from "@mui/material";
-import { useAppSelector } from "@/redux";
-
-type Booking = {
-  id: number;
-  user: number;
-  service: number;
-  date: string;
-  status: string;
-  vendor: number;
-};
+import React from "react";
 
 export default function Bookings() {
-  const user = useAppSelector((s: RootState) => s.auth.user);
+  const user = useAppSelector((state) => state.auth.user);
   const isAdmin =
-    user?.is_superuser || user?.is_staff || user?.user_type === "ADMIN";
-
+    user?.is_staff || user?.is_superuser || user?.user_type === "ADMIN";
   const {
     data: allBookings = [],
     isLoading: allLoading,
-    isError: error1,
+    isError: errorAll,
   } = useGetBookingsQuery();
-  const {
-    data: vendorBookings = [],
-    isLoading: vendorLoading,
-    isError: error2,
-  } = useGetVendorBookingsQuery(user?.id || 0, { skip: !user });
-
-  const bookings = isAdmin ? allBookings : vendorBookings;
-  const isLoading = isAdmin ? allLoading : vendorLoading;
-  const isError = isAdmin ? error1 : error2;
 
   const [updateBooking] = useUpdateBookingMutation();
   const [toast, setToast] = React.useState<{
@@ -61,14 +41,22 @@ export default function Bookings() {
 
   const handleStatusChange = async (id: number, status: string) => {
     try {
-      await updateBooking({ id, status }).unwrap();
-      setToast({ open: true, msg: "Booking updated", severity: "success" });
-    } catch {
-      setToast({ open: true, msg: "Update failed", severity: "error" });
+      const res = await updateBooking({ booking: id, status }).unwrap();
+      setToast({
+        open: true,
+        msg: res?.message || "Booking Updated Successfully",
+        severity: "success",
+      });
+    } catch (err: any) {
+      setToast({
+        open: true,
+        msg: err?.data?.message || "Update failed",
+        severity: "error",
+      });
     }
   };
 
-  if (isLoading) {
+  if (allLoading) {
     return (
       <Box p={6}>
         <Box mb={2} display="flex" gap={2}>
@@ -90,88 +78,96 @@ export default function Bookings() {
       </Box>
     );
   }
-  if (isError)
+
+  if (errorAll) {
     return (
       <Box p={4} color="error.main">
-        Error loading Bookings
+        Error loading bookings.
       </Box>
     );
+  }
+
+  if (allBookings.length === 0) {
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        p={8}
+        m={4}
+        borderRadius={2}
+        boxShadow={3}
+        bgcolor="background.paper"
+      >
+        <Typography variant="h1" color="text.disabled">
+          🛒
+        </Typography>
+        <Typography variant="h6" gutterBottom>
+          No bookings found
+        </Typography>
+        <Typography color="text.secondary">
+          There are no bookings to display right now.
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box p={4}>
-      {!bookings || bookings.length === 0 ? (
-        <Box
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          p={8}
-          m={4}
-          borderRadius={2}
-          boxShadow={3}
-          bgcolor="background.paper"
-        >
-          <Box mb={2}>
-            <Typography variant="h1" color="text.disabled">
-              🛒
-            </Typography>
-          </Box>
-          <Typography variant="h6" gutterBottom>
-            No Bookings Found
-          </Typography>
-          <Typography color="text.secondary" mb={2}>
-            There are no bookings to display right now.
-          </Typography>
-        </Box>
-      ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                {isAdmin && <TableCell>Vendor</TableCell>}
-                <TableCell>User</TableCell>
-                <TableCell>Service</TableCell>
-                <TableCell>Date</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {bookings.map((b: Booking) => (
-                <TableRow key={b.id}>
-                  <TableCell>{b.id}</TableCell>
-                  {isAdmin && <TableCell>{b.vendor}</TableCell>}
-                  <TableCell>{b.user}</TableCell>
-                  <TableCell>{b.service}</TableCell>
-                  <TableCell>{new Date(b.date).toLocaleString()}</TableCell>
-                  <TableCell>
-                    <Select
-                      value={b.status}
-                      onChange={(e) => handleStatusChange(b.id, e.target.value)}
-                    >
-                      {["PENDING", "CONFIRMED", "CANCELLED"].map((s) => (
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              {isAdmin && <TableCell>Vendor</TableCell>}
+              <TableCell>User</TableCell>
+              <TableCell>Service</TableCell>
+              <TableCell>Date</TableCell>
+              <TableCell>Time</TableCell>
+              <TableCell>Status</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {allBookings.map((b) => (
+              <TableRow key={b.id}>
+                <TableCell>{b.id}</TableCell>
+                {isAdmin && <TableCell>{b.vendor_name}</TableCell>}
+                <TableCell>{b.user_name}</TableCell>
+                <TableCell>{b.service_name}</TableCell>
+                <TableCell>{new Date(b.date).toLocaleDateString()}</TableCell>
+                <TableCell>{b.time}</TableCell>
+                <TableCell>
+                  <Select
+                    value={b.status}
+                    onChange={(e) =>
+                      handleStatusChange(b.id, e.target.value as string)
+                    }
+                    size="small"
+                  >
+                    {["Pending", "Confirmed", "Cancelled", "Completed"].map(
+                      (s) => (
                         <MenuItem key={s} value={s}>
                           {s}
                         </MenuItem>
-                      ))}
-                    </Select>
-                  </TableCell>
-                  <TableCell>{/* additional actions if needed */}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+                      )
+                    )}
+                  </Select>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
       <Snackbar
         open={toast.open}
         autoHideDuration={3000}
-        onClose={() => setToast({ ...toast, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        onClose={() => setToast((t) => ({ ...t, open: false }))}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
-          onClose={() => setToast({ ...toast, open: false })}
+          onClose={() => setToast((t) => ({ ...t, open: false }))}
           severity={toast.severity}
           sx={{ width: "100%" }}
         >

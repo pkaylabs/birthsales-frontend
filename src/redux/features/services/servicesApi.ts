@@ -10,7 +10,26 @@ export interface ServiceDto {
   // category: string;
   vendor_id: string; // vendor ID
   bookings?: number;
+}
 
+interface BookServiceRequest {
+  service: number;
+  date: string;
+  time: string;
+}
+
+interface BookServiceResponse {
+  created_at: string;
+  date: string;
+  id: number;
+  service: number;
+  service_name: string;
+  status: string;
+  time: string;
+  updated_at: string;
+  user: number;
+  user_name: string;
+  vendor_name: string;
 }
 
 export const serviceApi = api.injectEndpoints({
@@ -38,6 +57,16 @@ export const serviceApi = api.injectEndpoints({
       }),
       invalidatesTags: (result, error, id) => [{ type: "Service", id }],
     }),
+    bookService: builder.mutation<
+      { message: string; data: BookServiceResponse },
+      BookServiceRequest
+    >({
+      query: (body) => ({
+        url: `bookings/`,
+        method: "POST",
+        body,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -47,4 +76,5 @@ export const {
   useGetServiceQuery,
   useAddServiceMutation,
   useDeleteServiceMutation,
+  useBookServiceMutation,
 } = serviceApi;

@@ -1,67 +1,66 @@
 import { api } from "@/app/api/auth";
-import { Booking } from "@/redux/type";
 
-interface BookingDTO {
-    id: number;
-    user: number;
-    service: number;
-    date: string;
-    status: string;
-    vendor: number;
-  }
+interface Booking {
+  id: number;
+  service_name: string;
+  user_name: string;
+  vendor_name: string;
+  date: string;
+  time: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  service: number;
+  user: number;
+}
 
-  export const bookingsApi = api.injectEndpoints({
-    endpoints: (builder) => ({
-      getBookings: builder.query<Booking[], void>({
-        query: () => `bookings/`,
-        transformResponse: (response: BookingDTO[]) =>
-          response.map(({ id, user, service, date, status, vendor }) => ({
-            id,
-            user,
-            service,
-            date,
-            status,
-            vendor,
-          })),
-        providesTags: (result) =>
-          result
-            ? [
-                ...result.map((b) => ({ type: 'Booking' as const, id: b.id })),
-                { type: 'Booking' as const, id: 'LIST' },
-              ]
-            : [{ type: 'Booking' as const, id: 'LIST' }],
-      }),
-      getVendorBookings: builder.query<Booking[], number>({
-        query: (vendorId) => `bookings/?vendor=${vendorId}`,
-        transformResponse: (response: BookingDTO[]) =>
-          response.map(({ id, user, service, date, status, vendor }) => ({
-            id,
-            user,
-            service,
-            date,
-            status,
-            vendor,
-          })),
-        providesTags: (result) =>
-          result
-            ? [
-                ...result.map((b) => ({ type: 'Booking' as const, id: b.id })),
-              ]
-            : [],
-      }),
-      updateBooking: builder.mutation<Booking, Partial<Booking> & Pick<Booking, 'id'>>({
-        query: ({ id, ...patch }) => ({ url: `bookings/${id}/`, method: 'PUT', body: patch }),
-        invalidatesTags: (result, error, { id }) => [
-          { type: 'Booking', id },
-          { type: 'Booking', id: 'LIST' },
-        ],
-      }),
+interface BookingRequest {
+  booking: number;
+  status: string;
+}
+
+interface BookingResponse {
+  id: number;
+  service_name: string;
+  user_name: string;
+  vendor_name: string;
+  date: string;
+  time: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  service: number;
+  user: number;
+}
+
+export const bookingsApi = api.injectEndpoints({
+  endpoints: (builder) => ({
+    getBookings: builder.query<Booking[], void>({
+      query: () => `bookings/`,
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map((b) => ({ type: "Booking" as const, id: b.id })),
+              { type: "Booking" as const, id: "LIST" },
+            ]
+          : [{ type: "Booking" as const, id: "LIST" }],
     }),
-    overrideExisting: false,
-  });
-  
-  export const {
-    useGetBookingsQuery,
-    useGetVendorBookingsQuery,
-    useUpdateBookingMutation,
-  } = bookingsApi;
+    updateBooking: builder.mutation<
+      { message: string; data: BookingResponse },
+      BookingRequest
+    >({
+      query: (body) => ({
+        url: `bookings/`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (result, error, { booking }) => [
+        { type: "Booking", id: booking },
+        { type: "Booking", id: "LIST" },
+      ],
+    }),
+  }),
+  overrideExisting: false,
+});
+
+export const { useGetBookingsQuery, useUpdateBookingMutation } = bookingsApi;
