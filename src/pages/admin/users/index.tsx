@@ -22,26 +22,24 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Typography,
+  DialogActions,
 } from "@mui/material";
 
-import { useNavigate } from "react-location";
 import ShimmerTable from "../components/Shimmer";
 import {
   useAddUserMutation,
-  // useDeleteUserMutation,
   useGetUsersQuery,
-  useUpdateUserMutation,
 } from "@/redux/features/users/usersApi";
 import { User, UserForm } from "@/redux/type";
 
 export default function Users() {
-  const navigate = useNavigate();
   const { data: users = [], isLoading, isError } = useGetUsersQuery();
   const [addUser] = useAddUserMutation();
-  const [updateUser] = useUpdateUserMutation();
 
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Toast state
   const [toastOpen, setToastOpen] = useState(false);
@@ -49,11 +47,13 @@ export default function Users() {
   const [toastSeverity, setToastSeverity] = useState<"success" | "error">(
     "success"
   );
+  const [viewOpen, setViewOpen] = useState(false);
+  const [viewUser, setViewUser] = useState<User | null>(null);
 
   // New state for search/filter
-  const [searchTerm, setSearchTerm] = useState("");
+
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
+
   const [currentForm, setCurrentForm] = useState<UserForm>({
     id: 0,
     name: "",
@@ -78,36 +78,14 @@ export default function Users() {
   );
 
   const handleOpenAdd = () => {
-    setEditOpen(false);
-    setCurrentForm({
-      id: 0,
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
-      user_type: "VENDOR",
-      password: "",
-      avatarFile: null,
-      avatarPreview: null,
-    });
     setDialogOpen(true);
   };
 
-  const handleOpenEdit = (user: User) => {
-    setEditOpen(true);
-    setCurrentForm({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      address: user.address,
-      user_type: user.user_type,
-      password: "",
-      avatarFile: null,
-      avatarPreview: user.avatar || null,
-    });
-    setDialogOpen(true);
+  const handleView = (u: User) => {
+    setViewUser(u);
+    setViewOpen(true);
   };
+
 
   const handleSave = async () => {
     const formData = new FormData();
@@ -121,16 +99,8 @@ export default function Users() {
       formData.append("avatar", currentForm.avatarFile);
     }
     try {
-      if (editOpen && currentForm.id) {
-        await updateUser({
-          id: currentForm.id,
-          body: formData,
-        } as any).unwrap();
-        setToastMessage("User updated successfully");
-      } else {
-        await addUser(formData as any).unwrap();
-        setToastMessage("User added successfully");
-      }
+      await addUser(formData as any).unwrap();
+      setToastMessage("User added successfully");
       setToastSeverity("success");
     } catch (err) {
       console.error("Save error", err);
@@ -141,7 +111,6 @@ export default function Users() {
       setDialogOpen(false);
     }
   };
-
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -192,9 +161,7 @@ export default function Users() {
               fullWidth
               maxWidth="sm"
             >
-              <DialogTitle>
-                {editOpen ? "Edit User" : "Add New User"}
-              </DialogTitle>
+              <DialogTitle>{"Add New User"}</DialogTitle>
               <DialogContent>
                 <Box display="flex" flexDirection="column" gap={2}>
                   <TextField
@@ -266,49 +233,6 @@ export default function Users() {
                     fullWidth
                   />
 
-                  {/* Avatar upload */}
-                  {/* <Box display="flex" alignItems="center" gap={2}>
-                    <Button
-                      variant="contained"
-                      component="label"
-                      disabled={
-                        editOpen ? editImageUploading : mainImageUploading
-                      }
-                    >
-                      {editOpen
-                        ? editImageUploading
-                          ? "Uploading..."
-                          : "Change Avatar"
-                        : mainImageUploading
-                        ? "Uploading..."
-                        : "Upload Avatar"}
-                      <input
-                        hidden
-                        type="file"
-                        accept="image/*"
-                        onChange={handleAvatarChange}
-                      />
-                    </Button>
-                    {(editOpen ? current.avatar : current.avatar) &&
-                      !(editOpen ? editImageUploading : mainImageUploading) && (
-                        <img
-                          src={current.avatar as string}
-                          alt="Avatar"
-                          className="w-12 h-12 object-cover rounded-full"
-                        />
-                      )}
-                    {(editOpen ? editImageUploading : mainImageUploading) && (
-                      <CircularProgress size={24} />
-                    )}
-                  </Box>
-
-                  <Button
-                    variant="contained"
-                    sx={{ mt: 2 }}
-                    onClick={handleSave}
-                  >
-                    {editOpen ? "Save Changes" : "Save"}
-                  </Button> */}
                   <Button variant="contained" component="label">
                     Choose Avatar{" "}
                     <input
@@ -326,7 +250,7 @@ export default function Users() {
                     />
                   )}
                   <Button variant="contained" onClick={handleSave}>
-                    {editOpen ? "Save Changes" : "Create User"}
+                    {"Create User"}
                   </Button>
                 </Box>
               </DialogContent>
@@ -352,41 +276,12 @@ export default function Users() {
                 <TableBody>
                   {paginated.map((user) => (
                     <TableRow key={user.id}>
-                      {/* <TableCell
-                        style={{ display: "flex", alignItems: "center" }}
-                      >
-                        {user.avatarFile && (
-                          <img
-                            src={user.avatar}
-                            alt={user.name}
-                            style={{ marginRight: 10 }}
-                            className="w-[3rem] h-[3rem] object-cover rounded-full"
-                          />
-                        )}
-                      </TableCell> */}
                       <TableCell>{user.name}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.phone}</TableCell>
                       <TableCell>{user.user_type}</TableCell>
                       <TableCell>
-                        <Button
-                          onClick={() => navigate({ to: `/users/${user.id}` })}
-                        >
-                          View
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            handleOpenEdit(user);
-                          }}
-                        >
-                          Edit
-                        </Button>
-                        {/* <Button
-                          color="error"
-                          onClick={() => handleDelete(user.id)}
-                        >
-                          Delete
-                        </Button> */}
+                        <Button onClick={() => handleView(user)}>View</Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -424,6 +319,35 @@ export default function Users() {
           {toastMessage}
         </Alert>
       </Snackbar>
+      <Dialog
+        open={viewOpen}
+        onClose={() => setViewOpen(false)}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>User Details</DialogTitle>
+        <DialogContent dividers>
+          {viewUser && (
+            <Box display="flex" flexDirection="column" gap={2}>
+              <Typography>
+                <strong>Name:</strong> {viewUser.name}
+              </Typography>
+              <Typography>
+                <strong>Email:</strong> {viewUser.email}
+              </Typography>
+              <Typography>
+                <strong>Phone:</strong> {viewUser.phone}
+              </Typography>
+              <Typography>
+                <strong>Type:</strong> {viewUser.user_type}
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

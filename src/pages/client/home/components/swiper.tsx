@@ -5,11 +5,11 @@ import { GoArrowLeft, GoArrowRight } from "react-icons/go";
 import { useSwipeable } from "react-swipeable";
 
 interface CarouselProps {
-  banners: Banner[]; // Array of custom components or content
-  autoPlay?: boolean; // Option to enable auto play
-  autoPlayInterval?: number; // Interval for auto play in milliseconds
-  showDots?: boolean; // Option to show dots for navigation
-  showControls?: boolean; // Option to show next/prev controls
+  banners: Banner[];
+  autoPlay?: boolean;
+  autoPlayInterval?: number;
+  showDots?: boolean;
+  showControls?: boolean;
 }
 
 const Carousel: React.FC<CarouselProps> = ({
@@ -19,97 +19,88 @@ const Carousel: React.FC<CarouselProps> = ({
   showDots = true,
   showControls = true,
 }) => {
-  const activeBanners = banners?.filter((b) => b.is_active);
+  const activeBanners = banners.filter((b) => b.is_active);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const totalBanners = activeBanners.length;
+  const total = activeBanners.length;
 
-  const nextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % totalBanners);
-  };
+  const next = React.useCallback(() => setCurrentIndex((i) => (i + 1) % total), [total]);
+  const prev = React.useCallback(() => setCurrentIndex((i) => (i - 1 + total) % total), [total]);
 
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + totalBanners) % totalBanners);
-  };
-
+  // autoplay
   useEffect(() => {
-    if (autoPlay && totalBanners > 1) {
-      const interval = setInterval(nextSlide, autoPlayInterval);
-      return () => clearInterval(interval);
-    }
-  }, [autoPlay, autoPlayInterval, totalBanners]);
+    if (!autoPlay || total < 2) return;
+    const iv = setInterval(next, autoPlayInterval);
+    return () => clearInterval(iv);
+  }, [autoPlay, autoPlayInterval, total, next]);
 
-  const handlers = useSwipeable({
-    onSwipedLeft: nextSlide,
-    onSwipedRight: prevSlide,
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: next,
+    onSwipedRight: prev,
     preventScrollOnSwipe: true,
     trackMouse: true,
   });
 
-  if (totalBanners === 0) return null;
+  if (!total) return null;
 
   return (
     <div
-      className="relative w-full h-64 md:h-96 lg:h-[500px] overflow-hidden rounded-lg shadow-lg"
-      {...handlers}
+      {...swipeHandlers}
+      className="relative w-full overflow-hidden rounded-lg shadow-lg"
     >
-      {/* Carousel Content */}
-      <div
-        className="flex h-full transition-transform duration-700 ease-out"
-        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-      >
-        {activeBanners.map((banner, idx) => (
-          <div
-            key={idx}
-            className="min-w-full h-full relative"
-            aria-label={banner.title}
-          >
-            <img
-              src={`${BASE_URL}${banner.image}`}
-              alt={banner.title}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            {banner.title && (
-              <div className="absolute bottom-6 left-6 bg-black bg-opacity-60 text-white px-4 py-2 rounded">
-                <h3 className="text-lg md:text-xl font-semibold">
-                  {banner.title}
-                </h3>
-              </div>
-            )}
-          </div>
-        ))}
+      {/* aspect ratio box to maintain height based on width */}
+      <div className="w-full aspect-w-16 aspect-h-9 md:aspect-h-7 lg:aspect-h-5">
+        <div
+          className="flex h-full transition-transform duration-700 ease-out"
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        >
+          {activeBanners.map((b, idx) => (
+            <div key={idx} className="min-w-full h-full relative">
+              <img
+                src={`${BASE_URL}${b.image}`}
+                alt={b.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              {b.title && (
+                <div className="absolute bottom-4 left-4 bg-black bg-opacity-60 text-white px-3 py-1 rounded text-sm md:text-base">
+                  {b.title}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Controls */}
-      {showControls && totalBanners > 1 && (
+      {/* controls */}
+      {showControls && total > 1 && (
         <>
           <button
-            onClick={prevSlide}
-            className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white p-2 rounded-full backdrop-blur"
-            aria-label="Previous"
+            onClick={prev}
+            aria-label="Previous slide"
+            className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 p-2 rounded-full backdrop-blur"
           >
-            <GoArrowLeft className="w-5 h-5" />
+            <GoArrowLeft className="w-5 h-5 text-black" />
           </button>
           <button
-            onClick={nextSlide}
-            className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white p-2 rounded-full backdrop-blur"
-            aria-label="Next"
+            onClick={next}
+            aria-label="Next slide"
+            className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 p-2 rounded-full backdrop-blur"
           >
-            <GoArrowRight className="w-5 h-5" />
+            <GoArrowRight className="w-5 h-5 text-black" />
           </button>
         </>
       )}
 
-      {/* Navigation Dots */}
-      {showDots && totalBanners > 1 && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      {/* dots */}
+      {showDots && total > 1 && (
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
           {activeBanners.map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrentIndex(i)}
-              className={`w-3 h-3 rounded-full transition-colors duration-200 focus:outline-none $`
-              + `${i === currentIndex ? 'bg-white' : 'bg-gray-400/70'}`
-              }
+              className={`w-2 h-2 rounded-full transition-colors ${
+                i === currentIndex ? "bg-white" : "bg-gray-400/70"
+              }`}
               aria-label={`Go to slide ${i + 1}`}
             />
           ))}

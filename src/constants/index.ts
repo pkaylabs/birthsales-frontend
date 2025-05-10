@@ -22,6 +22,7 @@ export const ADMIN_SUBSCRIPTIONS = "/admin-subscriptions";
 export const ADMIN_PLANS = "/admin-plans";
 export const USERS = "/users";
 export const CATEGORIES = "/categories";
+export const CLIENT_CATEGORY_DETAILS = "/client-category/:id";
 export const VENDORS = "/vendors";
 export const BOOKINGS = "/bookings";
 export const PROFILE = "/profile";

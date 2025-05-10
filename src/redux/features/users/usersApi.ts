@@ -59,36 +59,12 @@ export const usersApi = api.injectEndpoints({
       invalidatesTags: [{ type: "User", id: "LIST" }],
     }),
 
-    updateUser: builder.mutation<User, UserForm & Pick<User, "id">>({
-      query: ({ id, ...patch }) => ({
-        url: `users/${id}/`,
-        method: "PUT",
-        body: patch,
-      }),
-      invalidatesTags: (result, error, { id }) => [
-        { type: "User", id },
-        { type: "User", id: "LIST" },
-      ],
-    }),
 
-    deleteUser: builder.mutation<{ success: boolean; id: number }, number>({
-      query: (id) => ({
-        url: `users/`,
-        method: "DELETE",
-        body: { user: Number(id) },
-      }),
-      invalidatesTags: (result, error, id) => [
-        { type: "User", id },
-        { type: "User", id: "LIST" },
-      ],
-    }),
   }),
   overrideExisting: false,
 });
 
 export const {
   useGetUsersQuery,
-  useAddUserMutation,
-  useUpdateUserMutation,
-  useDeleteUserMutation,
+  useAddUserMutation
 } = usersApi;

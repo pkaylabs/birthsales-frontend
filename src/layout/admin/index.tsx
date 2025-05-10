@@ -35,49 +35,6 @@ import { useAppDispatch, useAppSelector } from "@/redux";
 import { RootState } from "@/app/store";
 import { logout } from "@/redux/features/auth/authSlice";
 
-// const navigation = [
-//   { name: "Dashboard", href: ADMIN_HOME, icon: HomeIcon, current: false },
-//   {
-//     name: "Products",
-//     href: "/products",
-//     icon: ShoppingBagIcon,
-//     current: false,
-//   },
-//   {
-//     name: "Category",
-//     href: "/categories",
-//     icon: TagIcon,
-//     current: false,
-//   },
-//   { name: "Users", href: "/users", icon: UserGroupIcon, current: false },
-//   {
-//     name: "Services",
-//     href: "/admin-services",
-//     icon: UserGroupIcon,
-//     current: false,
-//   },
-//   {
-//     name: "Orders",
-//     href: "/admin-orders",
-//     icon: ShoppingBagIcon,
-//     current: false,
-//   },
-//   {
-//     name: "Carts",
-//     href: "/admin-carts",
-//     icon: ShoppingCartIcon,
-//     current: false,
-//   },
-//   {
-//     name: "Subscriptions",
-//     href: "/admin-plans",
-//     icon: TagIcon,
-//     current: false,
-//   },
-
-//   { name: "Ads", href: "/admin-ads", icon: MegaphoneIcon, current: false },
-// ];
-
 const baseNavigation = [
   { name: "Dashboard", href: ADMIN_HOME, icon: HomeIcon, current: false },
   {
@@ -86,7 +43,6 @@ const baseNavigation = [
     icon: ShoppingBagIcon,
     current: false,
   },
-  { name: "Category", href: "/categories", icon: TagIcon, current: false },
 
   {
     name: "Services",
@@ -140,7 +96,13 @@ export default function AdminLayout() {
         current: false,
       },
       { name: "Users", href: "/users", icon: UserGroupIcon, current: false },
-      { name: "Vendors", href: "/vendors", icon: UserGroupIcon, current: false }
+      {
+        name: "Vendors",
+        href: "/vendors",
+        icon: UserGroupIcon,
+        current: false,
+      },
+      { name: "Category", href: "/categories", icon: TagIcon, current: false }
     );
   }
 
@@ -159,6 +121,17 @@ export default function AdminLayout() {
     },
     { name: "Sign out", onClick: handleLogout },
   ];
+
+  const soonItems = navigation.filter(
+    (item) => item.name === "Carts" || item.name === "Ads"
+  );
+
+  const mainItems = navigation.filter(
+    (item) => item.name !== "Carts" && item.name !== "Ads"
+  );
+
+  const orderedNav = [...mainItems, ...soonItems];
+
 
   return (
     <>
@@ -209,25 +182,37 @@ export default function AdminLayout() {
                   <ul role="list" className="flex flex-1 flex-col gap-y-7">
                     <li>
                       <ul role="list" className="-mx-2 space-y-1">
-                        {navigation.map((item) => (
-                          <li key={item.name}>
-                            <Link
-                              to={item.href}
-                              className={classNames(
-                                item.current
-                                  ? "bg-gray-800 text-white"
-                                  : "text-gray-400 hover:bg-gray-800 hover:text-white",
-                                "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold"
-                              )}
-                            >
-                              <item.icon
-                                aria-hidden="true"
-                                className="size-6 shrink-0"
-                              />
-                              {item.name}
-                            </Link>
-                          </li>
-                        ))}
+                        {orderedNav.map((item) => {
+                          const isSoon =
+                            (item as (typeof navigation)[number]).name ===
+                              "Carts" ||
+                            (item as (typeof navigation)[number]).name ===
+                              "Ads";
+                          return (
+                            <li key={item.name}>
+                              <Link
+                                to={item.href}
+                                className={classNames(
+                                  item.current
+                                    ? "bg-gray-800 text-white"
+                                    : "text-gray-400 hover:bg-gray-800 hover:text-white",
+                                  "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold"
+                                )}
+                              >
+                                <item.icon
+                                  aria-hidden="true"
+                                  className="size-6 shrink-0"
+                                />
+                                <span>{item.name}</span>
+                                {isSoon && (
+                                  <span className="inline-block rounded-full bg-yellow-400 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                    Soon
+                                  </span>
+                                )}
+                              </Link>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </li>
 
@@ -268,25 +253,34 @@ export default function AdminLayout() {
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
                 <li>
                   <ul role="list" className="-mx-2 space-y-2">
-                    {navigation.map((item) => (
-                      <li key={item.name}>
-                        <Link
-                          to={item.href}
-                          className={classNames(
-                            item.current
-                              ? "bg-gray-800 text-white"
-                              : "text-gray-400 hover:bg-gray-800 hover:text-white",
-                            "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold"
-                          )}
-                        >
-                          <item.icon
-                            aria-hidden="true"
-                            className="size-6 shrink-0"
-                          />
-                          {item.name}
-                        </Link>
-                      </li>
-                    ))}
+                    {orderedNav.map((item) => {
+                      const isSoon =
+                        item.name === "Carts" || item.name === "Ads";
+                      return (
+                        <li key={item.name}>
+                          <Link
+                            to={item.href}
+                            className={classNames(
+                              item.current
+                                ? "bg-gray-800 text-white"
+                                : "text-gray-400 hover:bg-gray-800 hover:text-white",
+                              "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold"
+                            )}
+                          >
+                            <item.icon
+                              aria-hidden="true"
+                              className="size-6 shrink-0"
+                            />
+                            <span>{item.name}</span>
+                            {isSoon && (
+                              <span className=" inline-block rounded-full bg-yellow-400 px-2 py-0.5 text-xs font-semibold text-gray-900">
+                                Soon
+                              </span>
+                            )}
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </li>
 

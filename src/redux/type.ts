@@ -106,23 +106,7 @@ export interface BookingForm {
   vendor: number;
 }
 
-export interface DashboardData {
-  products: number;
-  balance: number;
-  users: number;
-  orders: number;
-  latest_transactions: {
-    id: number;
-    product: string;
-    customer: string;
-    date: string;
-    image: string;
-    amount: number;
-    method: string;
-    status: string;
-  }[];
-  sales_today: number;
-}
+
 
 export interface ServiceForm {
   name: string;

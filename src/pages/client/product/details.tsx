@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link, useMatch } from "react-location";
 import { IoStar } from "react-icons/io5";
 import { MdOutlineFavoriteBorder } from "react-icons/md";
-import { TbTruckDelivery } from "react-icons/tb";
-import { GrPowerCycle } from "react-icons/gr";
+// import { TbTruckDelivery } from "react-icons/tb";
+// import { GrPowerCycle } from "react-icons/gr";
 import { motion } from "framer-motion";
 import { useGetProductQuery } from "@/redux/features/products/productsApi";
 import { Box, CircularProgress } from "@mui/material";
@@ -12,19 +12,18 @@ import { useAppDispatch } from "@/redux";
 import { addToCart } from "@/redux/features/cart/cartSlice";
 import { toast } from "react-toastify";
 
-const ProductDetails = () => {
+const ProductDetails: React.FC = () => {
   const dispatch = useAppDispatch();
   const { params } = useMatch();
   const prodId = Number(params.id);
-
   const { data: product, isLoading, isError } = useGetProductQuery(prodId);
 
   const [gallery, setGallery] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string>("");
-  // const [quantity, setQuantity] = useState<number>(1);
+
   useEffect(() => {
     if (!product) return;
-    const imgs: string[] = Array.isArray(product.image)
+    const imgs = Array.isArray(product.image)
       ? product.image
       : product.image
       ? [product.image]
@@ -34,14 +33,10 @@ const ProductDetails = () => {
   }, [product]);
 
   const handleAddToCart = () => {
-    if (product) {
-      dispatch(addToCart({ product, quantity: 1 }));
-    } else {
-      toast.error("Product is not available.");
-    }
-    toast.success(`Added "${product?.name}" to cart`);
+    if (!product) return toast.error("Product unavailable");
+    dispatch(addToCart({ product, quantity: 1 }));
+    toast.success(`Added "${product.name}" to cart`);
   };
-
 
   if (isLoading) {
     return (
@@ -57,161 +52,121 @@ const ProductDetails = () => {
   }
 
   return (
-    <main className="w-full max-w-[80rem] mx-auto">
-      <div className="mt-6 flex items-center space-x-3 text-gray-400">
-        <p className="">Account</p> <span>/</span> <p className="">Category</p>{" "}
-        <span>/</span> <p className="text-black">Product Name</p>
-      </div>
+    <main className="max-w-5xl mx-auto px-4 py-8">
+      {/* Breadcrumb */}
+      <nav className="text-gray-500 text-sm mb-6 flex flex-wrap gap-1">
+        <Link to="/">Home</Link>
+        <span>/</span>
+        <Link to="/products">Products</Link>
+        <span>/</span>
+        <span className="text-gray-900">{product.name}</span>
+      </nav>
 
-      <div className="w-full md:h-[600px] mt-8 flex md:flex-row flex-col gap-8 items-center md:items-stretch">
-        {/* Side Images */}
-        <div className="md:w-[170px] md:flex md:flex-col w-full  hidden  justify-between gap-4">
-          {gallery.map((image, index) => (
-            <motion.div
-              key={index}
-              className="w-full h-full bg-[#F5F5F5] rounded flex justify-center items-center cursor-pointer"
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.9, rotate: -3 }}
-              transition={{ type: "spring", stiffness: 300 }}
-              onClick={() => setSelectedImage(image)}
-            >
-              <img
-                src={`${BASE_URL}${product.image}`}
-                alt={`product-${index}`}
-                className="w-full h-full object-cover rounded"
-              />
-            </motion.div>
-          ))}
-        </div>
+      <div className="flex flex-col md:flex-row gap-8">
+        {/* Thumbnails */}
+        {gallery.length > 1 && (
+          <div className="flex md:flex-col overflow-x-auto md:overflow-visible space-x-2 md:space-x-0 md:space-y-2">
+            {gallery.map((img, idx) => (
+              <motion.div
+                key={idx}
+                onClick={() => setSelectedImage(img)}
+                className={`flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-md cursor-pointer border ${
+                  img === selectedImage
+                    ? "border-rose-500"
+                    : "border-gray-200"
+                } overflow-hidden`}
+                whileHover={{ scale: 1.05 }}
+              >
+                <img
+                  src={`${BASE_URL}${img}`}
+                  alt={`thumb-${idx}`}
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         {/* Main Image */}
         <motion.div
-          className="md:w-[500px] w-[270px] bg-[#F5F5F5] rounded flex justify-center items-center"
           key={selectedImage}
-          initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          exit={{ opacity: 0, scale: 0.8, rotate: 10 }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="flex-1 bg-gray-100 rounded-lg flex items-center justify-center p-4"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
         >
           <img
-            src={`${BASE_URL}${product.image}`}
+            src={`${BASE_URL}${selectedImage || product.image}`}
             alt={product.name}
-            className="md:w-[446px] md:h-[315px] md:object-contain w-[250px]"
+            className="max-w-full max-h-96 object-contain"
           />
         </motion.div>
-        <div className="flex-1 px-14 flex flex-col justify-between ">
-          <div className="pb-6 border-b border-black ">
-            <h2 className="font-semibold md:text-2xl text-lg mb-2">
-              {product.name}
-            </h2>
-            <div className="flex items-center space-x-3 my-2">
-              <div className="flex items-center space-x-1.5">
-                {[1, 2, 3, 4, 5].map((_, index) => (
-                  <IoStar
-                    key={index}
-                    className={`md:size-5 size-3  ${
-                      index === 4 ? "text-gray-400 " : "text-[#FFAD33]"
-                    }`}
-                    aria-hidden="true"
-                  />
-                ))}
-              </div>
-              <p className="font-medium text-base text-gray-400 ">
-                ({product.reviews_count ?? 0}Reviews)
-              </p>
-              <span className="text-gray-400">|</span>
-              <p className="font-medium text-base text-[#00FF66] ">
-                {product.in_stock ? "In Stock" : "Out of Stock"}
-              </p>
-            </div>
-            <h4 className="md:text-2xl text-xl mb-4">GHC{product.price}</h4>
-            <p className="text-sm max-w-[373px]">
-              {product.description ?? "No description available."}
-            </p>
-          </div>
-          <div className="">
-            {/* <div className="flex items-center gap-4 mb-5">
-              <p className="md:text-xl text-lg">Color:</p>
-              <ColorSelector options={colors} onSelect={setSelectedColor} />
-            </div> */}
-            {/* <div className="flex items-center gap-4 mb-5">
-              <p className="md:text-xl text-lg">Size:</p>
-              <SizePicker options={sizes} onSelect={setSelectedSize} />
-            </div> */}
-            <div className="flex md:flex-row justify-between items-center flex-col gap-6">
-              {/* <div className="flex-1 flex items-center select-none w-full">
-                <div
-                  onClick={() => handleQuantityChange(Number(product.id), quantity - 1)}
-                  className="w-10 h-11 flex justify-center items-center border border-black rounded-s text-2xl hover:bg-[#DB4444] hover:text-white hover:border-[#DB4444] transition-all duration-150 ease-in-out cursor-pointer"
-                >
-                  -
-                </div>
-                <div className="flex-1 h-11 flex justify-center items-center border-y border-black md:text-xl text-lg">
-                  {quantity}
-                </div>
-                <div
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="w-10 h-11 flex justify-center items-center border border-black rounded-e text-2xl hover:bg-[#DB4444] hover:text-white hover:border-[#DB4444] transition-all duration-150 ease-in-out cursor-pointer"
-                >
-                  +
-                </div>
-              </div> */}
-              <div className="flex-1 w-full">
-                <button
-                  className="w-full h-11 flex justify-center items-center bg-[#DB4444] text-white rounded-md"
-                  onClick={handleAddToCart} // Add your add to cart logic here
-                >
-                  Add To Cart
-                </button>
-              </div>
-              <div className="w-10 h-11 md:flex items-center justify-center border border-black rounded cursor-pointer hidden">
-                <MdOutlineFavoriteBorder
-                  className="size-6"
-                  aria-hidden="true"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="border border-[#1C1B1F] rounded md:mt-0 mt-5">
-            <div className="flex items-center gap-5 border-b border-[#1C1B1F] py-5 px-4">
-              <TbTruckDelivery className="size-10 text-black" />
-              <div className="">
-                <h2 className=" font-medium md:text-base text-sm">
-                  FREE AND FAST DELIVERY
-                </h2>
-                <p className="text-sm underline">
-                  Enter your postal code for Delivery Availability
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-5 py-5 px-4">
-              <GrPowerCycle className="size-10 text-black" />
-              <div className="">
-                <h2 className=" font-medium md:text-base text-sm">
-                  Return Delivery
-                </h2>
-                <p className="text-sm ">
-                  Free 30 Days Delivery Returns.{" "}
-                  <Link to={"#"} className="underline">
-                    Details
-                  </Link>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* <section className="mt-20">
-        <CardCarousel
-          type="Related Item"
-          itemsPerView={4}
-          title=""
-          items={productCards}
-        />
-      </section> */}
+      {/* Details */}
+      <div className="mt-8 space-y-6">
+        <h1 className="text-2xl md:text-3xl font-semibold">{product.name}</h1>
+        <div className="flex items-center space-x-4">
+          <div className="flex">
+            {[...Array(5)].map((_, i) => (
+              <IoStar
+                key={i}
+                className={`w-5 h-5 ${
+                  i < Math.round(product.rating ?? 0)
+                    ? "text-amber-400"
+                    : "text-gray-300"
+                }`}
+              />
+            ))}
+          </div>
+          <span className="text-gray-500">
+            ({product.reviews_count ?? 0} reviews)
+          </span>
+          <span className="text-green-600 font-medium">
+            {product.in_stock ? "In Stock" : "Out of Stock"}
+          </span>
+        </div>
+        <p className="text-2xl font-bold">GHC{product.price}</p>
+        <p className="text-gray-700">{product.description || "No description available."}</p>
+
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <button
+            onClick={handleAddToCart}
+            className="flex-1 bg-rose-500 hover:bg-rose-600 text-white py-3 rounded-lg transition"
+          >
+            Add to Cart
+          </button>
+          <button className="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-lg flex items-center justify-center">
+            <MdOutlineFavoriteBorder className="mr-2" /> Add to Wishlist
+          </button>
+        </div>
+
+        {/* Delivery & Returns */}
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 border-t pt-6">
+          <div className="flex items-start space-x-3">
+            <TbTruckDelivery className="w-6 h-6 text-gray-600 mt-1" />
+            <div>
+              <h3 className="font-medium">Free & Fast Delivery</h3>
+              <Link to="#" className="text-sm text-rose-500 underline">
+                Check availability
+              </Link>
+            </div>
+          </div>
+          <div className="flex items-start space-x-3">
+            <GrPowerCycle className="w-6 h-6 text-gray-600 mt-1" />
+            <div>
+              <h3 className="font-medium">30-Day Returns</h3>
+              <Link to="#" className="text-sm text-rose-500 underline">
+                Learn more
+              </Link>
+            </div>
+          </div>
+        </div> */}
+      </div>
     </main>
   );
 };
 
 export default ProductDetails;
+

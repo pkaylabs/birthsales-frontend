@@ -1,165 +1,264 @@
+import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux";
 import { logout } from "@/redux/features/auth/authSlice";
-import React from "react";
-import { useNavigate } from "react-location";
+import { Link, useNavigate } from "react-location";
 import { toast } from "react-toastify";
+import { useGetOrdersQuery } from "@/redux/features/orders/orderApiSlice";
 
+type Tab = "profile" | "orders" | "bookings";
 
-const Account = () => {
+const Account: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.auth.user);
+  const user = useAppSelector((s) => s.auth.user);
+
+  const [activeTab, setActiveTab] = useState<Tab>("profile");
+
+  const { data: orders = [], isLoading: loadingOrders } = useGetOrdersQuery(
+    undefined,
+    {
+      skip: activeTab !== "orders",
+    }
+  );
+  const { data: bookings = [], isLoading: loadingBookings } =
+    useGetBookingsQuery(undefined, {
+      skip: activeTab !== "bookings",
+    });
 
   const handleLogout = () => {
     dispatch(logout());
-    toast.success("Logout Successful")
+    toast.success("Logout successful");
     navigate({ to: "/login", replace: true });
   };
 
   return (
-    <main className="w-full max-w-[80rem] mx-auto slide-up">
-      <div className="mt-6 flex items-center justify-between">
-        <div className=" flex items-center space-x-3 text-gray-400">
-          <p className="">Home</p> <span>/</span>{" "}
-          <p className="text-black">My Account</p>
-        </div>
-        <div className="text-black">
-          Welcome! <span className="text-[#DB4444]">{user?.name}</span>
-        </div>
-      </div>
+    <main className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      {/* Breadcrumb */}
+      <nav className="text-gray-500 text-sm mb-6">
+        <ol className="flex space-x-2">
+          <li>
+            <Link to="/" className="hover:underline">
+              Home
+            </Link>
+          </li>
+          <li>/</li>
+          <li className="text-gray-900 font-medium">My Account</li>
+        </ol>
+      </nav>
 
-      <section className="mt-14 flex justify-between space-x-10">
-        <div className="w-[20rem]  rounded px-5 py-12 ">
-          <div className="flex flex-col justify-between gap-5 ">
-            <div className=" flex flex-col gap-2">
-              <h1 className="font-medium text-base">Manage My Account</h1>
-              <div className=" px-3">
-                <p className="font-normal text-base opacity-50 hover:text-[#DB4444]">
-                  My Profile
-                </p>
-                <p className="font-normal text-base opacity-50 hover:text-[#DB4444]">
-                  Address Book
-                </p>
-                <p className="font-normal text-base opacity-50 hover:text-[#DB4444]">
-                  My Payment Options
-                </p>
-              </div>
-            </div>
-            <div className=" flex flex-col gap-2">
-              <h1 className="font-medium text-base">My Orders</h1>
-              <div className=" px-3">
-                <p className="font-normal text-base opacity-50 hover:text-[#DB4444]">
-                  My Returns
-                </p>
-                <p className="font-normal text-base opacity-50 hover:text-[#DB4444]">
-                  My Cancellations
-                </p>
-              </div>
-            </div>
-            <div className=" flex flex-col gap-2">
-              <h1 className="font-medium text-base">My WishList</h1>
-              <div className=" px-3"></div>
-            </div>
+      <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800 mb-4">
+        Welcome, <span className="text-red-600">{user?.name}</span>
+      </h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* Sidebar */}
+        <aside className="md:col-span-1 bg-white rounded-lg shadow p-6 flex flex-col">
+          <nav className="flex-1 space-y-4">
             <button
-              onClick={handleLogout}
-              className="mt-6 w-full bg-rose-500 text-white text-center py-2 rounded hover:bg-red-600 transition"
+              onClick={() => setActiveTab("profile")}
+              className={`block w-full text-left px-2 py-1 rounded ${
+                activeTab === "profile"
+                  ? "bg-rose-100 text-rose-600 font-medium"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
             >
-              Logout
+              Profile
             </button>
-          </div>
-        </div>
-        <div className="flex-1 flex flex-col gap-3 justify-between shadow-lg rounded px-5 py-10">
-          <div>
-            <h1 className="font-medium text-xl text-[#DB4444]">
-              Edit Your Profile
-            </h1>
-          </div>
-          <div className="flex flex-col justify-between items-center gap-4">
-            <div className="w-full flex justify-between gap-10">
-              <div className="w-full">
-                <label htmlFor="firstName">First Name</label>
-                <input
-                  type="text"
-                  name="firstName"
-                  id="firstName"
-                  className="w-full rounded h-12 bg-[#F5F5F5] px-4 flex-1"
-                  placeholder="First Name"
-                />
-              </div>
-              <div className="w-full">
-                <label htmlFor="lastName">Last Name</label>
-                <input
-                  type="text"
-                  name="lastName"
-                  id="lastName"
-                  className="w-full rounded h-12 bg-[#F5F5F5] px-4 flex-1"
-                  placeholder="Last Name"
-                />
-              </div>
-            </div>
-            <div className="w-full flex justify-between gap-10">
-              <div className="w-full">
-                <label htmlFor="email">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  id="email"
-                  className="w-full rounded h-12 bg-[#F5F5F5] px-4 flex-1"
-                  placeholder="Email"
-                />
-              </div>
-              <div className="w-full">
-                <label htmlFor="address">Address</label>
-                <input
-                  type="text"
-                  name="address"
-                  id="address"
-                  className="w-full rounded h-12 bg-[#F5F5F5] px-4 flex-1"
-                  placeholder="Address"
-                />
-              </div>
-            </div>
-            <div className="w-full">
-              <p className="font-normal text-base">Password Changes</p>
-              <input
-                type="text"
-                name="address"
-                id="address"
-                className=" rounded h-12 bg-[#F5F5F5] px-4 flex-1 w-full"
-                placeholder="Current Password"
-              />
-            </div>
-            <div className="w-full">
-              <input
-                type="text"
-                name="address"
-                id="address"
-                className=" rounded h-12 bg-[#F5F5F5] px-4 flex-1 w-full"
-                placeholder="New Password"
-              />
-            </div>
-            <div className="w-full">
-              <input
-                type="text"
-                name="address"
-                id="address"
-                className=" rounded h-12 bg-[#F5F5F5] px-4 flex-1 w-full"
-                placeholder="Confirm New Password"
-              />
-            </div>
-          </div>
-          <div className="flex gap-3 justify-end">
-            <button className="font-medium flex justify-center items-center rounded mt-4">
-              Cancel
+
+            <button
+              onClick={() => setActiveTab("orders")}
+              className={`block w-full text-left px-2 py-1 rounded ${
+                activeTab === "orders"
+                  ? "bg-rose-100 text-rose-600 font-medium"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              My Orders
             </button>
-            <button className="font-medium bg-[#DB4444] text-white w-[200px] h-[48px] flex justify-center items-center rounded mt-4">
-              Save Changes
+
+            <button
+              onClick={() => setActiveTab("bookings")}
+              className={`block w-full text-left px-2 py-1 rounded ${
+                activeTab === "bookings"
+                  ? "bg-rose-100 text-rose-600 font-medium"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              My Bookings
             </button>
-          </div>
-        </div>
-      </section>
+          </nav>
+
+          <button
+            onClick={handleLogout}
+            className="mt-6 w-full bg-rose-600 text-white py-2 rounded-lg hover:bg-rose-700 transition"
+          >
+            Logout
+          </button>
+        </aside>
+
+        {/* Main Content */}
+        <section className="md:col-span-3 bg-white rounded-lg shadow p-6 space-y-6">
+          {activeTab === "profile" && <ProfileForm />}
+
+          {activeTab === "orders" && (
+            <div>
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                My Orders
+              </h2>
+              {loadingOrders ? (
+                <p>Loading orders…</p>
+              ) : (
+                <div className="space-y-4">
+                  {orders.map((o) => (
+                    <div key={o.id} className="p-4 border rounded-lg">
+                      <div className="flex justify-between">
+                        <span>Order #{o.id}</span>
+                        <span className="font-medium">{o.status}</span>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Total: GHC{o.total_price} • Placed:{" "}
+                        {new Date(o.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  ))}
+                  {orders.length === 0 && <p>You have no orders yet.</p>}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "bookings" && (
+            <div>
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                My Bookings
+              </h2>
+              {loadingBookings ? (
+                <p>Loading bookings…</p>
+              ) : (
+                <div className="space-y-4">
+                  {bookings.map((b) => (
+                    <div key={b.id} className="p-4 border rounded-lg">
+                      <div className="flex justify-between">
+                        <span>Booking #{b.id}</span>
+                        <span className="font-medium">{b.status}</span>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Service: {b.service_name} • Date: {b.date} @ {b.time}
+                      </div>
+                    </div>
+                  ))}
+                  {bookings.length === 0 && <p>You have no bookings yet.</p>}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      </div>
     </main>
   );
 };
 
 export default Account;
+
+import React from "react";
+import { useGetBookingsQuery } from "@/redux/features/bookings/bookingsApiSlice";
+
+export const ProfileForm: React.FC = () => (
+  <>
+    <h2 className="text-xl font-semibold text-red-600 mb-4">
+      Edit Your Profile
+    </h2>
+    <form className="space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            First Name
+          </label>
+          <input
+            type="text"
+            placeholder="First Name"
+            className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Last Name
+          </label>
+          <input
+            type="text"
+            placeholder="Last Name"
+            className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Email
+          </label>
+          <input
+            type="email"
+            placeholder="someone@example.com"
+            className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Address
+          </label>
+          <input
+            type="text"
+            placeholder="Your address"
+            className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
+          />
+        </div>
+      </div>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Current Password
+          </label>
+          <input
+            type="password"
+            placeholder="••••••••"
+            className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            New Password
+          </label>
+          <input
+            type="password"
+            placeholder="••••••••"
+            className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Confirm New Password
+          </label>
+          <input
+            type="password"
+            placeholder="••••••••"
+            className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
+          />
+        </div>
+      </div>
+      <div className="flex justify-end space-x-3">
+        <button
+          type="button"
+          className="px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-200 transition"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-6 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition"
+        >
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </>
+);

@@ -30,6 +30,7 @@ import {
   BOOKINGS,
   PROFILE,
   ADMIN_SUBSCRIPTIONS,
+  CLIENT_CATEGORY_DETAILS,
 } from "@/constants";
 import { lazy, Suspense } from "react";
 import { RequireAuth } from "./RequireAuth";
@@ -61,10 +62,6 @@ const UserDetails = lazy(() => import("@/pages/admin/users/UserDetails"));
 const ProductsPage = lazy(() => import("@/pages/admin/products"));
 const Category = lazy(() => import("@/pages/admin/category"));
 const ServicesPage = lazy(() => import("@/pages/admin/services"));
-// const AdminServiceDetails = lazy(
-//   () => import("@/pages/admin/services/AdminServiceDetails")
-// );
-
 const SubscriptionPlansPage = lazy(
   () => import("@/pages/admin/plans/SubscriptionPlansPage")
 );
@@ -92,6 +89,11 @@ const routes: RouteProps[] = [
   },
   {
     path: HOME,
+    element: <Home />,
+    meta: { layout: "App" },
+  },
+  {
+    path: CLIENT_CATEGORY_DETAILS,
     element: <Home />,
     meta: { layout: "App" },
   },
@@ -237,15 +239,6 @@ const routes: RouteProps[] = [
         ),
         meta: { layout: "Admin" },
       },
-      // {
-      //   path: "/:id",
-      //   element: (
-      //     <Suspense fallback={<div>Loading...</div>}>
-      //       <AdminServiceDetails />
-      //     </Suspense>
-      //   ),
-      //   meta: { layout: "Admin" },
-      // },
     ],
   },
 

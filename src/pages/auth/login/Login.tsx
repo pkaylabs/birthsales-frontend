@@ -67,7 +67,7 @@ const Login = () => {
               onBlur={formik.handleBlur}
               value={formik.values.email}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400"
-              placeholder="you@example.com"
+              placeholder="someone@example.com"
             />
             {formik.touched.email && formik.errors.email && (
               <p className="mt-1 text-xs text-rose-500">
