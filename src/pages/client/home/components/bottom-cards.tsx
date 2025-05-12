@@ -52,8 +52,8 @@ import { RiShieldCheckLine } from "react-icons/ri";
 
 const elements = [
   {
-    title: "FREE AND FAST DELIVERY",
-    description: "Free delivery for all orders over $140",
+    title: "FAST DELIVERY",
+    description: "Convenient and fast delivery",
     icon: TbTruckDelivery,
   },
   {
@@ -76,8 +76,10 @@ const BottomCards: React.FC = () => (
           key={idx}
           className="flex flex-col items-center text-center space-y-3 p-4 bg-white rounded-lg shadow-sm"
         >
-          <div className="flex items-center justify-center rounded-full bg-black mb-2
-                          w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24">
+          <div
+            className="flex items-center justify-center rounded-full bg-black mb-2
+                          w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24"
+          >
             <Icon className="text-white text-2xl sm:text-3xl md:text-4xl" />
           </div>
           <h3 className="font-semibold text-sm sm:text-base md:text-lg">

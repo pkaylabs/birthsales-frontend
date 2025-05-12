@@ -44,6 +44,7 @@ export const api = createApi({
     "HomePage",
     "Orders",
     "Search",
+    "Banner"
   ],
   endpoints: () => ({}),
 });
