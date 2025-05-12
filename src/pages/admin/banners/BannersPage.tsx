@@ -130,10 +130,10 @@ export default function BannersPage() {
   const handleDelete = async () => {
     if (!bannerToDelete) return;
     try {
-      await deleteBanner(bannerToDelete.id).unwrap();
+      const res = await deleteBanner(bannerToDelete.id).unwrap();
       setToast({
         open: true,
-        msg: "Banner deleted successfully",
+        msg: res.message,
         sev: "success",
       });
     } catch (err) {
