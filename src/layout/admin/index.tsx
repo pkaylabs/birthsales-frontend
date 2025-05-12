@@ -14,15 +14,16 @@ import {
 import {
   Bars3Icon,
   BellIcon,
-  ShoppingCartIcon,
+  // ShoppingCartIcon,
   Cog6ToothIcon,
   ShoppingBagIcon,
   UserGroupIcon,
   HomeIcon,
-  MegaphoneIcon,
+  // MegaphoneIcon,
   CalendarDaysIcon,
   XMarkIcon,
   TagIcon,
+  PhotoIcon,
 } from "@heroicons/react/24/outline";
 import {
   ChevronDownIcon,
@@ -30,7 +31,7 @@ import {
 } from "@heroicons/react/20/solid";
 import { classNames } from "@/utils";
 import { Link, Outlet, useNavigate } from "react-location";
-import { ADMIN_HOME, LOGIN, PROFILE } from "@/constants";
+import { ADMIN_HOME, LOGIN } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/redux";
 import { RootState } from "@/app/store";
 import { logout } from "@/redux/features/auth/authSlice";
@@ -62,13 +63,14 @@ const baseNavigation = [
     icon: CalendarDaysIcon,
     current: false,
   },
-  {
-    name: "Carts",
-    href: "/admin-carts",
-    icon: ShoppingCartIcon,
-    current: false,
-  },
-  { name: "Ads", href: "/admin-ads", icon: MegaphoneIcon, current: false },
+
+  // {
+  //   name: "Carts",
+  //   href: "/admin-carts",
+  //   icon: ShoppingCartIcon,
+  //   current: false,
+  // },
+  // { name: "Ads", href: "/admin-ads", icon: MegaphoneIcon, current: false },
 ];
 
 export default function AdminLayout() {
@@ -93,6 +95,12 @@ export default function AdminLayout() {
         name: "Subscription",
         href: "/admin-subscriptions",
         icon: TagIcon,
+        current: false,
+      },
+      {
+        name: "Banners",
+        href: "/admin-banners",
+        icon: PhotoIcon,
         current: false,
       },
       { name: "Users", href: "/users", icon: UserGroupIcon, current: false },
@@ -131,7 +139,6 @@ export default function AdminLayout() {
   );
 
   const orderedNav = [...mainItems, ...soonItems];
-
 
   return (
     <>

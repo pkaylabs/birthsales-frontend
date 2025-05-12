@@ -31,6 +31,7 @@ import {
   PROFILE,
   ADMIN_SUBSCRIPTIONS,
   CLIENT_CATEGORY_DETAILS,
+  ADMIN_BANNERS,
 } from "@/constants";
 import { lazy, Suspense } from "react";
 import { RequireAuth } from "./RequireAuth";
@@ -43,6 +44,7 @@ import About from "@/pages/client/about";
 import SignUp from "@/pages/auth/signUp";
 import VendorAccount from "@/pages/auth/vendor/VendorAccount";
 import Login from "@/pages/auth/login/Login";
+import BannersPage from "@/pages/admin/banners/BannersPage";
 const WishList = lazy(() => import("@/pages/client/wishList"));
 const ProductDetails = lazy(() => import("@/pages/client/product/details"));
 const AdminHomePage = lazy(() => import("@/pages/admin/home"));
@@ -344,6 +346,17 @@ const routes: RouteProps[] = [
       <RequireAuth roles={["ADMIN", "VENDOR"]}>
         <Suspense fallback={<div>Loading...</div>}>
           <Ads />
+        </Suspense>
+      </RequireAuth>
+    ),
+    meta: { layout: "Admin" },
+  },
+  {
+    path: ADMIN_BANNERS,
+    element: (
+      <RequireAuth roles={["ADMIN", "VENDOR"]}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <BannersPage />
         </Suspense>
       </RequireAuth>
     ),

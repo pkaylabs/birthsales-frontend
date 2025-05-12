@@ -17,6 +17,7 @@ export const ADMIN_PRODUCT = "/products";
 export const ADMIN_SERVICES = "/admin-services";
 export const ADMIN_ORDERS = "/admin-orders";
 export const ADMIN_CARTS = "/admin-carts";
+export const ADMIN_BANNERS = "/admin-banners";
 export const ADMIN_ADS = "/admin-ads";
 export const ADMIN_SUBSCRIPTIONS = "/admin-subscriptions";
 export const ADMIN_PLANS = "/admin-plans";
