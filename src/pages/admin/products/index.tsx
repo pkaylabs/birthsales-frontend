@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, useMemo } from "react";
+import React, { useState, ChangeEvent } from "react";
 import {
   Table,
   TableBody,
@@ -138,16 +138,16 @@ export default function ProductsPage() {
       setOpen(false);
       setToastMessage("Product created successfully");
       setToastSeverity("success");
-      // setForm({
-      //   name: "",
-      //   description: "",
-      //   price: "",
-      //   vendor: "",
-      //   category: "",
-      //   in_stock: true,
-      //   imageFile: null,
-      //   imagePreview: "",
-      // });
+      setForm({
+        name: "",
+        description: "",
+        price: "",
+        vendor: "",
+        category: "",
+        in_stock: true,
+        imageFile: null,
+        imagePreview: "",
+      });
       refetch();
     } catch (err) {
       console.error(err);

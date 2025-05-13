@@ -11,7 +11,6 @@ import { addToCart } from "@/redux/features/cart/cartSlice";
 import { toast } from "react-toastify";
 import { addToWishlist } from "@/redux/features/wishlist/wishlistSlice";
 
-
 interface ProductCardProps {
   product: Product;
   onFavorite?: (id: number) => void;
@@ -46,12 +45,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onFavorite }) => {
   };
 
   return (
-    <div className="px-2 sm:px-3 md:px-4 lg:px-6 flex-shrink-0 w-full">
+    <div className="px-5 sm:px-3   flex-shrink-0 w-full">
       <motion.div
         className="
-          relative bg-gray-100 rounded-lg overflow-hidden
-          p-2 sm:p-3 md:p-4 lg:p-6
-          h-48 sm:h-56 md:h-64 lg:h-72
+          relative bg-gray-100 rounded-lg overflow-hidden border-2
+           sm:h-56 md:h-64 lg:h-full
           group
         "
       >
@@ -93,8 +91,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onFavorite }) => {
         <div className="flex items-center justify-center h-full">
           <div
             className="
-              w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28
-              lg:w-32 lg:h-32 xl:w-36 xl:h-36
+              w-full h-full sm:w-24 sm:h-24 md:w-full md:h-full
+              lg:w-full lg:h-full xl:w-full xl:h-full
               flex items-center justify-center
             "
           >
