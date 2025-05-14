@@ -276,7 +276,6 @@ export default function SubscriptionPlansPage() {
                   label="Interval"
                 >
                   <MenuItem value="month">Month</MenuItem>
-                  <MenuItem value="year">Year</MenuItem>
                 </Select>
               </FormControl>
               <TextField

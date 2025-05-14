@@ -202,4 +202,5 @@ export interface Subscriptions {
   payment_status?: null;
   vendor: number;
   package: number;
+  package_price: number
 }

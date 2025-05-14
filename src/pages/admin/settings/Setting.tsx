@@ -1,12 +1,28 @@
 import { useChangePasswordMutation } from "@/redux/features/auth/authApiSlice";
-import { useGetSubscriptionsQuery } from "@/redux/features/subscriptions/subscriptionSlice";
+import {
+  useGetSubscriptionsQuery,
+  useRenewSubscriptionsMutation,
+} from "@/redux/features/subscriptions/subscriptionSlice";
 import { useUpdateUserProfileMutation } from "@/redux/features/users/usersApi";
 import {
   useGetVendorProfileQuery,
   useUpdateVendorProfileMutation,
 } from "@/redux/features/vendor/vendorApiSlice";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import { CircularProgress } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { ChangeEvent, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -29,6 +45,13 @@ const Setting = () => {
   const [updateUserProfile, { isLoading: updating }] =
     useUpdateUserProfileMutation();
 
+  const [renew, { isLoading: renewing }] = useRenewSubscriptionsMutation();
+
+  // Renewal modal state
+  const [openModal, setOpenModal] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [network, setNetwork] = useState<"MTN" | "VOD" | "AIR">("MTN");
+
   // Basic Profile
   const [profile, setProfile] = useState<ProfileForm>({
     name: "",
@@ -50,6 +73,13 @@ const Setting = () => {
     vendor_address: "",
   });
 
+  // Reset the password
+  const [passwords, setPasswords] = useState({
+    old_password: "",
+    new_password: "",
+    confirm_password: "",
+  });
+
   useEffect(() => {
     if (vendorProfile) {
       setVendorForm({
@@ -64,15 +94,13 @@ const Setting = () => {
         phone: vendorProfile.user.phone,
         address: vendorProfile.user.address,
       });
+      setPasswords({
+        old_password: "",
+        new_password: "",
+        confirm_password: "",
+      });
     }
   }, [vendorProfile]);
-
-  // Reset the password
-  const [passwords, setPasswords] = useState({
-    old_password: "",
-    new_password: "",
-    confirm_password: "",
-  });
 
   const [changePwd, { isLoading: pwdLoading }] = useChangePasswordMutation();
 
@@ -85,16 +113,13 @@ const Setting = () => {
     (s) => s.vendor === vendorProfile?.vendor?.id
   );
 
-  // const [renew, {isLoading: renewing}] = useRenewSubscriptionMutation()
-
   const handleProfileChange = (e: ChangeEvent<HTMLInputElement>) => {
     setProfile((p) => ({ ...p, [e.target.name]: e.target.value }));
   };
 
   const submitProfile = async () => {
     try {
-      const res = updateUserProfile(profile).unwrap();
-      console.log(res);
+      updateUserProfile(profile).unwrap();
       toast.success("Profile updated successfully");
     } catch (error) {
       console.log(error);
@@ -139,13 +164,21 @@ const Setting = () => {
       .catch(() => toast.error("Password change failed"));
   };
 
-  // const handleRenew = () => {
-  //   if (!mySub) return;
-  //   renew({ subscription: mySub.id })
-  //     .unwrap()
-  //     .then(() => toast.success("Subscription renewed"))
-  //     .catch(() => toast.error("Renewal failed"));
-  // };
+  const handleRenew = async () => {
+    if (!mySubscriptions) return;
+    try {
+      const res = await renew({
+        subscription: mySubscriptions.id,
+        phone,
+        network,
+      }).unwrap();
+      toast.success(res.message || "Renewal successful");
+      setPhone("");
+      setOpenModal(false);
+    } catch (err: any) {
+      toast.error(err.data.message || "Renewal failed");
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-10">
@@ -265,19 +298,74 @@ const Setting = () => {
               <strong>Plan:</strong> {mySubscriptions.package_name}
             </p>
             <p>
+              <strong>Package Price:</strong> GHC{mySubscriptions.package_price}
+            </p>
+
+            <p>
+              <strong>Status:</strong> {mySubscriptions.payment_status}
+            </p>
+
+            <p>
               <strong>Expired:</strong> {mySubscriptions.expired ? "Yes" : "No"}
             </p>
             {mySubscriptions.expired === true ? (
               <button
-                // disabled={renewing}
-                // onClick={handleRenew}
-                className="mt-4 w-full bg-red-600 text-white py-1 rounded hover:bg-red-700 transition"
+                onClick={() => setOpenModal(true)}
+                className="mt-4 w-full bg-red text-white py-1 rounded hover:bg-red transition"
               >
-                {/* {renewing ? "Renewing…" : "Renew Now"} */}
                 Renew
               </button>
             ) : (
               <span className="mt-4 text-green-600 font-medium">Active</span>
+            )}
+            {openModal && (
+              <Dialog
+                open={openModal}
+                onClose={() => setOpenModal(false)}
+                maxWidth="sm"
+                fullWidth
+              >
+                <DialogTitle>
+                  <Typography variant="h6">Renew your subscription</Typography>
+                </DialogTitle>
+                <DialogContent dividers>
+                  <Box display={"flex"} flexDirection={"column"} gap={2}>
+                    <InputLabel>Select network</InputLabel>
+                    <Select
+                      label="Select network"
+                      value={network}
+                      onChange={(e: any) => setNetwork(e.target.value)}
+                      fullWidth
+                    >
+                      <MenuItem value="MTN">MTN</MenuItem>
+                      <MenuItem value="VOD">TELECEL</MenuItem>
+                      <MenuItem value="AIR">AIRTEL</MenuItem>
+                    </Select>
+                    <TextField
+                      label="phone"
+                      fullWidth
+                      value={phone}
+                      onChange={(e: any) => setPhone(e.target.value)}
+                      required
+                    />
+                  </Box>
+                </DialogContent>
+
+                <DialogActions>
+                  <Button onClick={() => setOpenModal(false)}>Close</Button>
+                  <Button
+                    onClick={handleRenew}
+                    type="submit"
+                    variant="contained"
+                  >
+                    {renewing ? (
+                      <CircularProgress size={20} sx={{ color: "white" }} />
+                    ) : (
+                      "Renew Subscription"
+                    )}
+                  </Button>
+                </DialogActions>
+              </Dialog>
             )}
           </>
         )}

@@ -38,6 +38,7 @@ import { useAppSelector } from "@/redux";
 import { RootState } from "@/app/store";
 import { Service, ServiceForm } from "@/redux/type";
 import { BASE_URL } from "@/constants";
+import { toast } from "react-toastify";
 
 export default function ServicesPage() {
   // auth user
@@ -47,6 +48,8 @@ export default function ServicesPage() {
   const {
     data: services = [],
     isLoading,
+    isError,
+    error,
     // isFetching,
     // refetch,
   } = useGetServicesQuery();
@@ -167,6 +170,10 @@ export default function ServicesPage() {
       </Box>
     );
   }
+
+  // if (isError) {
+  //   toast.error(error?.data?.message);
+  // }
 
   return (
     <div className="p-6 space-y-6">

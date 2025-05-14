@@ -263,21 +263,12 @@ const routes: RouteProps[] = [
     path: ADMIN_PRODUCT,
     element: (
       <RequireAuth roles={["ADMIN", "VENDOR"]}>
-        <Outlet />
+        <Suspense fallback={<div>Loading...</div>}>
+          <ProductsPage />
+        </Suspense>
       </RequireAuth>
     ),
     meta: { layout: "Admin" },
-    children: [
-      {
-        path: "/",
-        element: (
-          <Suspense fallback={<div>Loading...</div>}>
-            <ProductsPage />
-          </Suspense>
-        ),
-        meta: { layout: "Admin" },
-      },
-    ],
   },
 
   {
@@ -391,7 +382,7 @@ const routes: RouteProps[] = [
     element: (
       <RequireAuth roles={["ADMIN", "VENDOR"]}>
         <Suspense fallback={<div>Loading...</div>}>
-         <Setting />
+          <Setting />
         </Suspense>
       </RequireAuth>
     ),
