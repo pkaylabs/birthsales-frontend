@@ -39,6 +39,7 @@ import { useGetVendorsQuery } from "@/redux/features/vendor/vendorApiSlice";
 import { useGetCategoriesQuery } from "@/redux/features/category/productCategoryApiSlice";
 import { Product } from "@/redux/type";
 import { BASE_URL } from "@/constants";
+import { toast } from "react-toastify";
 
 export default function ProductsPage() {
   // auth user
@@ -47,16 +48,18 @@ export default function ProductsPage() {
     data: products = [],
     isLoading,
     isError,
+    error,
     refetch,
   } = useGetProductsQuery();
   const [addProduct, { isLoading: adding }] = useAddProductMutation();
   const { data: categories = [] } = useGetCategoriesQuery();
-  const { data: allVendors = [] } = useGetVendorsQuery();
+  const { data: allVendors = [] } = useGetVendorsQuery(undefined, {
+    skip:
+      !user?.is_superuser || !user?.is_staff || user?.user_type === "VENDOR",
+  });
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
   const [updateProduct, { isLoading: isPublishing }] =
     useUpdateProductMutation();
-
-
 
   // table/filter state
   const [searchTerm, setSearchTerm] = useState("");
@@ -83,6 +86,8 @@ export default function ProductsPage() {
     imageFile: null as File | null,
     imagePreview: "",
   });
+
+
 
   // upload spinner
   const [uploading, setUploading] = useState(false);
@@ -192,6 +197,11 @@ export default function ProductsPage() {
       setToastSeverity("error");
     }
   };
+ 
+  
+ if (isError) {
+    toast.error("vendor profile not found or subscription expired")
+  }
 
   if (isLoading) {
     return (
@@ -215,12 +225,12 @@ export default function ProductsPage() {
       </Box>
     );
   }
-  if (isError)
-    return (
-      <Box p={4} color="error.main">
-        Error loading products
-      </Box>
-    );
+ 
+    // return (
+    //   <Box p={4} color="error.main">
+    //    eror
+    //   </Box>
+    // );
 
   return (
     <Box p={6}>

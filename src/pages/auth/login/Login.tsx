@@ -1,15 +1,40 @@
-import React from "react";
+import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-location";
 import { HOME, ADMIN_HOME, LOGIN_BG } from "@/constants";
-import { useLoginMutation } from "@/redux/features/auth/authApiSlice";
-import { CircularProgress } from "@mui/material";
+import {
+  useGetOtpMutation,
+  useLoginMutation,
+  useResetPasswordMutation,
+  useVerifyOtpMutation,
+} from "@/redux/features/auth/authApiSlice";
+import {
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+} from "@mui/material";
 import { toast } from "react-toastify";
 
 const Login = () => {
   const navigate = useNavigate();
   const [login, { isLoading, error }] = useLoginMutation();
+
+  const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [getOtp, { isLoading: gettingOtp }] = useGetOtpMutation();
+
+  const [verifyOtp, { isLoading: verifying }] = useVerifyOtpMutation();
+
+  const [resetPassword, { isLoading: resetting }] = useResetPasswordMutation();
 
   const formik = useFormik({
     initialValues: { email: "", password: "" },
@@ -30,11 +55,49 @@ const Login = () => {
           replace: true,
         });
       } catch (err: any) {
-        const errMessage = err?.data?.detail || "Login Failed";
+        const errMessage = err?.data?.error_message || "Login Failed";
         toast.error(errMessage);
       }
     },
   });
+
+  const handleGetOtp = async () => {
+    if (!phone) return toast.error("Please enter your phone number");
+    try {
+      const res = await getOtp({ phone }).unwrap();
+      toast.success(res?.message || "OTP sent!");
+      setStep(2);
+    } catch (e: any) {
+      toast.error(e?.data?.message || "Failed to send OTP");
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    try {
+      const res = await verifyOtp({ phone, otp }).unwrap();
+      toast.success(res?.message || "OTP verified!");
+      setStep(3);
+    } catch (e: any) {
+      toast.error(e.data?.message || "Invalid OTP");
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (newPassword !== confirmPassword) {
+      return toast.error("Passwords must match");
+    }
+    try {
+      await resetPassword({
+        phone,
+        new_password: newPassword,
+        confirm_password: confirmPassword,
+      }).unwrap();
+      toast.success("Password reset successful");
+      setStep(0);
+    } catch (e: any) {
+      toast.error(e.data?.message || "Reset failed");
+    }
+  };
 
   return (
     <div
@@ -122,9 +185,7 @@ const Login = () => {
           <div className="flex justify-between text-sm">
             <button
               type="button"
-              onClick={() => {
-                /* TODO: forgot password flow */
-              }}
+              onClick={() => setStep(1)}
               disabled={isLoading}
               className="text-rose-500 hover:underline"
             >
@@ -141,6 +202,72 @@ const Login = () => {
           </div>
         </form>
       </div>
+      <Dialog open={step > 0} onClose={() => setStep(0)}>
+        <DialogTitle>
+          {step === 1 && "Enter your Phone"}
+          {step === 2 && "Enter the OTP"}
+          {step === 3 && "Reset your password"}
+        </DialogTitle>
+        <DialogContent dividers>
+          {step === 1 && (
+            <TextField
+              label="Phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              fullWidth
+            />
+          )}
+          {step === 2 && (
+            <TextField
+              label="OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              fullWidth
+            />
+          )}
+          {step === 3 && (
+            <>
+              <TextField
+                label="New Password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                fullWidth
+                margin="dense"
+              />
+              <TextField
+                label="Confirm Password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                fullWidth
+                margin="dense"
+              />
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setStep(0)}>Cancel</Button>
+          {step === 1 && (
+            <Button onClick={handleGetOtp} disabled={!phone || gettingOtp}>
+              {gettingOtp ? <CircularProgress size={20} /> : "Get Otp"}
+            </Button>
+          )}
+          {step === 2 && (
+            <Button onClick={handleVerifyOtp} disabled={!otp || verifying}>
+              {verifying ? <CircularProgress size={20} /> : "Verify Otp"}
+            </Button>
+          )}
+          {step === 3 && (
+            <Button
+              onClick={handleResetPassword}
+              disabled={!newPassword || !confirmPassword || resetting}
+            >
+              {resetting ? <CircularProgress size={20} /> : "Reset Password"}
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
