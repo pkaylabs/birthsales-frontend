@@ -31,7 +31,7 @@ import {
 } from "@heroicons/react/20/solid";
 import { classNames } from "@/utils";
 import { Link, Outlet, useNavigate } from "react-location";
-import { ADMIN_HOME, LOGIN } from "@/constants";
+import { ADMIN_HOME, LOGIN, SETTINGS } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/redux";
 import { RootState } from "@/app/store";
 import { logout } from "@/redux/features/auth/authSlice";
@@ -224,8 +224,8 @@ export default function AdminLayout() {
                     </li>
 
                     <li className="mt-auto">
-                      <a
-                        href="#"
+                      <Link
+                        to={SETTINGS}
                         className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
                       >
                         <Cog6ToothIcon
@@ -233,7 +233,7 @@ export default function AdminLayout() {
                           className="size-6 shrink-0"
                         />
                         Settings
-                      </a>
+                      </Link>
                     </li>
                   </ul>
                 </nav>
@@ -292,8 +292,8 @@ export default function AdminLayout() {
                 </li>
 
                 <li className="mt-auto">
-                  <a
-                    href="#"
+                  <Link
+                    to={SETTINGS}
                     className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
                   >
                     <Cog6ToothIcon
@@ -301,7 +301,7 @@ export default function AdminLayout() {
                       className="size-6 shrink-0"
                     />
                     Settings
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </nav>

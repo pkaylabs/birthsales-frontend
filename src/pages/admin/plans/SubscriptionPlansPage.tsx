@@ -21,6 +21,8 @@ import {
   Typography,
   Snackbar,
   Alert,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material/Select";
 import { Add, Delete, Info } from "@mui/icons-material";
@@ -64,11 +66,20 @@ export default function SubscriptionPlansPage() {
     price: "0",
     interval: "month",
     description: "",
+    can_create_product: false,
+    can_create_service: false,
   });
 
   // Handlers
   const openAdd = () => {
-    setForm({ name: "", price: "0", interval: "month", description: "" });
+    setForm({
+      name: "",
+      price: "0",
+      interval: "month",
+      description: "",
+      can_create_product: false,
+      can_create_service: false,
+    });
     setDialogOpen(true);
   };
 
@@ -91,6 +102,7 @@ export default function SubscriptionPlansPage() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    console.log(form);
     try {
       await addPlan(form).unwrap();
       setToastMessage("Plan added successfully!");
@@ -219,6 +231,34 @@ export default function SubscriptionPlansPage() {
                 fullWidth
                 required
               />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={form.can_create_product}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        can_create_product: e.target.checked,
+                      }))
+                    }
+                  />
+                }
+                label="Can create product"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={form.can_create_service}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        can_create_service: e.target.checked,
+                      }))
+                    }
+                  />
+                }
+                label="Can create service"
+              />
               <TextField
                 name="price"
                 label="Price"
@@ -279,6 +319,14 @@ export default function SubscriptionPlansPage() {
               </Typography>
               <Typography>
                 <strong>Description:</strong> {viewingPlan.description}
+              </Typography>
+              <Typography>
+                <strong>Can Create a product:</strong>{" "}
+                {viewingPlan.can_create_product ? "Yes" : "No"}
+              </Typography>
+              <Typography>
+                <strong>Can Create a service:</strong>{" "}
+                {viewingPlan.can_create_service ? "Yes" : "No"}
               </Typography>
             </Box>
           )}

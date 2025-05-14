@@ -44,6 +44,8 @@ export interface Plan {
   price: string;
   interval: string; // e.g., "month" or "year"
   description: string;
+  can_create_product: boolean;
+  can_create_service: boolean;
 }
 
 export interface Product {
@@ -106,8 +108,6 @@ export interface BookingForm {
   vendor: number;
 }
 
-
-
 export interface ServiceForm {
   name: string;
   description: string;
@@ -139,9 +139,8 @@ export interface CategoryForm {
   imagePreview?: string;
 }
 
-
 export interface Product {
-  id: string 
+  id: string;
   name: string;
   description: string;
   price: number;
@@ -167,7 +166,6 @@ export interface ProductForm {
   vendor: number;
   imageFile?: File;
 }
-
 
 export interface HomePageData {
   banners: Banner[];
@@ -196,13 +194,12 @@ export interface Order {
   user: number;
 }
 
-
 export interface Subscriptions {
-  id: number,
-  vendor_name: string,
-  package_name: string,
-  expired: boolean,
-  payment_status?: null,
-  vendor: number,
-  package: number
+  id: number;
+  vendor_name: string;
+  package_name: string;
+  expired: boolean;
+  payment_status?: null;
+  vendor: number;
+  package: number;
 }

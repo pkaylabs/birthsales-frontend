@@ -15,6 +15,12 @@ export interface AuthCredentials {
   user_type: "VENDOR" | "ADMIN" | "DELIVERY";
 }
 
+interface ChangePasswordRequest {
+  old_password: string;
+  new_password: string;
+  confirm_password: string;
+}
+
 export const authApiSlice = api.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<
@@ -50,7 +56,49 @@ export const authApiSlice = api.injectEndpoints({
         dispatch({ type: "auth/setCredentials", payload: data });
       },
     }),
+    changePassword: builder.mutation<{ status: string }, ChangePasswordRequest>(
+      {
+        query: (body) => ({
+          url: "changepassword/",
+          method: "POST",
+          body,
+        }),
+      }
+    ),
+    getOtp: builder.mutation<{ message: string }, { phone: string }>({
+      query: ({ phone }) => ({
+        url: `verifyotp/?phone=${phone}`,
+        method: "GET",
+      }),
+    }),
+    verifyOtp: builder.mutation<
+      { message: string },
+      { otp: string; phone: string }
+    >({
+      query: (body) => ({
+        url: `verifyotp/`,
+        method: "POST",
+        body,
+      }),
+    }),
+    resetPassword: builder.mutation<
+      { message: string },
+      { phone: string; new_password: string; confirm_password: string }
+    >({
+      query: (body) => ({
+        url: `resetpassword/`,
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
-export const { useLoginMutation, useRegisterMutation } = authApiSlice;
+export const {
+  useLoginMutation,
+  useRegisterMutation,
+  useChangePasswordMutation,
+  useGetOtpMutation,
+  useVerifyOtpMutation,
+  useResetPasswordMutation,
+} = authApiSlice;

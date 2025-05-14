@@ -11,7 +11,14 @@ import type { Plan } from "@/redux/type";
 import { useAppSelector } from "@/redux";
 import { RootState } from "@/app/store";
 import { toast } from "react-toastify";
-import { CircularProgress } from "@mui/material";
+import {
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from "@mui/material";
 import { useMobilePaymentMutation } from "@/redux/features/orders/orderApiSlice";
 
 const VendorAccount: React.FC = () => {
@@ -30,6 +37,7 @@ const VendorAccount: React.FC = () => {
     vendor_phone: "",
     vendor_address: "",
   });
+  const [viewingPlan, setViewingPlan] = useState<Plan | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [paymentMethod, setPaymentMethod] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
@@ -198,7 +206,7 @@ const VendorAccount: React.FC = () => {
                   className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                 >
                   {regLoading ? (
-                    <CircularProgress size={15} sx={{ color: "white" }} />
+                    <CircularProgress size={24} sx={{ color: "white" }} />
                   ) : (
                     "Next"
                   )}
@@ -242,7 +250,7 @@ const VendorAccount: React.FC = () => {
                   disabled={bizLoading}
                   className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                 >
-                  {bizLoading ? <CircularProgress size={15} /> : "Next"}
+                  {bizLoading ? <CircularProgress size={24} /> : "Next"}
                 </button>
               </div>
             </div>
@@ -261,7 +269,12 @@ const VendorAccount: React.FC = () => {
                     className="flex justify-between items-center p-4 border rounded-md"
                   >
                     <div>
-                      <p className="font-semibold">{plan.name}</p>
+                      <p
+                        className="font-semibold cursor-pointer hover:underline"
+                        onClick={() => setViewingPlan(plan)}
+                      >
+                        {plan.name}
+                      </p>
                       <p className="text-sm text-gray-600">
                         GHC{plan.price}/month
                       </p>
@@ -362,6 +375,52 @@ const VendorAccount: React.FC = () => {
               </div>
             </div>
           )}
+          {/* PLAN DETAILS MODAL */}
+          <Dialog
+            open={!!viewingPlan}
+            onClose={() => setViewingPlan(null)}
+            fullWidth
+            maxWidth="sm"
+          >
+            <DialogTitle>Plan Details</DialogTitle>
+            <DialogContent dividers>
+              {viewingPlan && (
+                <div className="space-y-2">
+                  <p>
+                    <strong>Name: </strong>
+                    {viewingPlan.name}
+                  </p>
+                  <p>
+                    <strong>Price: </strong>
+                    {viewingPlan.price}
+                  </p>
+                  <p>
+                    <strong>Interval: </strong>
+                    {viewingPlan.interval}
+                  </p>
+                  <p>
+                    <strong>Description: </strong>
+                    {viewingPlan.description}
+                  </p>
+                  {typeof viewingPlan.can_create_product !== "undefined" && (
+                    <>
+                      <p>
+                        <strong>Can create products: </strong>
+                        {viewingPlan.can_create_product ? "Yes" : "No"}
+                      </p>
+                      <p>
+                        <strong>Can create services: </strong>
+                        {viewingPlan.can_create_service ? "Yes" : "No"}
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setViewingPlan(null)}>Close</Button>
+            </DialogActions>
+          </Dialog>
         </div>
       </div>
     </div>

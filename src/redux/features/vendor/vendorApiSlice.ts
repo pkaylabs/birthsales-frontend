@@ -12,6 +12,7 @@ interface VendorDTO {
 }
 
 export interface VendorProfile {
+  id: number;
   vendor_id: string;
   vendor_name: string;
   vendor_phone: string;
@@ -104,10 +105,10 @@ export const vendorsApi = api.injectEndpoints({
           : [],
     }),
     updateVendorProfile: builder.mutation<
-      UserProfileResponse,
+      { message: string; vendor: VendorProfile },
       Partial<VendorProfile>
     >({
-      query: (patch) => ({ url: "profile/", method: "PUT", body: patch }),
+      query: (body) => ({ url: "vendorprofile/", method: "PUT", body }),
       invalidatesTags: [{ type: "Vendor", id: "PROFILE" }],
     }),
   }),

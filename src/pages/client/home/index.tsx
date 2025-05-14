@@ -105,7 +105,7 @@ const Home: React.FC = () => {
       ) : (
         <>
           {/* hero slider */}
-          <div className="w-full h-64 sm:h-80 md:h-96 lg:h-[500px] rounded-lg overflow-hidden shadow-lg mb-12">
+          <div className="w-full max-w-[80rem] mx-auto mb-12">
             <Carousel
               banners={data.banners}
               autoPlay

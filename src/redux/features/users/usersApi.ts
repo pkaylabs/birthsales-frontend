@@ -1,4 +1,5 @@
 import { api } from "@/app/api/auth";
+import { ProfileForm } from "@/pages/admin/settings/Setting";
 import type { User, UserForm } from "@/redux/type";
 
 interface UserDTO {
@@ -58,13 +59,15 @@ export const usersApi = api.injectEndpoints({
       }),
       invalidatesTags: [{ type: "User", id: "LIST" }],
     }),
-
-
+    updateUserProfile: builder.mutation<User, ProfileForm>({
+      query: (body) => ({
+        url: "userprofile/",
+        method: "PUT",
+        body,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
 
-export const {
-  useGetUsersQuery,
-  useAddUserMutation
-} = usersApi;
+export const { useGetUsersQuery, useAddUserMutation, useUpdateUserProfileMutation } = usersApi;

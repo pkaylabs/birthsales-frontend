@@ -51,12 +51,13 @@ export default function ProductsPage() {
   } = useGetProductsQuery();
   const [addProduct, { isLoading: adding }] = useAddProductMutation();
   const { data: categories = [] } = useGetCategoriesQuery();
-  const { data: allVendors = [] } = useGetVendorsQuery();
+  const { data: allVendors = [] } = useGetVendorsQuery(undefined, {
+    skip:
+      !user?.is_superuser || !user?.is_staff || user?.user_type === "VENDOR",
+  });
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
   const [updateProduct, { isLoading: isPublishing }] =
     useUpdateProductMutation();
-
-
 
   // table/filter state
   const [searchTerm, setSearchTerm] = useState("");

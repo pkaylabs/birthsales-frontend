@@ -48,7 +48,7 @@ const Carousel: React.FC<CarouselProps> = ({
       className="relative w-full overflow-hidden rounded-lg shadow-lg"
     >
       {/* aspect ratio box to maintain height based on width */}
-      <div className="w-full aspect-w-16 aspect-h-9 md:aspect-h-7 lg:aspect-h-5">
+      <div className="w-full aspect-video">
         <div
           className="flex h-full transition-transform duration-700 ease-out"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
@@ -60,7 +60,7 @@ const Carousel: React.FC<CarouselProps> = ({
                 alt={b.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
               {b.title && (
                 <div className="absolute bottom-4 left-4 bg-black bg-opacity-60 text-white px-3 py-1 rounded text-sm md:text-base">
                   {b.title}
@@ -77,14 +77,14 @@ const Carousel: React.FC<CarouselProps> = ({
           <button
             onClick={prev}
             aria-label="Previous slide"
-            className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 p-2 rounded-full backdrop-blur"
+            className="absolute top-1/2 left-2  -translate-y-1/2 bg-white/30 hover:bg-white/50 p-2 rounded-full backdrop-blur"
           >
             <GoArrowLeft className="w-5 h-5 text-black" />
           </button>
           <button
             onClick={next}
             aria-label="Next slide"
-            className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white/30 hover:bg-white/50 p-2 rounded-full backdrop-blur"
+            className="absolute top-1/2 right-2  -translate-y-1/2 bg-white/30 hover:bg-white/50 p-2 rounded-full backdrop-blur"
           >
             <GoArrowRight className="w-5 h-5 text-black" />
           </button>
@@ -93,7 +93,7 @@ const Carousel: React.FC<CarouselProps> = ({
 
       {/* dots */}
       {showDots && total > 1 && (
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        <div className="absolute bottom-2 left-1/2  -translate-x-1/2 flex space-x-2">
           {activeBanners.map((_, i) => (
             <button
               key={i}
