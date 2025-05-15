@@ -1,5 +1,5 @@
 // src/pages/ServicesPage.tsx
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -148,6 +148,21 @@ export default function ServicesPage() {
     }
   };
 
+  useEffect(() => {
+    if (isError && error && "data" in error) {
+      const err = error as {
+        status: number;
+        data: { message?: string; [key: string]: any };
+      };
+
+      const message =
+        err?.data?.message ||
+        (typeof err.data === "string" ? err.data : "Failed to fetch services");
+
+      toast.error(message);
+    }
+  }, [isError, error]);
+
   if (isLoading) {
     return (
       <Box p={6}>
@@ -171,10 +186,6 @@ export default function ServicesPage() {
     );
   }
 
-  // if (isError) {
-  //   toast.error(error?.data?.message);
-  // }
-
   return (
     <div className="p-6 space-y-6">
       {(isAdding || isDeleting) && <LinearProgress />}
@@ -189,7 +200,7 @@ export default function ServicesPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent>Total Revenue: $0</CardContent>
+          <CardContent>Total Revenue: GHC0</CardContent>
         </Card>
       </div>
 

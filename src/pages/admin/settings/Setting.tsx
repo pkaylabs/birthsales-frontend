@@ -245,46 +245,58 @@ const Setting = () => {
       {/* Reset Password */}
       <section className="bg-white p-4 rounded shadow">
         <h2 className="text-lg font-semibold mb-2">Reset Password</h2>
-        {["old_password", "new_password", "confirm_password"].map((field) => {
-          const label =
-            field === "old_password"
-              ? "Current Password"
-              : field === "new_password"
-              ? "New Password"
-              : "Confirm New Password";
-
-          return (
-            <div key={field} className="mb-4 relative">
-              <label className="block text-sm font-medium">{label}</label>
-              <input
-                type={visible ? "text" : "password"}
-                name={field}
-                value={(passwords as any)[field]}
-                onChange={handlePwdChange}
-                className="mt-1 w-full px-3 py-2 border rounded pr-10"
-                placeholder=""
-              />
-              <button
-                type="button"
-                onClick={() => setVisible((v) => !v)}
-                className="absolute inset-y-0 right-2 flex items-center top-5"
-              >
-                {visible ? (
-                  <EyeSlashIcon className="w-4 h-4 text-gray-500" />
-                ) : (
-                  <EyeIcon className="w-4 h- text-gray-500" />
-                )}
-              </button>
-            </div>
-          );
-        })}
-        <button
-          disabled={pwdLoading}
-          onClick={submitPassword}
-          className="mt-10 w-full bg-yellow-600 text-white py-1 rounded hover:bg-yellow-700 transition"
+        <form
+          autoComplete="off"
+          onSubmit={(e) => {
+            e.preventDefault();
+            submitPassword();
+          }}
         >
-          {pwdLoading ? <CircularProgress size={20} /> : "Change Password"}
-        </button>
+          {["old_password", "new_password", "confirm_password"].map((field) => {
+            const label =
+              field === "old_password"
+                ? "Current Password"
+                : field === "new_password"
+                ? "New Password"
+                : "Confirm New Password";
+
+            const autoCompleteAttr =
+              field === "old_password" ? "current-password" : "new-password";
+
+            return (
+              <div key={field} className="mb-4 relative">
+                <label className="block text-sm font-medium">{label}</label>
+                <input
+                  type={visible ? "text" : "password"}
+                  name={field}
+                  value={(passwords as any)[field]}
+                  onChange={handlePwdChange}
+                  className="mt-1 w-full px-3 py-2 border rounded pr-10"
+                  placeholder=""
+                  autoComplete={autoCompleteAttr}
+                />
+                <button
+                  type="button"
+                  onClick={() => setVisible((v) => !v)}
+                  className="absolute inset-y-0 right-2 flex items-center top-5"
+                >
+                  {visible ? (
+                    <EyeSlashIcon className="w-4 h-4 text-gray-500" />
+                  ) : (
+                    <EyeIcon className="w-4 h- text-gray-500" />
+                  )}
+                </button>
+              </div>
+            );
+          })}
+          <button
+            disabled={pwdLoading}
+            type="submit"
+            className="mt-10 w-full bg-yellow-600 text-white py-1 rounded hover:bg-yellow-700 transition"
+          >
+            {pwdLoading ? <CircularProgress size={20} /> : "Change Password"}
+          </button>
+        </form>
       </section>
 
       {/* Subscription Status */}
