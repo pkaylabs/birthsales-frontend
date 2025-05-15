@@ -45,7 +45,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onFavorite }) => {
   };
 
   return (
-    <div className="px-5 sm:px-3   flex-shrink-0 w-full">
+    <div className="px-5 sm:px-3 flex-shrink-0 w-full">
       <motion.div
         className="
           relative bg-gray-100 rounded-lg overflow-hidden border-2

@@ -41,6 +41,7 @@ const Home: React.FC = () => {
   const allCategories = data.categories;
   const bestSellers = data.best_selling_products;
 
+
   const renderCarousel = (
     section: "flash" | "categories" | "best",
     title: string,

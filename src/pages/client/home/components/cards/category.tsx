@@ -24,7 +24,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ id, name, image }) => {
         p-4 sm:p-6 md:p-8 
         flex flex-col items-center justify-center 
         transition-transform transform hover:-translate-y-1 hover:shadow-lg
-        bg-white
+        bg-white mx-2
       "
     >
       {image ? (
