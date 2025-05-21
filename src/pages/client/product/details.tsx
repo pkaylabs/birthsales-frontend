@@ -18,6 +18,8 @@ const ProductDetails: React.FC = () => {
   const prodId = Number(params.id);
   const { data: product, isLoading, isError } = useGetProductQuery(prodId);
 
+  console.log(product)
+
   const [gallery, setGallery] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string>("");
 
@@ -106,6 +108,7 @@ const ProductDetails: React.FC = () => {
       {/* Details */}
       <div className="mt-8 space-y-6">
         <h1 className="text-2xl md:text-3xl font-semibold">{product.name}</h1>
+        <h2 className="text-2xl md:text-3xl text-gray-400 font-semibold">{product.vendor_name}</h2>
         <div className="flex items-center space-x-4">
           <div className="flex">
             {[...Array(5)].map((_, i) => (

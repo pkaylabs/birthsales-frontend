@@ -52,18 +52,23 @@ const stats = [
 const team = [
   {
     name: "Seth Annan Addo",
-    role: "Founder & Chairman",
+    role: "Team Member",
     img: seth,
   },
   {
     name: "Neequaye Prosper Pastore Kotei",
-    role: "Co-Founder",
+    role: "Team Member",
     img: pastore,
   },
   {
     name: "Laura Sampong",
-    role: "CTO",
+    role: "Team Member",
     img: luxora,
+  },
+  {
+    name: "Stephanie Asante",
+    role: "Team Member",
+    img: seth,
   },
 ];
 

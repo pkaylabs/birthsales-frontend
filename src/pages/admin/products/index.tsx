@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from "react";
+import React, { useState, ChangeEvent, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -86,8 +86,6 @@ export default function ProductsPage() {
     imageFile: null as File | null,
     imagePreview: "",
   });
-
-
 
   // upload spinner
   const [uploading, setUploading] = useState(false);
@@ -197,11 +195,21 @@ export default function ProductsPage() {
       setToastSeverity("error");
     }
   };
- 
-  
- if (isError) {
-    toast.error("vendor profile not found or subscription expired")
-  }
+
+  useEffect(() => {
+    if (isError && error && "data" in error) {
+      const err = error as {
+        status: number;
+        data: { message?: string; [key: string]: any };
+      };
+
+      const message =
+        err?.data?.message ||
+        (typeof err.data === "string" ? err.data : "Failed to fetch products");
+
+      toast.error(message);
+    }
+  }, [isError, error]);
 
   if (isLoading) {
     return (
@@ -225,12 +233,7 @@ export default function ProductsPage() {
       </Box>
     );
   }
- 
-    // return (
-    //   <Box p={4} color="error.main">
-    //    eror
-    //   </Box>
-    // );
+
 
   return (
     <Box p={6}>

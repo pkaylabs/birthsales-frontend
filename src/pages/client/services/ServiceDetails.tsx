@@ -4,7 +4,7 @@ import { LocationGenerics } from "@/router/location";
 import { BASE_URL } from "@/constants";
 import {
   useBookServiceMutation,
-  useGetServicesQuery,
+  useGetCustomerServiceQuery,
 } from "@/redux/features/services/servicesApi";
 import { TbTruckDelivery } from "react-icons/tb";
 import { motion } from "framer-motion";
@@ -14,10 +14,14 @@ import PaymentModal from "./components/PaymentModal";
 
 const ServiceDetails: React.FC = () => {
   const { params } = useMatch<LocationGenerics>();
+  const serviceId = Number(params.id);
   const navigate = useNavigate();
-  const { data: services = [], isLoading, isError } = useGetServicesQuery();
+  const {
+    data: service,
+    isLoading,
+    isError,
+  } = useGetCustomerServiceQuery(serviceId);
   const [bookService, { isLoading: booking }] = useBookServiceMutation();
-  const service = services.find((s) => s.id === Number(params.id));
 
   const [bookingId, setBookingId] = useState<number | null>(null);
   const [payOpen, setPayOpen] = useState(false);
@@ -28,7 +32,7 @@ const ServiceDetails: React.FC = () => {
   const [time, setTime] = useState("08:30");
 
   const [mainImage, setMainImage] = useState<string | undefined>(
-    service ? `${BASE_URL}${service.image}` : undefined
+    service ? `${BASE_URL}${(service as any).image}` : undefined
   );
 
   // refresh mainImage if service loads later
@@ -53,7 +57,6 @@ const ServiceDetails: React.FC = () => {
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to book");
     }
-    
   };
 
   if (isLoading) return <p className="py-12 text-center">Loading…</p>;

@@ -24,6 +24,7 @@ export const subscriptionsApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getSubscriptions: builder.query<Subscriptions[], void>({
       query: () => `subscriptions/`,
+      providesTags: [{ type: "Subscription", id: "LIST" }],
     }),
     renewSubscriptions: builder.mutation<
       {
@@ -38,9 +39,11 @@ export const subscriptionsApi = api.injectEndpoints({
         method: "POST",
         body,
       }),
+      invalidatesTags: [{ type: "Subscription", id: "LIST" }],
     }),
     // overrideExisting: false,
   }),
 });
 
-export const { useGetSubscriptionsQuery, useRenewSubscriptionsMutation } = subscriptionsApi;
+export const { useGetSubscriptionsQuery, useRenewSubscriptionsMutation } =
+  subscriptionsApi;

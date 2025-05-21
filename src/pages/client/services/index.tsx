@@ -1,11 +1,11 @@
 // src/pages/Services.tsx
 import React from "react";
 import ServiceCard from "./components/ServiceCard";
-import { useGetServicesQuery } from "@/redux/features/services/servicesApi";
+import { useGetCustomerServicesQuery } from "@/redux/features/services/servicesApi";
 import { Service } from "@/redux/type";
 
 const Services: React.FC = () => {
-  const { data: services = [], isLoading, isError } = useGetServicesQuery();
+  const { data: services = [], isLoading, isError } = useGetCustomerServicesQuery();
 
   // number of skeleton cards to show
   const SKELETON_COUNT = 8;

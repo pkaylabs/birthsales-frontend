@@ -1,4 +1,4 @@
-import { BASE_URL,  LOGIN } from "@/constants";
+import { BASE_URL, LOGIN } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/redux";
 import { removeFromCart } from "@/redux/features/cart/cartSlice";
 import {
@@ -19,11 +19,11 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [network, setNetwork] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [location, setLocation] = useState("");
+  const [customerPhone, setcustomerPhone] = useState("");
 
   const [placeOrder, { isLoading: placing }] = usePlaceOrderMutation();
   const [payment, { isLoading: paying }] = useMobilePaymentMutation();
-
-  // console.log(payment)
 
   const subTotal = items.reduce(
     (sum, { product, quantity }) => sum + product.price * quantity,
@@ -49,10 +49,14 @@ const Checkout = () => {
           product: Number(product.id),
           quantity,
         })),
+        location,
+        customer_phone: customerPhone,
       }).unwrap();
+      setcustomerPhone("");
+      setLocation("");
       orderId = data.id;
     } catch (err: any) {
-      toast.error(err.data?.message || "Failed to place order");
+      toast.error(err.data[0] || "Failed to place order");
       return;
     }
 
@@ -149,8 +153,33 @@ const Checkout = () => {
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                 />
+                <p className="text-gray-400">
+                  Payment will be done through this number
+                </p>
               </div>
             )}
+          </div>
+          {paymentMethod === "mobileMoney" && <hr className="border mt-4 " />}
+          <div className="my-5">
+            <input
+              type="tel"
+              placeholder="Delivery phone number"
+              className="w-full border border-gray-300 rounded p-2"
+              value={customerPhone}
+              onChange={(e) => setcustomerPhone(e.target.value)}
+            />
+            <p className="text-gray-400">
+              The vendor will call you on this number
+            </p>
+          </div>
+          <div className="my-5">
+            <textarea
+              className="w-full border border-gray-300 rounded p-2"
+              placeholder="Enter location"
+              name="location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
           </div>
         </section>
 

@@ -57,6 +57,7 @@ export interface Product {
   qty: number;
   date_added: string;
   main_image_url: string;
+  vendor_name: string;
   status: "pending" | "approved";
 }
 
@@ -192,6 +193,10 @@ export interface Order {
   created_at: string;
   updated_at: string;
   user: number;
+  customer_name: string;
+  customer_phone: string;
+  vendor_name: string;
+  location: string;
 }
 
 export interface Subscriptions {

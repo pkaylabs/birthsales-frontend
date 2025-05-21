@@ -1,5 +1,6 @@
 import React from "react";
-import { FiFacebook, FiTwitter, FiInstagram, FiLinkedin } from "react-icons/fi";
+import { FiFacebook, FiTwitter, FiInstagram } from "react-icons/fi";
+import { FaSnapchat } from "react-icons/fa6";
 import { Link } from "react-location";
 
 const Footer = () => {
@@ -111,7 +112,7 @@ const Footer = () => {
                 <FiTwitter size={20} />
               </a>
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/birth.non?igsh=ZHh2YmVxZ3lzZzR2&utm_source=qr"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white transition"
@@ -119,12 +120,12 @@ const Footer = () => {
                 <FiInstagram size={20} />
               </a>
               <a
-                href="https://linkedin.com"
+                href="https://www.snapchat.com/add/birthnon?share_id=Gfv-CCVaoV0&locale=en-US"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white transition"
               >
-                <FiLinkedin size={20} />
+                <FaSnapchat size={20} />
               </a>
             </div>
             <div>
@@ -253,7 +254,7 @@ const Footer = () => {
                 <FiTwitter size={20} />
               </a>
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/birth.non?igsh=ZHh2YmVxZ3lzZzR2&utm_source=qr"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white transition"
@@ -261,12 +262,12 @@ const Footer = () => {
                 <FiInstagram size={20} />
               </a>
               <a
-                href="https://linkedin.com"
+                href="https://www.snapchat.com/add/birthnon?share_id=Gfv-CCVaoV0&locale=en-US"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white transition"
               >
-                <FiLinkedin size={20} />
+                <FaSnapchat size={20} />
               </a>
             </div>
             <div>

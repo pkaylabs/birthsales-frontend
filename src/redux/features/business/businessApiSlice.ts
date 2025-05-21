@@ -29,7 +29,7 @@ interface SubscribeDto {
 export const businessApi = api.injectEndpoints({
   endpoints: (builder) => ({
     createBusiness: builder.mutation<Business, CreateBusinessDto>({
-      query: (biz) => ({ url: "vendorprofile/", method: "POST", body: biz }),
+      query: (biz) => ({ url: "vendorprofile/", method: "PUT", body: biz }),
     }),
     subscribePlan: builder.mutation<SubscriptionResponse, SubscribeDto>({
       query: (sub) => ({ url: "subscriptions/", method: "POST", body: sub }),
