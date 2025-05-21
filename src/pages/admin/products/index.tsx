@@ -234,11 +234,6 @@ export default function ProductsPage() {
     );
   }
 
-  // return (
-  //   <Box p={4} color="error.main">
-  //    eror
-  //   </Box>
-  // );
 
   return (
     <Box p={6}>

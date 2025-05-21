@@ -41,6 +41,20 @@ export const serviceApi = api.injectEndpoints({
           .map(({ id }) => ({ type: "Service" as const, id }))
           .concat([{ type: "Service", id: "LIST" }]),
     }),
+    getCustomerServices: builder.query<Service[], void>({
+      query: () => "customerservices/",
+      providesTags: (result = []) =>
+        result
+          .map(({ id }) => ({ type: "Service" as const, id }))
+          .concat([{ type: "Service", id: "LIST" }]),
+    }),
+     getCustomerService: builder.query<Service,  number >({
+          query: (id) => `customerservices/?query=${id}`,
+          // providesTags: (result = []) =>
+          //   result
+          //     .map(({ id }) => ({ type: "Services" as const, id }))
+          //     .concat([{ type: "Services", id: "LIST" }]),
+        }),
     getService: builder.query<Service, number>({
       query: (id) => `services/${id}/`,
       providesTags: (result, error, id) => [{ type: "Service", id }],
@@ -77,4 +91,6 @@ export const {
   useAddServiceMutation,
   useDeleteServiceMutation,
   useBookServiceMutation,
+  useGetCustomerServicesQuery,
+  useGetCustomerServiceQuery
 } = serviceApi;

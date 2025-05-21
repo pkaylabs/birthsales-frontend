@@ -109,6 +109,9 @@ const Setting = () => {
     skip: false,
   });
 
+
+  console.log(subscriptions)
+
   const mySubscriptions = subscriptions.find(
     (s) => s.vendor === vendorProfile?.vendor?.id
   );
@@ -168,7 +171,7 @@ const Setting = () => {
     if (!mySubscriptions) return;
     try {
       const res = await renew({
-        subscription: mySubscriptions.id,
+        subscription: mySubscriptions?.id,
         phone,
         network,
       }).unwrap();

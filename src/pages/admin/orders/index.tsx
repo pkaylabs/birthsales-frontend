@@ -19,11 +19,9 @@ import {
 } from "@mui/material";
 import { useGetOrdersQuery } from "@/redux/features/orders/orderApiSlice";
 import { Order } from "@/redux/type";
-import { useAppSelector } from "@/redux";
 
 export default function OrdersPage() {
   const { data: orders = [], isLoading, isError } = useGetOrdersQuery();
-  const user = useAppSelector((user) => user.auth.user);
   const [selected, setSelected] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -120,6 +118,9 @@ export default function OrdersPage() {
                 <strong>Order ID</strong>
               </TableCell>
               <TableCell>
+                <strong>Vendor</strong>
+              </TableCell>
+              <TableCell>
                 <strong>Items Count</strong>
               </TableCell>
               <TableCell>
@@ -132,7 +133,7 @@ export default function OrdersPage() {
                 <strong>Payment Status</strong>
               </TableCell>
               <TableCell>
-                <strong>User</strong>
+                <strong>Customer</strong>
               </TableCell>
               <TableCell>
                 <strong>Placed At</strong>
@@ -146,11 +147,12 @@ export default function OrdersPage() {
             {filtered.map((o) => (
               <TableRow key={o.id} hover>
                 <TableCell>{o.id}</TableCell>
+                <TableCell>{o.vendor_name}</TableCell>
                 <TableCell>{o.items.length}</TableCell>
                 <TableCell>{o.total_price.toFixed(2)}</TableCell>
                 <TableCell>{o.status}</TableCell>
                 <TableCell>{o.payment_status}</TableCell>
-                <TableCell>{o.user === user?.id && user?.name}</TableCell>
+                <TableCell>{o.customer_name}</TableCell>
                 <TableCell>{new Date(o.created_at).toDateString()}</TableCell>
                 <TableCell align="right">
                   <Button size="small" onClick={() => setSelected(o)}>
@@ -177,10 +179,19 @@ export default function OrdersPage() {
           {selected && (
             <Box>
               <Typography variant="subtitle2">
-                User: {selected.user === user?.id && user?.name}
+                Customer: {selected.customer_name}
+              </Typography>
+              <Typography variant="subtitle2">
+                Vendor: {selected.vendor_name}
               </Typography>
               <Typography variant="subtitle2">
                 Placed: {new Date(selected.created_at).toLocaleString()}
+              </Typography>
+              <Typography variant="subtitle2">
+                Customer Phone: {selected.customer_phone}
+              </Typography>
+              <Typography variant="subtitle2">
+                Location: {selected.location}
               </Typography>
               <Typography variant="subtitle2">
                 Total: GHC{selected.total_price.toFixed(2)}

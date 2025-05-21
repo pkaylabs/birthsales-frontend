@@ -28,6 +28,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onFavorite }) => {
     discount_percent,
     rating,
     reviews_count,
+    vendor_name,
   } = product;
 
   const handleView = () => {
@@ -138,6 +139,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onFavorite }) => {
             </span>
           )}
         </p>
+        <h4 className="font-medium text-base sm:text-lg md:text-xl text-gray-500">
+          {vendor_name}
+        </h4>
         <div className="mt-2 flex items-center space-x-2">
           <div className="flex space-x-1">
             {[...Array(5)].map((_, idx) => (

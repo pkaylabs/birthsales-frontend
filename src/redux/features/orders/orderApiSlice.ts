@@ -13,6 +13,8 @@ export interface NewOrderItem {
 }
 export interface PlaceOrderRequest {
   items: NewOrderItem[];
+  location: string;
+  customer_phone: string;
 }
 
 export interface OrderResponse {
