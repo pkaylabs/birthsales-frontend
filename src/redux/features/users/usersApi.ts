@@ -59,6 +59,9 @@ export const usersApi = api.injectEndpoints({
       }),
       invalidatesTags: [{ type: "User", id: "LIST" }],
     }),
+    getUserProfile: builder.query<UserDTO, void>({
+      query: () => `userprofile/`,
+    }),
     updateUserProfile: builder.mutation<User, ProfileForm>({
       query: (body) => ({
         url: "userprofile/",
@@ -70,4 +73,9 @@ export const usersApi = api.injectEndpoints({
   overrideExisting: false,
 });
 
-export const { useGetUsersQuery, useAddUserMutation, useUpdateUserProfileMutation } = usersApi;
+export const {
+  useGetUsersQuery,
+  useAddUserMutation,
+  useGetUserProfileQuery,
+  useUpdateUserProfileMutation,
+} = usersApi;

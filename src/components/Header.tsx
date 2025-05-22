@@ -19,6 +19,7 @@ const menuVariants = {
 };
 
 const Header: React.FC = () => {
+  const user = useAppSelector((state) => state.auth.user);
   const [menuOpen, setMenuOpen] = useState(false);
   const items = useAppSelector((state) => state.cart.items);
 
@@ -79,7 +80,11 @@ const Header: React.FC = () => {
               </span>
             </Link>
             <Link to="/account" className="hidden md:block">
-              <FaUser className="text-xl text-gray-700 hover:text-rose-500 transition" />
+              {user ? (
+                "Hey, " + user.name.split(" ")[0]
+              ) : (
+                <FaUser className="text-xl text-gray-700 hover:text-rose-500 transition" />
+              )}
             </Link>
 
             <button
@@ -104,31 +109,37 @@ const Header: React.FC = () => {
           >
             <div className="px-4 pt-4 pb-2 space-y-4">
               {/* Mobile Links */}
-              {["Home", "Services", "About", "Sign Up", "Cart", "Wishlist", "Account"].map(
-                (label) => {
-                  let to = "/";
-                  switch (label) {
-                    case "Home":
-                      to = "/";
-                      break;
-                    case "Sign Up":
-                      to = SIGN_UP_ROLE;
-                      break;
-                    default:
-                      to = `/${label.toLowerCase().replace(" ", "-")}`;
-                  }
-                  return (
-                    <Link
-                      key={label}
-                      to={to}
-                      onClick={() => setMenuOpen(false)}
-                      className="block text-lg text-gray-700 hover:text-rose-500 transition py-2"
-                    >
-                      {label}
-                    </Link>
-                  );
+              {[
+                "Home",
+                "Services",
+                "About",
+                "Sign Up",
+                "Cart",
+                "Wishlist",
+                "Account",
+              ].map((label) => {
+                let to = "/";
+                switch (label) {
+                  case "Home":
+                    to = "/";
+                    break;
+                  case "Sign Up":
+                    to = SIGN_UP_ROLE;
+                    break;
+                  default:
+                    to = `/${label.toLowerCase().replace(" ", "-")}`;
                 }
-              )}
+                return (
+                  <Link
+                    key={label}
+                    to={to}
+                    onClick={() => setMenuOpen(false)}
+                    className="block text-lg text-gray-700 hover:text-rose-500 transition py-2"
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
             </div>
           </motion.nav>
         )}

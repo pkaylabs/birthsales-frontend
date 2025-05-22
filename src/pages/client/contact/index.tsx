@@ -22,7 +22,7 @@ const Contact = () => {
             We are available 24/7, 7 days a week.
           </p>
           <p className="font-medium text-base text-black mt-5 pb-8 border-b border-black ">
-            Phone: +8801611112222
+            Phone: +233592331108
           </p>
 
           <div className="flex items-center gap-4 mt-8">
@@ -35,10 +35,7 @@ const Contact = () => {
             Fill out our form and we will contact you within 24 hours.
           </p>
           <p className="font-medium text-base text-[#1C1B1F] mt-5  ">
-            Emails: customer@exclusive.com
-          </p>
-          <p className="font-medium text-base text-[#1C1B1F] mt-5  ">
-            Emails: support@exclusive.com
+            Emails: birthnon@gmail.com
           </p>
         </div>
         <div className="flex-1 flex flex-col justify-between shadow-lg rounded px-5 py-12">
