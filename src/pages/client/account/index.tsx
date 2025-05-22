@@ -1,9 +1,15 @@
-import { useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux";
 import { logout } from "@/redux/features/auth/authSlice";
 import { Link, useNavigate } from "react-location";
 import { toast } from "react-toastify";
 import { useGetOrdersQuery } from "@/redux/features/orders/orderApiSlice";
+import { useGetBookingsQuery } from "@/redux/features/bookings/bookingsApiSlice";
+import {
+  useGetUserProfileQuery,
+  useUpdateUserProfileMutation,
+} from "@/redux/features/users/usersApi";
+import { CircularProgress } from "@mui/material";
 
 type Tab = "profile" | "orders" | "bookings";
 
@@ -160,105 +166,156 @@ const Account: React.FC = () => {
 
 export default Account;
 
-import React from "react";
-import { useGetBookingsQuery } from "@/redux/features/bookings/bookingsApiSlice";
+export const ProfileForm: React.FC = () => {
+  const { data: profile, isLoading } = useGetUserProfileQuery();
+  const [updateUser, { isLoading: saving }] = useUpdateUserProfileMutation();
 
-export const ProfileForm: React.FC = () => (
-  <>
-    <h2 className="text-xl font-semibold text-red-600 mb-4">
-      Edit Your Profile
-    </h2>
-    <form className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            First Name
-          </label>
-          <input
-            type="text"
-            placeholder="First Name"
-            className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
-          />
+  const [userForm, setUserForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
+
+  useEffect(() => {
+    if (profile) {
+      setUserForm({
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        address: String(profile.address),
+      });
+    }
+  }, [profile]);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
+    setUserForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+
+  const handleSubmit = async () => {
+    try {
+      await updateUser(userForm).unwrap();
+      toast.success("Profile Updated successfully");
+    } catch (error: any) {
+      toast.error(error.data.message || "Error Updating profile");
+    }
+  };
+
+  if (isLoading) {
+    return <CircularProgress />;
+  }
+
+  return (
+    <>
+      <h2 className="text-xl font-semibold text-red-600 mb-4">
+        Edit Your Profile
+      </h2>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Name
+            </label>
+            <input
+              type="text"
+              name="name"
+              placeholder="Name"
+              value={userForm.name}
+              onChange={handleChange}
+              className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
+            />
+          </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Last Name
-          </label>
-          <input
-            type="text"
-            placeholder="Last Name"
-            className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              placeholder="someone@gmail.com"
+              value={userForm.email}
+              onChange={handleChange}
+              className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Phone
+            </label>
+            <input
+              type="text"
+              name="phone"
+              placeholder="123-456-789"
+              value={userForm.phone}
+              onChange={handleChange}
+              className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Address
+            </label>
+            <input
+              type="text"
+              name="address"
+              placeholder="Your address"
+              value={userForm.address}
+              onChange={handleChange}
+              className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
+            />
+          </div>
+        </div>
+        {/* <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Current Password
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              New Password
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Confirm New Password
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
+            />
+          </div>
+        </div> */}
+        <div className="flex justify-end space-x-3">
+         
+          <button
+            type="submit"
+            className="px-6 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition"
+            onClick={handleSubmit}
+            disabled={saving}
+          >
+            {saving ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              "Save changes"
+            )}
+          </button>
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
-          <input
-            type="email"
-            placeholder="someone@example.com"
-            className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Address
-          </label>
-          <input
-            type="text"
-            placeholder="Your address"
-            className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
-          />
-        </div>
-      </div>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Current Password
-          </label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            New Password
-          </label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Confirm New Password
-          </label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            className="w-full border-gray-300 rounded-lg p-2 bg-gray-100 focus:ring-red-500"
-          />
-        </div>
-      </div>
-      <div className="flex justify-end space-x-3">
-        <button
-          type="button"
-          className="px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-200 transition"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="px-6 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition"
-        >
-          Save Changes
-        </button>
-      </div>
-    </form>
-  </>
-);
+    </>
+  );
+};

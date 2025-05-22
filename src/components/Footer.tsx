@@ -1,6 +1,6 @@
 import React from "react";
 import { FiFacebook, FiTwitter, FiInstagram } from "react-icons/fi";
-import { FaSnapchat } from "react-icons/fa6";
+import { FaSnapchat, FaTiktok } from "react-icons/fa6";
 import { Link } from "react-location";
 
 const Footer = () => {
@@ -96,7 +96,7 @@ const Footer = () => {
             </h3>
             <div className="flex space-x-4 mb-4">
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/share/1Aawp6gShp/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white transition"
@@ -104,12 +104,12 @@ const Footer = () => {
                 <FiFacebook size={20} />
               </a>
               <a
-                href="https://twitter.com"
+                href="https://www.tiktok.com/@birthnon?_t=ZM-8wZGJMDXoMY&_r=1"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white transition"
               >
-                <FiTwitter size={20} />
+                <FaTiktok size={20} />
               </a>
               <a
                 href="https://www.instagram.com/birth.non?igsh=ZHh2YmVxZ3lzZzR2&utm_source=qr"
@@ -238,7 +238,7 @@ const Footer = () => {
             </h3>
             <div className="flex space-x-4 mb-4">
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/share/1Aawp6gShp/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white transition"
@@ -246,12 +246,12 @@ const Footer = () => {
                 <FiFacebook size={20} />
               </a>
               <a
-                href="https://twitter.com"
+                href="https://www.tiktok.com/@birthnon?_t=ZM-8wZGJMDXoMY&_r=1"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white transition"
               >
-                <FiTwitter size={20} />
+                <FaTiktok size={20} />
               </a>
               <a
                 href="https://www.instagram.com/birth.non?igsh=ZHh2YmVxZ3lzZzR2&utm_source=qr"

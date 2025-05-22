@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import speaker from "@/assets/images/speaker.png";
 import {
   useGetHomePageDataQuery,
   useSearchProductsQuery,
@@ -12,8 +11,10 @@ import Carousel from "./components/swiper";
 import CategoryCard from "./components/cards/category";
 import Countdown from "./components/countdown";
 import BottomCards from "./components/bottom-cards";
+import { useNavigate } from "react-location";
 
 const Home: React.FC = () => {
+  const navigate = useNavigate();
   const { data, isLoading, isError } = useGetHomePageDataQuery();
   const [search, setSearch] = useState("");
   const { data: searchResults = [], isFetching: isSearching } =
@@ -156,20 +157,25 @@ const Home: React.FC = () => {
             <div className="flex-1 text-center lg:text-left space-y-4">
               <p className="text-green-400 uppercase text-sm">Categories</p>
               <h1 className="text-white font-bold text-2xl sm:text-3xl lg:text-5xl">
-                Enhance Your <br /> Music Experience
+                {allProducts[4].name}
               </h1>
               <div className="hidden md:block">
                 <Countdown showInCat endDateTime="2025-01-20T23:59:59" />
               </div>
-              <button className="bg-green-400 text-black font-medium rounded-md px-6 py-2">
+              <button
+                className="bg-green-400 text-black font-medium rounded-md px-6 py-2"
+                onClick={() =>
+                  navigate({ to: `/product-details/${allProducts[4].id}` })
+                }
+              >
                 Buy Now!
               </button>
             </div>
             <div className="flex-1">
               <img
-                src={speaker}
+                src={`${BASE_URL}${allProducts[4].image}`}
                 alt="speaker"
-                className="w-full h-auto object-contain"
+                className="w-full h-auto object-contain rounded-lg"
               />
             </div>
           </section>
@@ -199,7 +205,16 @@ const Home: React.FC = () => {
                   <div className="absolute inset-0 p-6 flex flex-col justify-end bg-gradient-to-t from-black/50 to-transparent text-white">
                     <h5 className="font-semibold text-lg">{item.name}</h5>
                     <p className="text-sm">{item.description}</p>
-                    <button className="mt-2 underline">Shop Now</button>
+                    <button
+                      className="mt-2 underline"
+                      onClick={() =>
+                        navigate({
+                          to: `/product-details/${item.id}`,
+                        })
+                      }
+                    >
+                      Shop Now
+                    </button>
                   </div>
                 </div>
               ))}

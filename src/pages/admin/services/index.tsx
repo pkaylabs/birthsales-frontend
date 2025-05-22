@@ -439,7 +439,7 @@ export default function ServicesPage() {
                 <Typography variant="subtitle2" color="textSecondary">
                   Price
                 </Typography>
-                <Typography>${detailService?.price}</Typography>
+                <Typography>GHC{detailService?.price}</Typography>
               </Box>
               <Box></Box>
               <Box gridColumn="1 / -1">
