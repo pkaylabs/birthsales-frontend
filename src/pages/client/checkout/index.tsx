@@ -1,6 +1,6 @@
 import { BASE_URL, LOGIN } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/redux";
-import { removeFromCart } from "@/redux/features/cart/cartSlice";
+import { clearCart, removeFromCart } from "@/redux/features/cart/cartSlice";
 import {
   useMobilePaymentMutation,
   usePlaceOrderMutation,
@@ -54,6 +54,7 @@ const Checkout = () => {
       }).unwrap();
       setcustomerPhone("");
       setLocation("");
+      dispatch(clearCart())
       orderId = data.id;
     } catch (err: any) {
       toast.error(err.data[0] || "Failed to place order");

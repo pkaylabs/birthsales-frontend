@@ -4,6 +4,7 @@ import {
   useGetBookingsQuery,
   useUpdateBookingMutation,
 } from "@/redux/features/bookings/bookingsApiSlice";
+import { Booking } from "@/redux/type";
 import {
   Table,
   TableBody,
@@ -19,8 +20,14 @@ import {
   Alert,
   Typography,
   Skeleton,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from "@mui/material";
-import React from "react";
+import React, { useMemo, useState } from "react";
 
 export default function Bookings() {
   const user = useAppSelector((state) => state.auth.user);
@@ -38,6 +45,16 @@ export default function Bookings() {
     msg: string;
     severity: "success" | "error";
   }>({ open: false, msg: "", severity: "success" });
+
+  const [search, setSearch] = useState("");
+
+  const [selected, setSelected] = useState<Booking | null>(null);
+
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return allBookings;
+    return allBookings.filter((b) => b.user_name.toLowerCase().includes(term));
+  }, [allBookings, search]);
 
   const handleStatusChange = async (id: number, status: string) => {
     try {
@@ -87,7 +104,7 @@ export default function Bookings() {
     );
   }
 
-  if (allBookings.length === 0) {
+  if (filtered.length === 0) {
     return (
       <Box
         display="flex"
@@ -115,6 +132,19 @@ export default function Bookings() {
 
   return (
     <Box p={4}>
+      <Typography variant="h4" gutterBottom>
+        Bookings
+      </Typography>
+
+      <Box mb={2}>
+        <TextField
+          fullWidth
+          placeholder="Filter name.."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </Box>
+
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -126,10 +156,13 @@ export default function Bookings() {
               <TableCell>Date</TableCell>
               <TableCell>Time</TableCell>
               <TableCell>Status</TableCell>
+              <TableCell>
+                <strong>Actions</strong>
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {allBookings.map((b) => (
+            {filtered.map((b) => (
               <TableRow key={b.id}>
                 <TableCell>{b.id}</TableCell>
                 {isAdmin && <TableCell>{b.vendor_name}</TableCell>}
@@ -154,11 +187,51 @@ export default function Bookings() {
                     )}
                   </Select>
                 </TableCell>
+                <TableCell>
+                  <Button
+                    size="small"
+                    onClick={() =>
+                      setSelected({
+                        ...b,
+                        vendor: (b as any).vendor ?? 0,
+                      })
+                    }
+                  >
+                    View
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Detail Dialog */}
+      <Dialog
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Booking {selected?.id} — {selected?.status}
+        </DialogTitle>
+        <DialogContent dividers>
+          {selected && (
+            <Box>
+              <Typography variant="subtitle2">
+                UserID: {selected.user}
+              </Typography>
+              <Typography variant="subtitle2">
+                Placed: {new Date(selected.date).toLocaleString()}
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSelected(null)}>Close</Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={toast.open}
