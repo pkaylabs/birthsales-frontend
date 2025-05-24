@@ -200,7 +200,10 @@ export default function ServicesPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent>Total Revenue: GHC0</CardContent>
+          <CardContent>
+            Total Revenue: GHC
+            {visibleServices.reduce((sum, s) => sum + Number(s.price), 0)}
+          </CardContent>
         </Card>
       </div>
 

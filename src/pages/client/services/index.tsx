@@ -1,11 +1,23 @@
 // src/pages/Services.tsx
-import React from "react";
+import React, { useMemo, useState } from "react";
 import ServiceCard from "./components/ServiceCard";
 import { useGetCustomerServicesQuery } from "@/redux/features/services/servicesApi";
 import { Service } from "@/redux/type";
+import { Box, TextField } from "@mui/material";
 
 const Services: React.FC = () => {
-  const { data: services = [], isLoading, isError } = useGetCustomerServicesQuery();
+  const [search, setSearch] = useState("");
+  const {
+    data: services = [],
+    isLoading,
+    isError,
+  } = useGetCustomerServicesQuery();
+
+  const filteredSearch = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return services;
+    return services.filter((s) => s.name.toLowerCase().includes(term));
+  }, [services, search]);
 
   // number of skeleton cards to show
   const SKELETON_COUNT = 8;
@@ -15,15 +27,30 @@ const Services: React.FC = () => {
       {/* Breadcrumb */}
       <nav className="text-gray-500 text-sm mb-6" aria-label="Breadcrumb">
         <ol className="list-reset flex">
-          <li><a href="/" className="hover:underline">Home</a></li>
-          <li><span className="mx-2">/</span></li>
+          <li>
+            <a href="/" className="hover:underline">
+              Home
+            </a>
+          </li>
+          <li>
+            <span className="mx-2">/</span>
+          </li>
           <li className="text-gray-900 font-semibold">Services</li>
         </ol>
       </nav>
 
-      <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-8 text-center sm:text-left">
-        Our Services
-      </h1>
+      <Box className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+        <h1 className="text-3xl sm:text-2xl font-bold text-gray-800">
+          Our Services
+        </h1>
+        <TextField
+          size="small"
+          placeholder="Search services"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full sm:64"
+        />
+      </Box>
 
       {isError && (
         <p className="text-center py-12 text-red-500">
@@ -53,16 +80,16 @@ const Services: React.FC = () => {
             </div>
           ))}
         </div>
-      ) : services.length ? (
+      ) : filteredSearch.length === 0 ? (
+        <p className="text-center py-12 text-gray-500">
+          No services found matching "{search}".
+        </p>
+      ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {services.map((service: Service) => (
+          {filteredSearch.map((service: Service) => (
             <ServiceCard key={service.id} service={service} />
           ))}
         </div>
-      ) : (
-        <p className="text-center py-12 text-gray-500">
-          No services available.
-        </p>
       )}
     </div>
   );
