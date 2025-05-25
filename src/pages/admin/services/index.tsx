@@ -189,24 +189,9 @@ export default function ServicesPage() {
   return (
     <div className="p-6 space-y-6">
       {(isAdding || isDeleting) && <LinearProgress />}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent>Total Services: {visibleServices.length}</CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            Total Bookings:{" "}
-            {visibleServices.reduce((sum, s) => sum + (s.bookings || 0), 0)}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            Total Revenue: GHC
-            {visibleServices.reduce((sum, s) => sum + Number(s.price), 0)}
-          </CardContent>
-        </Card>
-      </div>
-
+      <Typography variant="h4" gutterBottom>
+        Services Management
+      </Typography>
       <div className="bg-white shadow rounded p-4 overflow-x-auto">
         <div className="flex justify-between mb-4">
           <TextField
