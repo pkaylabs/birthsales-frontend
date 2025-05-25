@@ -4,12 +4,30 @@ import { logout } from "@/redux/features/auth/authSlice";
 import { Link, useNavigate } from "react-location";
 import { toast } from "react-toastify";
 import { useGetOrdersQuery } from "@/redux/features/orders/orderApiSlice";
-import { useGetBookingsQuery } from "@/redux/features/bookings/bookingsApiSlice";
+import {
+  Booking,
+  useGetBookingsQuery,
+} from "@/redux/features/bookings/bookingsApiSlice";
 import {
   useGetUserProfileQuery,
   useUpdateUserProfileMutation,
 } from "@/redux/features/users/usersApi";
-import { CircularProgress } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
+import { Order } from "@/redux/type";
 
 type Tab = "profile" | "orders" | "bookings";
 
@@ -19,6 +37,8 @@ const Account: React.FC = () => {
   const user = useAppSelector((s) => s.auth.user);
 
   const [activeTab, setActiveTab] = useState<Tab>("profile");
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
   const { data: orders = [], isLoading: loadingOrders } = useGetOrdersQuery(
     undefined,
@@ -116,15 +136,26 @@ const Account: React.FC = () => {
               ) : (
                 <div className="space-y-4">
                   {orders.map((o) => (
-                    <div key={o.id} className="p-4 border rounded-lg">
-                      <div className="flex justify-between">
-                        <span>Order #{o.id}</span>
-                        <span className="font-medium">{o.status}</span>
+                    <div
+                      key={o.id}
+                      className="p-4 border rounded-lg flex justify-between items-center"
+                    >
+                      <div>
+                        <div className="flex flex-col sm:flex-col justify-between mb-2">
+                          <span>Order #{o.id}</span>
+                          <span className="font-medium">{o.status}</span>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Total: GHC{o.total_price} • Placed:{" "}
+                          {new Date(o.created_at).toLocaleDateString()}
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-600">
-                        Total: GHC{o.total_price} • Placed:{" "}
-                        {new Date(o.created_at).toLocaleDateString()}
-                      </div>
+                      <button
+                        onClick={() => setSelectedOrder(o)}
+                        className="text-xs md:text-base border border-blue-300 text-black md:px-4 md:py-2 px-3 py-2  rounded-lg hover:bg-blue-500 hover:text-white transition"
+                      >
+                        Order Details
+                      </button>
                     </div>
                   ))}
                   {orders.length === 0 && <p>You have no orders yet.</p>}
@@ -132,6 +163,74 @@ const Account: React.FC = () => {
               )}
             </div>
           )}
+
+          {/* Order details */}
+
+          <Dialog
+            open={!!selectedOrder}
+            onClose={() => setSelectedOrder(null)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle>
+              Order {selectedOrder?.id} — {selectedOrder?.status}
+            </DialogTitle>
+            <DialogContent dividers>
+              {selectedOrder && (
+                <Box>
+                  <Typography variant="subtitle2">
+                    Customer: {selectedOrder.customer_name}
+                  </Typography>
+                  <Typography variant="subtitle2">
+                    Vendor: {selectedOrder.vendor_name}
+                  </Typography>
+                  <Typography variant="subtitle2">
+                    Placed:{" "}
+                    {new Date(selectedOrder.created_at).toLocaleString()}
+                  </Typography>
+                  <Typography variant="subtitle2">
+                    Customer Phone: {selectedOrder.customer_phone}
+                  </Typography>
+                  <Typography variant="subtitle2">
+                    Vendor Phone: {selectedOrder.vendor_phone}
+                  </Typography>
+                  <Typography variant="subtitle2">
+                    Location: {selectedOrder.location}
+                  </Typography>
+                  <Typography variant="subtitle2">
+                    Total: GHC{selectedOrder.total_price.toFixed(2)}
+                  </Typography>
+                  <Typography variant="subtitle2">
+                    Payment: {selectedOrder.payment_status}
+                  </Typography>
+                  <Typography variant="h6" sx={{ mt: 2 }}>
+                    Items
+                  </Typography>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Product</TableCell>
+                        <TableCell>Qty</TableCell>
+                        <TableCell>Price</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {selectedOrder.items.map((it) => (
+                        <TableRow key={it.id}>
+                          <TableCell>{it.product_name}</TableCell>
+                          <TableCell>{it.quantity}</TableCell>
+                          <TableCell>{Math.round(it.price)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Box>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setSelectedOrder(null)}>Close</Button>
+            </DialogActions>
+          </Dialog>
 
           {activeTab === "bookings" && (
             <div>
@@ -143,14 +242,25 @@ const Account: React.FC = () => {
               ) : (
                 <div className="space-y-4">
                   {bookings.map((b) => (
-                    <div key={b.id} className="p-4 border rounded-lg">
-                      <div className="flex justify-between">
-                        <span>Booking #{b.id}</span>
-                        <span className="font-medium">{b.status}</span>
+                    <div
+                      key={b.id}
+                      className="p-4 border rounded-lg flex justify-between items-center"
+                    >
+                      <div>
+                        <div className="flex flex-col sm:flex-col justify-between mb-2">
+                          <span>Booking #{b.id}</span>
+                          <span className="font-medium">{b.status}</span>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Service: {b.service_name} • Date: {b.date} @ {b.time}
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-600">
-                        Service: {b.service_name} • Date: {b.date} @ {b.time}
-                      </div>
+                      <button
+                        onClick={() => setSelectedBooking(b)}
+                        className="text-xs md:text-base border border-blue-300 text-black md:px-4 md:py-2 px-3 py-2  rounded-lg hover:bg-blue-500 hover:text-white transition"
+                      >
+                        Booking Details
+                      </button>
                     </div>
                   ))}
                   {bookings.length === 0 && <p>You have no bookings yet.</p>}
@@ -158,6 +268,48 @@ const Account: React.FC = () => {
               )}
             </div>
           )}
+          {/* Booking details */}
+          <Dialog
+            open={!!selectedBooking}
+            onClose={() => setSelectedBooking(null)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle>
+              Booking {selectedBooking?.id} — {selectedBooking?.status}
+            </DialogTitle>
+            <DialogContent dividers>
+              {selectedBooking && (
+                <Box>
+                  <Typography variant="subtitle2">
+                    Customer: {selectedBooking.user_name}
+                  </Typography>
+                  <Typography variant="subtitle2">
+                    Vendor: {selectedBooking.vendor_name}
+                  </Typography>
+                  <Typography variant="subtitle2">
+                    Customer Phone: {selectedBooking.user_phone}
+                  </Typography>
+                  <Typography variant="subtitle2">
+                    Vendor Phone: {selectedBooking.vendor_phone}
+                  </Typography>
+                  <Typography variant="subtitle2">
+                    Location: {selectedBooking.location}
+                  </Typography>
+                  <Typography variant="subtitle2">
+                    Date: {selectedBooking.date} @ {selectedBooking.time}
+                  </Typography>
+
+                  <Typography variant="subtitle2">
+                    Payment: {selectedBooking.status}
+                  </Typography>
+                </Box>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setSelectedBooking(null)}>Close</Button>
+            </DialogActions>
+          </Dialog>
         </section>
       </div>
     </main>
@@ -301,7 +453,6 @@ export const ProfileForm: React.FC = () => {
           </div>
         </div> */}
         <div className="flex justify-end space-x-3">
-         
           <button
             type="submit"
             className="px-6 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition"

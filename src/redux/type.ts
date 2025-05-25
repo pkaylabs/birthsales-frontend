@@ -92,14 +92,14 @@ export interface VendorForm {
   vendor_phone: string;
 }
 
-export interface Booking {
-  id: number;
-  user: number;
-  service: number;
-  date: string;
-  status: string; // e.g., 'PENDING', 'CONFIRMED', 'CANCELLED'
-  vendor: number;
-}
+// export interface Booking {
+//   id: number;
+//   user: number;
+//   service: number;
+//   date: string;
+//   status: string; // e.g., 'PENDING', 'CONFIRMED', 'CANCELLED'
+//   vendor: number;
+// }
 
 export interface BookingForm {
   user: number;
@@ -179,6 +179,7 @@ export interface HomePageData {
 export interface OrderItem {
   id: number;
   product: number;
+  product_name: string;
   quantity: number;
   price: number;
 }
@@ -195,6 +196,7 @@ export interface Order {
   user: number;
   customer_name: string;
   customer_phone: string;
+  vendor_phone: string;
   vendor_name: string;
   location: string;
 }

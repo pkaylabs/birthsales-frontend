@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Link, useMatch, useNavigate } from "react-location";
+import { useMatch, useNavigate } from "react-location";
 import { LocationGenerics } from "@/router/location";
 import { BASE_URL } from "@/constants";
 import {
   useBookServiceMutation,
   useGetCustomerServiceQuery,
 } from "@/redux/features/services/servicesApi";
-import { TbTruckDelivery } from "react-icons/tb";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import { TextField } from "@mui/material";
+import { CircularProgress, TextField } from "@mui/material";
 import PaymentModal from "./components/PaymentModal";
 
 const ServiceDetails: React.FC = () => {
@@ -30,6 +29,7 @@ const ServiceDetails: React.FC = () => {
   const today = new Date().toISOString().split("T")[0];
   const [date, setDate] = useState(today);
   const [time, setTime] = useState("08:30");
+  const [location, setLocation] = useState("");
 
   const [mainImage, setMainImage] = useState<string | undefined>(
     service ? `${BASE_URL}${(service as any).image}` : undefined
@@ -41,15 +41,25 @@ const ServiceDetails: React.FC = () => {
   }, [service]);
 
   const handleBooking = async () => {
-    if (!date || !time) {
-      toast.error("Please select date and time");
+    if (!date) {
+      toast.error("Please select date");
       return;
     }
+    if (!time) {
+      toast.error("Please select time");
+      return;
+    }
+    if (!location) {
+      toast.error("Please enter your location");
+      return;
+    }
+
     try {
       const res = await bookService({
         service: Number(service?.id),
         date,
         time,
+        location,
       }).unwrap();
       setBookingId(res.data.id);
       toast.success(res.message);
@@ -134,7 +144,7 @@ const ServiceDetails: React.FC = () => {
           </div>
 
           {/* Date & Time Pickers */}
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="mt-6 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <TextField
               label="Booking Date"
               type="date"
@@ -153,6 +163,16 @@ const ServiceDetails: React.FC = () => {
               onChange={(e) => setTime(e.target.value)}
             />
           </div>
+          <TextField
+            label="Location"
+            type="text"
+            placeholder="Enter your location"
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            inputProps={{ step: 300 }}
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          />
 
           {/* Actions */}
           <div className="mt-6 grid grid-cols-1  gap-4 w-full">
@@ -161,7 +181,11 @@ const ServiceDetails: React.FC = () => {
               disabled={booking}
               className="w-full py-3 bg-rose-600 text-white rounded-md hover:bg-rose-700 transition"
             >
-              {booking ? "Booking…" : "Book & Pay"}
+              {booking ? (
+                <CircularProgress size={20} sx={{ color: "white" }} />
+              ) : (
+                "Book & Pay"
+              )}
             </button>
             {/* <Link
               to="#"

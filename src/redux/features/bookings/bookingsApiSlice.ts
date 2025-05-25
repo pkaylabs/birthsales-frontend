@@ -1,16 +1,19 @@
 import { api } from "@/app/api/auth";
 
-interface Booking {
+export interface Booking {
   id: number;
   service_name: string;
   user_name: string;
   vendor_name: string;
+  vendor_phone: string;
+  user_phone: string;
+  location: string;
   date: string;
   time: string;
-  status: string;
   created_at: string;
   updated_at: string;
   service: number;
+  status: string; // e.g., 'PENDING', 'CONFIRMED', 'CANCELLED'
   user: number;
 }
 

@@ -132,6 +132,10 @@ const VendorAccount: React.FC = () => {
       setPaymentError("Please select a payment method");
       return;
     }
+    if (!network) {
+      toast.error("Please select a network");
+      return;
+    }
     if (paymentMethod === "mobile_money" && !mobileNumber) {
       setPaymentError("Please enter your mobile number");
     }

@@ -16,6 +16,7 @@ interface BookServiceRequest {
   service: number;
   date: string;
   time: string;
+  location: string;
 }
 
 interface BookServiceResponse {
