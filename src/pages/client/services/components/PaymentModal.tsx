@@ -71,6 +71,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
         <TextField
           label="Phone Number"
+          type="tel"
           fullWidth
           value={phone}
           onChange={(e) => setPhone(e.target.value)}

@@ -42,6 +42,11 @@ const Checkout = () => {
       return;
     }
 
+    if(!location) {
+      toast.error("Please enter your delivery location");
+      return;
+    }
+
     let orderId: number;
     try {
       const { data } = await placeOrder({
@@ -54,7 +59,8 @@ const Checkout = () => {
       }).unwrap();
       setcustomerPhone("");
       setLocation("");
-      dispatch(clearCart())
+      dispatch(clearCart());
+      navigate({ to: "/" });
       orderId = data.id;
     } catch (err: any) {
       toast.error(err.data[0] || "Failed to place order");
@@ -78,8 +84,10 @@ const Checkout = () => {
           phone: phoneNumber,
         }).unwrap();
         toast.success("Payment successful! Thank you for your purchase.");
+        dispatch(clearCart());
+        navigate({ to: "/" });
       } catch (err: any) {
-        toast.error(err?.data?.message || "Payment faild");
+        toast.error(err?.data?.message || "Payment failed");
         return;
       }
     }

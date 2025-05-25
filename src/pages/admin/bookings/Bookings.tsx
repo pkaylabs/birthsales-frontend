@@ -1,10 +1,10 @@
 // import React from "react";
 import { useAppSelector } from "@/redux";
 import {
+  Booking,
   useGetBookingsQuery,
   useUpdateBookingMutation,
 } from "@/redux/features/bookings/bookingsApiSlice";
-import { Booking } from "@/redux/type";
 import {
   Table,
   TableBody,
@@ -30,6 +30,8 @@ import {
 import React, { useMemo, useState } from "react";
 
 export default function Bookings() {
+  const [currentPage, setCurrentPage] = useState(0);
+  const PAGE_SIZE = 10; // Number of bookings per page
   const user = useAppSelector((state) => state.auth.user);
   const isAdmin =
     user?.is_staff || user?.is_superuser || user?.user_type === "ADMIN";
@@ -50,10 +52,21 @@ export default function Bookings() {
 
   const [selected, setSelected] = useState<Booking | null>(null);
 
+  const totalBookings = allBookings.length;
+  const totalPages = Math.ceil(totalBookings / PAGE_SIZE);
+
+  const startIndex = currentPage * PAGE_SIZE;
+  const endIndex = startIndex + PAGE_SIZE;
+
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     if (!term) return allBookings;
-    return allBookings.filter((b) => b.user_name.toLowerCase().includes(term));
+    return allBookings.filter(
+      (b) =>
+        b.user_name.toLowerCase().includes(term) ||
+        b.service_name.toLowerCase().includes(term) ||
+        b.vendor_name?.toLowerCase().includes(term)
+    );
   }, [allBookings, search]);
 
   const handleStatusChange = async (id: number, status: string) => {
@@ -104,32 +117,6 @@ export default function Bookings() {
     );
   }
 
-  if (filtered.length === 0) {
-    return (
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        p={8}
-        m={4}
-        borderRadius={2}
-        boxShadow={3}
-        bgcolor="background.paper"
-      >
-        <Typography variant="h1" color="text.disabled">
-          🛒
-        </Typography>
-        <Typography variant="h6" gutterBottom>
-          No bookings found
-        </Typography>
-        <Typography color="text.secondary">
-          There are no bookings to display right now.
-        </Typography>
-      </Box>
-    );
-  }
-
   return (
     <Box p={4}>
       <Typography variant="h4" gutterBottom>
@@ -139,11 +126,21 @@ export default function Bookings() {
       <Box mb={2}>
         <TextField
           fullWidth
-          placeholder="Filter name.."
+          placeholder="Filter names, services, vendors..."
+          variant="outlined"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
       </Box>
+      {filtered.length > 0 ? (
+        <Typography variant="subtitle1" color="text.secondary" mb={2}>
+          Found {filtered.length} booking{filtered.length > 1 ? "s" : ""}
+        </Typography>
+      ) : (
+        <Typography variant="subtitle1" color="text.secondary" mb={2}>
+          No bookings match your search criteria.
+        </Typography>
+      )}
 
       <TableContainer component={Paper}>
         <Table>
@@ -162,7 +159,7 @@ export default function Bookings() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filtered.map((b) => (
+            {filtered.slice(startIndex, endIndex).map((b) => (
               <TableRow key={b.id}>
                 <TableCell>{b.id}</TableCell>
                 {isAdmin && <TableCell>{b.vendor_name}</TableCell>}
@@ -188,15 +185,7 @@ export default function Bookings() {
                   </Select>
                 </TableCell>
                 <TableCell>
-                  <Button
-                    size="small"
-                    onClick={() =>
-                      setSelected({
-                        ...b,
-                        vendor: (b as any).vendor ?? 0,
-                      })
-                    }
-                  >
+                  <Button size="small" onClick={() => setSelected(b)}>
                     View
                   </Button>
                 </TableCell>
@@ -205,6 +194,27 @@ export default function Bookings() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <div
+        className="pagination"
+        style={{ marginTop: 16, textAlign: "center" }}
+      >
+        {Array.from({ length: totalPages }, (_, page) => (
+          <Button
+            key={page}
+            variant={currentPage === page ? "contained" : "outlined"}
+            onClick={() => setCurrentPage(page)}
+            sx={{
+              m: 0.5,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {page + 1}
+          </Button>
+        ))}
+      </div>
 
       {/* Detail Dialog */}
       <Dialog
@@ -224,6 +234,23 @@ export default function Bookings() {
               </Typography>
               <Typography variant="subtitle2">
                 Placed: {new Date(selected.date).toLocaleString()}
+              </Typography>
+              <Typography variant="subtitle2">
+                User: {selected.user_name}
+              </Typography>
+              <Typography variant="subtitle2">
+                Service: {selected.service_name}
+                {selected.vendor_name && ` by ${selected.vendor_name}`}
+              </Typography>
+              <Typography variant="subtitle2">Time: {selected.time}</Typography>
+              <Typography variant="subtitle2">
+                Status: {selected.status}
+              </Typography>
+              <Typography variant="subtitle2">
+                Created At: {new Date(selected.created_at).toLocaleString()}
+              </Typography>
+              <Typography variant="subtitle2">
+                Updated At: {new Date(selected.updated_at).toLocaleString()}
               </Typography>
             </Box>
           )}

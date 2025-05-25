@@ -21,9 +21,18 @@ import { useGetOrdersQuery } from "@/redux/features/orders/orderApiSlice";
 import { Order } from "@/redux/type";
 
 export default function OrdersPage() {
+  const PAGE_SIZE = 10; // Number of orders per page
+  const [currentPage, setCurrentPage] = useState(0);
   const { data: orders = [], isLoading, isError } = useGetOrdersQuery();
   const [selected, setSelected] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const totalOrders = orders.length;
+  const totalPages = Math.ceil(totalOrders / PAGE_SIZE);
+
+  // Slice orders for pagination
+  const startIndex = currentPage * PAGE_SIZE;
+  const endIndex = startIndex + PAGE_SIZE;
 
   const filtered = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -33,7 +42,9 @@ export default function OrdersPage() {
         o.id.toString().includes(term) ||
         o.status.toLowerCase().includes(term) ||
         o.payment_status.toLowerCase().includes(term) ||
-        o.vendor_id.toLowerCase().includes(term)
+        o.vendor_id.toLowerCase().includes(term) ||
+        o.vendor_name.toLowerCase().includes(term) ||
+        o.customer_name.toLowerCase().includes(term)
       );
     });
   }, [orders, searchTerm]);
@@ -67,34 +78,6 @@ export default function OrdersPage() {
       </Box>
     );
 
-  if (!filtered || filtered.length === 0) {
-    return (
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        p={8}
-        m={4}
-        borderRadius={2}
-        boxShadow={3}
-        bgcolor="background.paper"
-      >
-        <Box mb={2}>
-          <Typography variant="h1" color="text.disabled">
-            🛒
-          </Typography>
-        </Box>
-        <Typography variant="h6" gutterBottom>
-          No Orders Found
-        </Typography>
-        <Typography color="text.secondary" mb={2}>
-          There are no orders to display right now.
-        </Typography>
-      </Box>
-    );
-  }
-
   return (
     <Box p={4}>
       <Typography variant="h4" gutterBottom>
@@ -104,11 +87,20 @@ export default function OrdersPage() {
       <Box mb={2}>
         <TextField
           fullWidth
-          placeholder="Filter by ID, status, vendor or payment…"
+          placeholder="Filter by ID, status, vendor name, customer name..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </Box>
+      {filtered.length > 0 ? (
+        <Typography variant="subtitle1" color="text.secondary" mb={2}>
+          Found {filtered.length} order{filtered.length > 1 ? "s" : ""}
+        </Typography>
+      ) : (
+        <Typography variant="subtitle1" color="text.secondary" mb={2}>
+          No orders match your search criteria.
+        </Typography>
+      )}
 
       <TableContainer component={Paper} elevation={2}>
         <Table>
@@ -121,20 +113,21 @@ export default function OrdersPage() {
                 <strong>Vendor</strong>
               </TableCell>
               <TableCell>
+                <strong>Customer</strong>
+              </TableCell>
+              <TableCell>
                 <strong>Items Count</strong>
               </TableCell>
               <TableCell>
                 <strong>Total (GHC)</strong>
               </TableCell>
-              <TableCell>
+              {/* <TableCell>
                 <strong>Status</strong>
-              </TableCell>
+              </TableCell> */}
               <TableCell>
                 <strong>Payment Status</strong>
               </TableCell>
-              <TableCell>
-                <strong>Customer</strong>
-              </TableCell>
+
               <TableCell>
                 <strong>Placed At</strong>
               </TableCell>
@@ -144,15 +137,15 @@ export default function OrdersPage() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filtered.map((o) => (
+            {filtered.slice(startIndex, endIndex).map((o) => (
               <TableRow key={o.id} hover>
                 <TableCell>{o.id}</TableCell>
                 <TableCell>{o.vendor_name}</TableCell>
+                <TableCell>{o.customer_name}</TableCell>
                 <TableCell>{o.items.length}</TableCell>
                 <TableCell>{o.total_price.toFixed(2)}</TableCell>
-                <TableCell>{o.status}</TableCell>
+                {/* <TableCell>{o.status}</TableCell> */}
                 <TableCell>{o.payment_status}</TableCell>
-                <TableCell>{o.customer_name}</TableCell>
                 <TableCell>{new Date(o.created_at).toDateString()}</TableCell>
                 <TableCell align="right">
                   <Button size="small" onClick={() => setSelected(o)}>
@@ -164,6 +157,18 @@ export default function OrdersPage() {
           </TableBody>
         </Table>
       </TableContainer>
+      <div className="pagination" style={{ marginTop: 16, textAlign: "center" }}>
+        {Array.from({ length: totalPages }, (_, page) => (
+          <Button
+            key={page}
+            variant={currentPage === page ? "contained" : "outlined"}
+            onClick={() => setCurrentPage(page)}
+            sx={{ m: 0.5, display: "inline-flex", alignItems: "center", justifyContent  : "center" }}
+          >
+            {page + 1}
+          </Button>
+        ))}
+      </div>
 
       {/* Detail Dialog */}
       <Dialog
@@ -205,17 +210,15 @@ export default function OrdersPage() {
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Item ID</TableCell>
-                    <TableCell>Product ID</TableCell>
+                    <TableCell>Product</TableCell>
                     <TableCell>Qty</TableCell>
-                    <TableCell>Price (GHC)</TableCell>
+                    <TableCell>Price</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {selected.items.map((it) => (
                     <TableRow key={it.id}>
-                      <TableCell>{it.id}</TableCell>
-                      <TableCell>{it.product}</TableCell>
+                      <TableCell>{it.product_name}</TableCell>
                       <TableCell>{it.quantity}</TableCell>
                       <TableCell>{Math.round(it.price)}</TableCell>
                     </TableRow>

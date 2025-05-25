@@ -48,23 +48,25 @@ const Header: React.FC = () => {
           {/* Desktop Nav + Search */}
           <div className="hidden md:flex md:items-center md:space-x-6">
             <nav className="flex items-center space-x-6">
-              {["Home", "Services", "About", "Sign Up"].map((label) => {
-                const to =
-                  label === "Home"
-                    ? "/"
-                    : label === "Sign Up"
-                    ? SIGN_UP_ROLE
-                    : `/${label.toLowerCase()}`;
-                return (
-                  <Link
-                    key={label}
-                    to={to}
-                    className="text-gray-700 hover:text-rose-500 transition"
-                  >
-                    {label}
-                  </Link>
-                );
-              })}
+              {["Home", "Services", "About", `${user ? "" : "Sign Up"}`].map(
+                (label) => {
+                  const to =
+                    label === "Home"
+                      ? "/"
+                      : label === "Sign Up"
+                      ? SIGN_UP_ROLE
+                      : `/${label.toLowerCase()}`;
+                  return (
+                    <Link
+                      key={label}
+                      to={to}
+                      className="text-gray-700 hover:text-rose-500 transition"
+                    >
+                      {label}
+                    </Link>
+                  );
+                }
+              )}
             </nav>
           </div>
 
