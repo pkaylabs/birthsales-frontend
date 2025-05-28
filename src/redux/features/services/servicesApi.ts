@@ -49,13 +49,13 @@ export const serviceApi = api.injectEndpoints({
           .map(({ id }) => ({ type: "Service" as const, id }))
           .concat([{ type: "Service", id: "LIST" }]),
     }),
-     getCustomerService: builder.query<Service,  number >({
-          query: (id) => `customerservices/?query=${id}`,
-          // providesTags: (result = []) =>
-          //   result
-          //     .map(({ id }) => ({ type: "Services" as const, id }))
-          //     .concat([{ type: "Services", id: "LIST" }]),
-        }),
+    getCustomerService: builder.query<Service, number>({
+      query: (id) => `customerservices/?query=${id}`,
+      // providesTags: (result = []) =>
+      //   result
+      //     .map(({ id }) => ({ type: "Services" as const, id }))
+      //     .concat([{ type: "Services", id: "LIST" }]),
+    }),
     getService: builder.query<Service, number>({
       query: (id) => `services/${id}/`,
       providesTags: (result, error, id) => [{ type: "Service", id }],
@@ -63,6 +63,17 @@ export const serviceApi = api.injectEndpoints({
     addService: builder.mutation<Service, ServiceDto>({
       query: (service) => ({ url: "services/", method: "POST", body: service }),
       invalidatesTags: [{ type: "Service", id: "LIST" }],
+    }),
+    publishService: builder.mutation<
+      { message: string; service: Service },
+      number
+    >({
+      query: (id) => ({
+        url: `services/`,
+        method: "PUT",
+        body: { service_id: Number(id) },
+      }),
+      invalidatesTags: (result, error, id) => [{ type: "Service", id }],
     }),
     deleteService: builder.mutation<{ success: boolean; id: number }, number>({
       query: (id) => ({
@@ -93,5 +104,6 @@ export const {
   useDeleteServiceMutation,
   useBookServiceMutation,
   useGetCustomerServicesQuery,
-  useGetCustomerServiceQuery
+  useGetCustomerServiceQuery,
+  usePublishServiceMutation
 } = serviceApi;

@@ -234,7 +234,6 @@ export default function ProductsPage() {
     );
   }
 
-
   return (
     <Box p={6}>
       {/* Header + Add button */}

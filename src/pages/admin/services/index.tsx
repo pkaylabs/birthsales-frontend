@@ -27,11 +27,13 @@ import {
   Skeleton,
   Typography,
   Divider,
+  DialogActions,
 } from "@mui/material";
 import {
   useGetServicesQuery,
   useAddServiceMutation,
   useDeleteServiceMutation,
+  usePublishServiceMutation,
 } from "@/redux/features/services/servicesApi";
 import { useGetVendorsQuery } from "@/redux/features/vendor/vendorApiSlice";
 import { useAppSelector } from "@/redux";
@@ -66,6 +68,10 @@ export default function ServicesPage() {
     // vendor user sees only own services
     else return services.filter((s) => s.vendor.user === user?.id);
   }, [services, userType, user]);
+
+  // publis services
+  const [publishService, { isLoading: isPublishing }] =
+    usePublishServiceMutation();
 
   // Local state for dialogs & form
   const [openAdd, setOpenAdd] = useState(false);
@@ -144,6 +150,21 @@ export default function ServicesPage() {
       setToastSeverity("error");
     } finally {
       setDeletingId(null);
+      setToastOpen(true);
+    }
+  };
+
+  const handlePublish = async (service: Service) => {
+    try {
+      await publishService(Number(service.id)).unwrap();
+      setToastMessage("Service published successfully");
+      setToastSeverity("success");
+      setDetailService(null); // Close detail dialog
+    } catch (err: any) {
+      console.error(err);
+      setToastMessage(err.data.message || "Publish failed");
+      setToastSeverity("error");
+    } finally {
       setToastOpen(true);
     }
   };
@@ -342,8 +363,7 @@ export default function ServicesPage() {
                   {userType && <TableCell align="left">Vendor</TableCell>}
                   <TableCell align="left">Description</TableCell>
                   <TableCell>Price</TableCell>
-                  {/* <TableCell>Category</TableCell> */}
-
+                  <TableCell>Published</TableCell>
                   <TableCell align="center">Bookings</TableCell>
                   <TableCell align="center">Actions</TableCell>
                 </TableRow>
@@ -363,8 +383,7 @@ export default function ServicesPage() {
                     )}
                     <TableCell align="left">{s.description}</TableCell>
                     <TableCell>GHC{s.price}</TableCell>
-                    {/* <TableCell>{s.category}</TableCell> */}
-
+                    <TableCell align="center">{s.published ? "✅" : "⏳"}</TableCell>
                     <TableCell align="center">{s.bookings}</TableCell>
                     <TableCell align="center">
                       <Button
@@ -376,7 +395,7 @@ export default function ServicesPage() {
                       </Button>
                     </TableCell>
                     <TableCell>
-                      {deletingId === s.id ? (
+                      {deletingId === Number(s.id) ? (
                         <CircularProgress size={24} />
                       ) : (
                         <Button
@@ -459,6 +478,22 @@ export default function ServicesPage() {
             </Box>
           </Box>
         </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={() => setDetailService(null)}>Close</Button>
+          {(user?.is_staff ||
+            user?.is_superuser ||
+            user?.user_type === "ADMIN") &&
+            !detailService?.published && (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => handlePublish(detailService!)}
+                disabled={isPublishing}
+              >
+                {isPublishing ? "Publishing…" : "Publish"}
+              </Button>
+            )}
+        </DialogActions>
       </Dialog>
     </div>
   );
