@@ -62,7 +62,7 @@ export interface Product {
 }
 
 export interface Service {
-  id?: number | string;
+  id: string;
   name: string;
   description: string;
   price: number;
@@ -70,6 +70,7 @@ export interface Service {
   bookings?: number;
   vendor_id: string;
   vendor: Vendor;
+  published: boolean;
   // category: string;
 }
 
