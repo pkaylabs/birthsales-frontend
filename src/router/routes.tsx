@@ -33,6 +33,7 @@ import {
   CLIENT_CATEGORY_DETAILS,
   ADMIN_BANNERS,
   SETTINGS,
+  VERIFY_OTP,
 } from "@/constants";
 import { lazy, Suspense } from "react";
 import { RequireAuth } from "./RequireAuth";
@@ -47,6 +48,7 @@ import VendorAccount from "@/pages/auth/vendor/VendorAccount";
 import Login from "@/pages/auth/login/Login";
 import BannersPage from "@/pages/admin/banners/BannersPage";
 import Setting from "@/pages/admin/settings/Setting";
+import VerifyOtp from "@/pages/auth/signUp/VerifyOtp";
 const WishList = lazy(() => import("@/pages/client/wishList"));
 const ProductDetails = lazy(() => import("@/pages/client/product/details"));
 const AdminHomePage = lazy(() => import("@/pages/admin/home"));
@@ -151,6 +153,17 @@ const routes: RouteProps[] = [
     meta: { layout: "Auth" },
   },
   {
+    path: VERIFY_OTP,
+    element: (
+      <RequireAuth roles={["DELIVERY"]}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <VerifyOtp />
+        </Suspense>
+      </RequireAuth>
+    ),
+    meta: { layout: "Auth" },
+  },
+  {
     path: VENDOR_SIGN_UP,
     element: <VendorAccount />,
     meta: { layout: "Auth" },
@@ -166,11 +179,9 @@ const routes: RouteProps[] = [
   {
     path: WISH_LIST,
     element: (
-      <RequireAuth roles={["DELIVERY", "ADMIN", "VENDOR"]}>
-        <Suspense fallback={<div>Loading...</div>}>
-          <WishList />
-        </Suspense>
-      </RequireAuth>
+      <Suspense fallback={<div>Loading...</div>}>
+        <WishList />
+      </Suspense>
     ),
     meta: { layout: "App" },
   },
@@ -178,11 +189,9 @@ const routes: RouteProps[] = [
   {
     path: CART_PAGE,
     element: (
-      <RequireAuth roles={["DELIVERY", "ADMIN", "VENDOR"]}>
-        <Suspense fallback={<div>Loading...</div>}>
-          <CartPage />
-        </Suspense>
-      </RequireAuth>
+      <Suspense fallback={<div>Loading...</div>}>
+        <CartPage />
+      </Suspense>
     ),
     meta: { layout: "App" },
   },
@@ -202,11 +211,9 @@ const routes: RouteProps[] = [
   {
     path: CHECKOUT,
     element: (
-      <RequireAuth roles={["DELIVERY", "ADMIN", "VENDOR"]}>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Checkout />
-        </Suspense>
-      </RequireAuth>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Checkout />
+      </Suspense>
     ),
     meta: { layout: "App" },
   },

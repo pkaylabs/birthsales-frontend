@@ -11,6 +11,8 @@ import { FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-location";
 import { toast } from "react-toastify";
 
+const GH_PHONE = /^(?:0|233)(?:24|25|54|55|20|26|27|50|56|57|28)\d{7}$/;
+
 const Checkout = () => {
   const items = useAppSelector((state) => state.cart.items);
   const user = useAppSelector((state) => state.auth.user);
@@ -42,7 +44,12 @@ const Checkout = () => {
       return;
     }
 
-    if(!location) {
+    if (!paymentMethod) {
+      toast.error("Please select a payment method");
+      return;
+    }
+
+    if (!location) {
       toast.error("Please enter your delivery location");
       return;
     }
@@ -75,6 +82,10 @@ const Checkout = () => {
     if (paymentMethod === "mobileMoney") {
       if (!network || !phoneNumber) {
         toast.error("Please select network and enter your phone number");
+        return;
+      }
+      if (!GH_PHONE.test(phoneNumber)) {
+        toast.error("Please enter a valid phone number");
         return;
       }
       try {
@@ -160,7 +171,15 @@ const Checkout = () => {
                   placeholder="Phone Number"
                   className="w-full border border-gray-300 rounded p-2"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  maxLength={10}
+                  onChange={(e) => {
+                    setPhoneNumber(e.target.value.replace(/\D/g, ""));
+                  }}
+                  onKeyDown={(e) => {
+                    if (!/[0-9]/.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
                 />
                 <p className="text-gray-400">
                   Payment will be done through this number
