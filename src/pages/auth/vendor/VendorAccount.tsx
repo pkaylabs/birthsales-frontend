@@ -21,6 +21,10 @@ import {
 } from "@mui/material";
 import { useMobilePaymentMutation } from "@/redux/features/orders/orderApiSlice";
 
+const GH_PHONE = /^(?:0|233)(?:24|25|54|55|20|26|27|50|56|57|28)\d{7}$/;
+const STRONG_PWD =
+  /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+
 const VendorAccount: React.FC = () => {
   const token = useAppSelector((state: RootState) => state.auth.token);
   const [step, setStep] = useState(1);
@@ -71,6 +75,16 @@ const VendorAccount: React.FC = () => {
 
   const handleAccountSubmit = async () => {
     setAccountError(null);
+    if (!GH_PHONE.test(accountData.phone)) {
+      setAccountError("Enter a valid number, e.g. 0546573849 or 233546573849");
+      return;
+    }
+    if (!STRONG_PWD.test(accountData.password)) {
+      setAccountError(
+        "Password must be ≥8 chars, include uppercase, lowercase, number & special character"
+      );
+      return;
+    }
     try {
       await register({
         name: accountData.fullName,
@@ -93,6 +107,12 @@ const VendorAccount: React.FC = () => {
   };
   const handleBusinessSubmit = async () => {
     setBusinessError(null);
+    if (!GH_PHONE.test(vendorData.vendor_phone)) {
+      setBusinessError(
+        "Enter a valid vendor phone number, e.g. 0546573849 or 233546573849"
+      );
+      return;
+    }
     try {
       await createBusiness(vendorData).unwrap();
       toast.success("Success: Select a subscription plan");
@@ -184,22 +204,75 @@ const VendorAccount: React.FC = () => {
         <div className="p-6 space-y-6">
           {step === 1 && (
             <div className="space-y-4">
-              {["fullName", "email", "phone", "address", "password"].map(
-                (f) => (
-                  <div key={f}>
-                    <label className="block text-sm font-medium text-gray-700 capitalize">
-                      {f.replace(/([A-Z])/g, " $1")}
-                    </label>
-                    <input
-                      name={f}
-                      type={f === "password" ? "password" : "text"}
-                      value={(accountData as any)[f] || ""}
-                      onChange={handleAccountChange}
-                      className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                  </div>
-                )
-              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Full Name
+                </label>
+                <input
+                  name="fullName"
+                  type="text"
+                  value={accountData.fullName}
+                  onChange={handleAccountChange}
+                  className="mt-1 block w-full px-3 py-2 border rounded-md focus:ring-blue-400"
+                  placeholder="Enter your full name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <input
+                  name="email"
+                  type="email"
+                  value={accountData.email}
+                  onChange={handleAccountChange}
+                  className="mt-1 block w-full px-3 py-2 border rounded-md focus:ring-blue-400"
+                  placeholder="Enter your email"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Phone
+                </label>
+                <input
+                  name="phone"
+                  type="tel"
+                  maxLength={10}
+                  value={accountData.phone}
+                  onChange={handleAccountChange}
+                  onKeyPress={(e) => {
+                    if (!/[0-9]/.test(e.key)) e.preventDefault();
+                  }}
+                  className="mt-1 block w-full px-3 py-2 border rounded-md focus:ring-blue-400"
+                  placeholder="0546573849"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Address
+                </label>
+                <input
+                  name="address"
+                  type="text"
+                  value={accountData.address}
+                  onChange={handleAccountChange}
+                  className="mt-1 block w-full px-3 py-2 border rounded-md focus:ring-blue-400"
+                  placeholder="Enter your address"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <input
+                  name="password"
+                  type="password"
+                  value={accountData.password}
+                  onChange={handleAccountChange}
+                  className="mt-1 block w-full px-3 py-2 border rounded-md focus:ring-blue-400"
+                  placeholder="••••••••"
+                />
+              </div>
               {accountError && (
                 <p className="text-red text-sm">{accountError}</p>
               )}
@@ -220,25 +293,58 @@ const VendorAccount: React.FC = () => {
           )}
           {step === 2 && (
             <div className="space-y-4">
-              {[
-                "vendor_name",
-                "vendor_email",
-                "vendor_phone",
-                "vendor_address",
-              ].map((f) => (
-                <div key={f}>
-                  <label className="block text-sm font-medium text-gray-700 uppercase">
-                    {f.replace("vendor_", "")}
-                  </label>
-                  <input
-                    name={f}
-                    type="text"
-                    value={(vendorData as any)[f] || ""}
-                    onChange={handleVendorChange}
-                    className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
-              ))}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Vendor Name
+                </label>
+                <input
+                  name="vendor_name"
+                  type="text"
+                  value={vendorData.vendor_name}
+                  onChange={handleVendorChange}
+                  className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Vendor Email
+                </label>
+                <input
+                  name="vendor_email"
+                  type="email"
+                  value={vendorData.vendor_email}
+                  onChange={handleVendorChange}
+                  className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Vendor Phone
+                </label>
+                <input
+                  name="vendor_phone"
+                  type="tel"
+                  maxLength={10}
+                  value={vendorData.vendor_phone}
+                  onChange={handleVendorChange}
+                  onKeyPress={(e) => {
+                    if (!/[0-9]/.test(e.key)) e.preventDefault();
+                  }}
+                  className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Vendor Address
+                </label>
+                <input
+                  name="vendor_address"
+                  type="text"
+                  value={vendorData.vendor_address}
+                  onChange={handleVendorChange}
+                  className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
               {businessError && (
                 <p className="text-red text-sm">{businessError}</p>
               )}
@@ -254,7 +360,11 @@ const VendorAccount: React.FC = () => {
                   disabled={bizLoading}
                   className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                 >
-                  {bizLoading ? <CircularProgress size={24} /> : "Next"}
+                  {bizLoading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    "Next"
+                  )}
                 </button>
               </div>
             </div>

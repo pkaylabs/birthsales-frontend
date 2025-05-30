@@ -16,6 +16,8 @@ import { toast } from "react-toastify";
 import { useMobilePaymentMutation } from "@/redux/features/orders/orderApiSlice";
 import { useNavigate } from "react-location";
 
+const GH_PHONE = /^(?:0|233)(?:24|25|54|55|20|26|27|50|56|57|28)\d{7}$/;
+
 interface PaymentModalProps {
   open: boolean;
   onClose: () => void;
@@ -33,6 +35,10 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   const [payBooking, { isLoading }] = useMobilePaymentMutation();
 
   const handlePay = async () => {
+    if (!GH_PHONE.test(phone)) {
+      toast.error("Please enter a valid phone number");
+      return;
+    }
     try {
       const res = await payBooking({
         booking: bookingId,
@@ -74,8 +80,20 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
           type="tel"
           fullWidth
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={(e) => {
+            setPhone(e.target.value.replace(/\D/g, ""));
+          }}
+          onKeyDown={(e) => {
+            if (!/[0-9]/.test(e.key)) {
+              e.preventDefault();
+            }
+          }}
           placeholder="0546573849"
+          inputProps={{
+            inputMode: "numeric",
+            pattern: "[0-9]*", // For mobile numeric keyboard
+            maxLength: 10, // Assuming phone number is 10 digits
+          }}
         />
       </DialogContent>
       <DialogActions>

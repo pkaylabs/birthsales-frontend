@@ -2,13 +2,15 @@ import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Link, useNavigate } from "react-location";
-import { HOME, LOGIN, LOGIN_BG } from "@/constants";
+import { HOME, LOGIN, LOGIN_BG, VERIFY_OTP } from "@/constants";
 import {
   useRegisterMutation,
   type AuthCredentials,
 } from "@/redux/features/auth/authApiSlice";
 import { CircularProgress } from "@mui/material";
 import { toast } from "react-toastify";
+
+const ghanaPhoneRegex = /^(?:0|233)(?:24|25|54|55|20|26|27|50|56|57|28)\d{7}$/;
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -24,21 +26,41 @@ const SignUp = () => {
       user_type: "DELIVERY",
     },
     validationSchema: Yup.object({
-      name: Yup.string().min(2).max(50).required("Name is required"),
+      name: Yup.string()
+        .min(2, "Name must be atleast two characters")
+        .max(50, "Name can be atmost 50 characters")
+        .required("Name is required"),
       email: Yup.string()
         .email("Enter a valid email")
         .required("Email is required"),
-      password: Yup.string().min(8).required("Password is required"),
-      phone: Yup.string().min(10).required("Phone is required"),
-      address: Yup.string().min(5).required("Address is required"),
+      password: Yup.string()
+        .min(8, "Must be at least 8 characters")
+        .matches(/[A-Z]/, "Must contain at least one uppercase letter")
+        .matches(/[a-z]/, "Must contain at least one lowercase letter")
+        .matches(/\d/, "Must contain at least one number")
+        .matches(
+          /[!@#$%^&*(),.?":{}|<>]/,
+          "Must contain at least one special character"
+        )
+        .required("Password is required"),
+      phone: Yup.string()
+        .matches(
+          ghanaPhoneRegex,
+          "Enter a valid number (e.g. 0546573849 or 233546573849)"
+        )
+        .required("Phone is required"),
+      address: Yup.string().min(5, "Too short").required("Address is required"),
     }),
     onSubmit: async (vals) => {
       try {
         await register(vals).unwrap();
-        toast.success("Login Successful");
-        navigate({ to: HOME, replace: true });
+        toast.success(
+          "Registration successful! An OTP has been sent to your phone."
+        );
+        // Redirect to OTP verification page
+        navigate({ to: VERIFY_OTP });
       } catch (err: any) {
-        const errMessage = err?.data?.detail || "Login Failed";
+        const errMessage = err?.data?.detail || "Failed to create account";
         toast.error(errMessage);
       }
     },
@@ -120,13 +142,19 @@ const SignUp = () => {
             <input
               id="phone"
               name="phone"
-              type="text"
+              type="tel"
+              maxLength={10}
               disabled={isLoading}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.phone}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400"
-              placeholder="123-456-7890"
+              placeholder="0546573849"
+              onKeyPress={(e) => {
+                if (!/[0-9]/.test(e.key)) {
+                  e.preventDefault();
+                }
+              }}
             />
             {formik.touched.phone && formik.errors.phone && (
               <p className="mt-1 text-xs text-rose-500">
