@@ -36,6 +36,7 @@ export const api = createApi({
     "Service",
     "Vendor",
     "Products",
+    "Locations",
     "Category",
     "Plan",
     "User",

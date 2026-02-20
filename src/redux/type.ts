@@ -38,6 +38,15 @@ export interface Business {
   created_at: string;
 }
 
+export interface Location {
+  id: number;
+  name: string;
+  category: string;
+  delivery_fee_price: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Plan {
   id: string;
   name: string;

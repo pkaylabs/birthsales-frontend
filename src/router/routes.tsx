@@ -32,6 +32,7 @@ import {
   ADMIN_SUBSCRIPTIONS,
   CLIENT_CATEGORY_DETAILS,
   ADMIN_BANNERS,
+  ADMIN_LOCATIONS,
   SETTINGS,
   VERIFY_OTP,
 } from "@/constants";
@@ -79,6 +80,7 @@ const Bookings = lazy(() => import("@/pages/admin/bookings/Bookings"));
 const VendorProfile = lazy(
   () => import("@/pages/admin/vendorProfile/VendorProfile")
 );
+const LocationsPage = lazy(() => import("@/pages/admin/locations"));
 
 export type RouteProps = Omit<Route, "children"> & {
   navigation?: boolean;
@@ -401,6 +403,17 @@ const routes: RouteProps[] = [
       <RequireAuth roles={["ADMIN", "VENDOR"]}>
         <Suspense fallback={<div>Loading...</div>}>
           <Category />
+        </Suspense>
+      </RequireAuth>
+    ),
+    meta: { layout: "Admin" },
+  },
+  {
+    path: ADMIN_LOCATIONS,
+    element: (
+      <RequireAuth roles={["ADMIN"]}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <LocationsPage />
         </Suspense>
       </RequireAuth>
     ),

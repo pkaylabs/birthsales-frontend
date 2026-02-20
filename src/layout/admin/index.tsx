@@ -31,7 +31,7 @@ import {
 } from "@heroicons/react/20/solid";
 import { classNames } from "@/utils";
 import { Link, Outlet, useNavigate } from "react-location";
-import { ADMIN_HOME, LOGIN, SETTINGS } from "@/constants";
+import { ADMIN_HOME, ADMIN_LOCATIONS, LOGIN, SETTINGS } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/redux";
 import { RootState } from "@/app/store";
 import { logout } from "@/redux/features/auth/authSlice";
@@ -108,6 +108,12 @@ export default function AdminLayout() {
         name: "Vendors",
         href: "/vendors",
         icon: UserGroupIcon,
+        current: false,
+      },
+      {
+        name: "Locations",
+        href: ADMIN_LOCATIONS,
+        icon: TagIcon,
         current: false,
       },
       { name: "Category", href: "/categories", icon: TagIcon, current: false }
