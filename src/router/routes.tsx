@@ -34,6 +34,7 @@ import {
   ADMIN_BANNERS,
   ADMIN_LOCATIONS,
   ADMIN_DELIVERY_FEES,
+  ADMIN_VIDEO_ADS,
   SETTINGS,
   VERIFY_OTP,
 } from "@/constants";
@@ -51,6 +52,7 @@ import Login from "@/pages/auth/login/Login";
 import BannersPage from "@/pages/admin/banners/BannersPage";
 import Setting from "@/pages/admin/settings/Setting";
 import VerifyOtp from "@/pages/auth/signUp/VerifyOtp";
+import VideoAdsPage from "@/pages/admin/videoAds";
 const WishList = lazy(() => import("@/pages/client/wishList"));
 const ProductDetails = lazy(() => import("@/pages/client/product/details"));
 const AdminHomePage = lazy(() => import("@/pages/admin/home"));
@@ -427,6 +429,17 @@ const routes: RouteProps[] = [
       <RequireAuth roles={["ADMIN"]}>
         <Suspense fallback={<div>Loading...</div>}>
           <DeliveryFeesPage />
+        </Suspense>
+      </RequireAuth>
+    ),
+    meta: { layout: "Admin" },
+  },
+  {
+    path: ADMIN_VIDEO_ADS,
+    element: (
+      <RequireAuth roles={["ADMIN"]}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <VideoAdsPage />
         </Suspense>
       </RequireAuth>
     ),

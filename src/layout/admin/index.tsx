@@ -35,6 +35,7 @@ import {
   ADMIN_DELIVERY_FEES,
   ADMIN_HOME,
   ADMIN_LOCATIONS,
+  ADMIN_VIDEO_ADS,
   LOGIN,
   SETTINGS,
 } from "@/constants";
@@ -128,6 +129,12 @@ export default function AdminLayout() {
         icon: TagIcon,
         current: false,
       },
+      {
+        name: "Video Ads",
+        href: ADMIN_VIDEO_ADS,
+        icon: PhotoIcon,
+        current: false,
+      },
       { name: "Category", href: "/categories", icon: TagIcon, current: false }
     );
   }
@@ -199,7 +206,7 @@ export default function AdminLayout() {
                 >
                   <img
                     alt="Your Company"
-                    src="/logo.jpg"
+                    src="/logo.png"
                     className="h-8 w-auto cursor-pointer"
                   />
                 </div>
@@ -270,7 +277,7 @@ export default function AdminLayout() {
             >
               <img
                 alt="Your Company"
-                src="/logo.jpg"
+                src="/logo.png"
                 className="h-8 w-auto object-contain rounded-md cursor-pointer"
               />
             </div>

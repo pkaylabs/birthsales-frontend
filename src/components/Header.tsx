@@ -7,7 +7,7 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import logo from "@/assets/images/logo.jpg";
+import logo from "@/assets/images/logo.png";
 import { Link } from "react-location";
 import { SIGN_UP_ROLE } from "@/constants";
 import { useAppSelector } from "@/redux";
