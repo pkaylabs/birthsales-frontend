@@ -47,6 +47,16 @@ export interface Location {
   updated_at: string;
 }
 
+export interface DeliveryFee {
+  id: number;
+  location: number;
+  location_name: string;
+  location_category: string;
+  price: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Plan {
   id: string;
   name: string;

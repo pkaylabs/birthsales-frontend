@@ -22,6 +22,7 @@ export const ADMIN_ADS = "/admin-ads";
 export const ADMIN_SUBSCRIPTIONS = "/admin-subscriptions";
 export const ADMIN_PLANS = "/admin-plans";
 export const ADMIN_LOCATIONS = "/admin-locations";
+export const ADMIN_DELIVERY_FEES = "/admin-delivery-fees";
 export const USERS = "/users";
 export const CATEGORIES = "/categories";
 export const CLIENT_CATEGORY_DETAILS = "/client-category/:id";

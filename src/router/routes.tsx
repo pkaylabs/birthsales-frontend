@@ -33,6 +33,7 @@ import {
   CLIENT_CATEGORY_DETAILS,
   ADMIN_BANNERS,
   ADMIN_LOCATIONS,
+  ADMIN_DELIVERY_FEES,
   SETTINGS,
   VERIFY_OTP,
 } from "@/constants";
@@ -81,6 +82,7 @@ const VendorProfile = lazy(
   () => import("@/pages/admin/vendorProfile/VendorProfile")
 );
 const LocationsPage = lazy(() => import("@/pages/admin/locations"));
+const DeliveryFeesPage = lazy(() => import("@/pages/admin/deliveryFees"));
 
 export type RouteProps = Omit<Route, "children"> & {
   navigation?: boolean;
@@ -414,6 +416,17 @@ const routes: RouteProps[] = [
       <RequireAuth roles={["ADMIN"]}>
         <Suspense fallback={<div>Loading...</div>}>
           <LocationsPage />
+        </Suspense>
+      </RequireAuth>
+    ),
+    meta: { layout: "Admin" },
+  },
+  {
+    path: ADMIN_DELIVERY_FEES,
+    element: (
+      <RequireAuth roles={["ADMIN"]}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <DeliveryFeesPage />
         </Suspense>
       </RequireAuth>
     ),

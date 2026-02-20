@@ -37,6 +37,7 @@ export const api = createApi({
     "Vendor",
     "Products",
     "Locations",
+    "DeliveryFees",
     "Category",
     "Plan",
     "User",
