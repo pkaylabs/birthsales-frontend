@@ -240,3 +240,33 @@ export interface Subscriptions {
   package: number;
   package_price: number
 }
+
+export interface PayoutItem {
+  id: number;
+  product_name: string;
+  quantity: number;
+  unit_price: string;
+  line_total: string;
+  created_at: string;
+  payout: number;
+  order_item: number;
+  product: number;
+}
+
+export interface Payout {
+  id: number;
+  items: PayoutItem[];
+  vendor_name: string;
+  vendor_id: number;
+  amount: string;
+  payment_status: string;
+  payout_status: string;
+  is_settled: boolean;
+  settled_at: string | null;
+  created_at: string;
+  updated_at: string;
+  order: number;
+  payment: number;
+  vendor: number;
+  settled_by: number | null;
+}

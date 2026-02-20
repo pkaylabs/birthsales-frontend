@@ -35,6 +35,7 @@ import {
   ADMIN_DELIVERY_FEES,
   ADMIN_HOME,
   ADMIN_LOCATIONS,
+  ADMIN_PAYOUTS,
   ADMIN_VIDEO_ADS,
   LOGIN,
   SETTINGS,
@@ -133,6 +134,12 @@ export default function AdminLayout() {
         name: "Video Ads",
         href: ADMIN_VIDEO_ADS,
         icon: PhotoIcon,
+        current: false,
+      },
+      {
+        name: "Payouts",
+        href: ADMIN_PAYOUTS,
+        icon: TagIcon,
         current: false,
       },
       { name: "Category", href: "/categories", icon: TagIcon, current: false }
