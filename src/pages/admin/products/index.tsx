@@ -40,6 +40,59 @@ import { useGetCategoriesQuery } from "@/redux/features/category/productCategory
 import { Product } from "@/redux/type";
 import { BASE_URL } from "@/constants";
 import { toast } from "react-toastify";
+import ChipInput from "@/components/core/chip-input";
+
+function parseFlexibleList(value: unknown): string[] {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value
+      .map((v) => String(v).trim())
+      .filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    const raw = value.trim();
+    if (!raw) return [];
+    if (raw.startsWith("[")) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          return parsed
+            .map((v) => String(v).trim())
+            .filter(Boolean);
+        }
+      } catch {
+        // fall through to comma split
+      }
+    }
+    return raw
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (!error) return fallback;
+  if (typeof error === "string") return error;
+  if (error instanceof Error && error.message) return error.message;
+
+  if (typeof error === "object") {
+    const obj = error as Record<string, unknown>;
+    const data = obj["data"];
+    if (typeof data === "string" && data.trim()) return data;
+    if (data && typeof data === "object") {
+      const message = (data as Record<string, unknown>)["message"];
+      if (typeof message === "string" && message.trim()) return message;
+    }
+    const message = obj["message"];
+    if (typeof message === "string" && message.trim()) return message;
+  }
+
+  return fallback;
+}
 
 export default function ProductsPage() {
   // auth user
@@ -76,6 +129,8 @@ export default function ProductsPage() {
 
   // dialog state for "Add Product"
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -85,6 +140,8 @@ export default function ProductsPage() {
     in_stock: true as boolean,
     imageFile: null as File | null,
     imagePreview: "",
+    available_sizes: [] as string[],
+    available_colors: [] as string[],
   });
 
   // upload spinner
@@ -104,7 +161,7 @@ export default function ProductsPage() {
   console.log(paginated);
 
   // handlers
-  const handleChangePage = (_: any, newPage: number) => setPage(newPage);
+  const handleChangePage = (_: unknown, newPage: number) => setPage(newPage);
   const handleChangeRowsPerPage = (e: ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(+e.target.value);
     setPage(0);
@@ -131,6 +188,8 @@ export default function ProductsPage() {
     if (user?.is_superuser || user?.is_staff || user?.user_type === "ADMIN")
       fd.append("vendor", form.vendor);
     fd.append("in_stock", String(form.in_stock));
+    fd.append("available_sizes", JSON.stringify(form.available_sizes));
+    fd.append("available_colors", JSON.stringify(form.available_colors));
     if (form.imageFile) {
       setUploading(true);
       fd.append("image", form.imageFile);
@@ -150,11 +209,65 @@ export default function ProductsPage() {
         in_stock: true,
         imageFile: null,
         imagePreview: "",
+        available_sizes: [],
+        available_colors: [],
       });
       refetch();
     } catch (err) {
       console.error(err);
       setToastMessage("Failed to add product");
+      setToastSeverity("error");
+    } finally {
+      setUploading(false);
+      setToastOpen(true);
+    }
+  };
+
+  const openEdit = (p: Product) => {
+    setEditingProduct(p);
+    setForm({
+      name: p.name ?? "",
+      description: p.description ?? "",
+      price: p.price != null ? String(p.price) : "",
+      category: p.category != null ? String(p.category) : "",
+      vendor: p.vendor != null ? String(p.vendor) : "",
+      in_stock: Boolean(p.in_stock),
+      imageFile: null,
+      imagePreview: p.image ? `${BASE_URL}${p.image}` : "",
+      available_sizes: parseFlexibleList(p.available_sizes),
+      available_colors: parseFlexibleList(p.available_colors),
+    });
+    setEditOpen(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!editingProduct) return;
+    const fd = new FormData();
+    fd.append("product_id", String(editingProduct.id));
+    fd.append("name", form.name);
+    fd.append("description", form.description);
+    fd.append("price", form.price);
+    fd.append("category", form.category);
+    if (user?.is_superuser || user?.is_staff || user?.user_type === "ADMIN") {
+      if (form.vendor) fd.append("vendor", form.vendor);
+    }
+    fd.append("in_stock", String(form.in_stock));
+    fd.append("available_sizes", JSON.stringify(form.available_sizes));
+    fd.append("available_colors", JSON.stringify(form.available_colors));
+    if (form.imageFile) {
+      setUploading(true);
+      fd.append("image", form.imageFile);
+    }
+
+    try {
+      await updateProduct(fd).unwrap();
+      setEditOpen(false);
+      setEditingProduct(null);
+      setToastMessage("Product updated successfully");
+      setToastSeverity("success");
+      refetch();
+    } catch (err: unknown) {
+      setToastMessage(getErrorMessage(err, "Failed to update product"));
       setToastSeverity("error");
     } finally {
       setUploading(false);
@@ -169,8 +282,8 @@ export default function ProductsPage() {
       await deleteProduct(id).unwrap();
       setToastMessage("Product deleted");
       setToastSeverity("success");
-    } catch (err: any) {
-      setToastMessage(err.data.message || "Delete failed");
+    } catch (err: unknown) {
+      setToastMessage(getErrorMessage(err, "Delete failed"));
       setToastSeverity("error");
     } finally {
       setDeletingId(null);
@@ -197,18 +310,8 @@ export default function ProductsPage() {
   };
 
   useEffect(() => {
-    if (isError && error && "data" in error) {
-      const err = error as {
-        status: number;
-        data: { message?: string; [key: string]: any };
-      };
-
-      const message =
-        err?.data?.message ||
-        (typeof err.data === "string" ? err.data : "Failed to fetch products");
-
-      toast.error(message);
-    }
+    if (!isError || !error) return;
+    toast.error(getErrorMessage(error, "Failed to fetch products"));
   }, [isError, error]);
 
   if (isLoading) {
@@ -299,6 +402,22 @@ export default function ProductsPage() {
                 ))}
               </Select>
             </FormControl>
+
+            <ChipInput
+              label="Available Sizes"
+              values={form.available_sizes}
+              onChange={(values) => setForm((f) => ({ ...f, available_sizes: values }))}
+              placeholder="Type a size and press Enter (or comma)"
+              helperText="Examples: S, M, L"
+            />
+
+            <ChipInput
+              label="Available Colors"
+              values={form.available_colors}
+              onChange={(values) => setForm((f) => ({ ...f, available_colors: values }))}
+              placeholder="Type a color and press Enter (or comma)"
+              helperText="Examples: Red, Blue"
+            />
             <Button component="label">
               {uploading ? "Uploading" : "Upload Image"}
               <input
@@ -345,6 +464,128 @@ export default function ProductsPage() {
               disabled={adding || uploading}
             >
               {adding || uploading ? "Saving…" : "Save"}
+            </Button>
+          </Box>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit‐product dialog */}
+      <Dialog
+        open={editOpen}
+        onClose={() => {
+          setEditOpen(false);
+          setEditingProduct(null);
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Edit Product</DialogTitle>
+        <DialogContent>
+          <Box display="flex" flexDirection="column" gap={2} mt={1}>
+            <TextField
+              label="Name"
+              fullWidth
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            />
+            <TextField
+              label="Description"
+              fullWidth
+              value={form.description}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, description: e.target.value }))
+              }
+            />
+            <TextField
+              label="Price"
+              fullWidth
+              type="number"
+              value={form.price}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, price: e.target.value }))
+              }
+            />
+            <FormControl fullWidth>
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={form.category}
+                label="Category"
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, category: e.target.value as string }))
+                }
+              >
+                {categories?.map((c) => (
+                  <MenuItem key={c.id} value={String(c.id)}>
+                    {c.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <ChipInput
+              label="Available Sizes"
+              values={form.available_sizes}
+              onChange={(values) => setForm((f) => ({ ...f, available_sizes: values }))}
+              placeholder="Type a size and press Enter (or comma)"
+              helperText="Examples: S, M, L"
+            />
+
+            <ChipInput
+              label="Available Colors"
+              values={form.available_colors}
+              onChange={(values) => setForm((f) => ({ ...f, available_colors: values }))}
+              placeholder="Type a color and press Enter (or comma)"
+              helperText="Examples: Red, Blue"
+            />
+
+            <Button component="label">
+              {uploading ? "Uploading" : "Upload Image"}
+              <input
+                hidden
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </Button>
+            {uploading ? (
+              <CircularProgress size={24} />
+            ) : (
+              form.imagePreview && (
+                <img
+                  className="w-[3rem] h-[3rem] rounded-full object-cover"
+                  src={form.imagePreview}
+                  alt="Product image"
+                />
+              )
+            )}
+
+            {(user?.is_staff ||
+              user?.is_superuser ||
+              user?.user_type === "ADMIN") && (
+              <FormControl fullWidth>
+                <InputLabel>Vendor</InputLabel>
+                <Select
+                  value={form.vendor}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, vendor: e.target.value }))
+                  }
+                >
+                  {allVendors?.map((v) => (
+                    <MenuItem key={v.id} value={v.user}>
+                      {v.vendor_name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleUpdate}
+              disabled={isPublishing || uploading}
+            >
+              {isPublishing || uploading ? "Saving…" : "Save"}
             </Button>
           </Box>
         </DialogContent>
@@ -540,6 +781,9 @@ export default function ProductsPage() {
                   <TableCell>
                     <Button size="small" onClick={() => setDetailProduct(p)}>
                       View
+                    </Button>
+                    <Button size="small" onClick={() => openEdit(p)}>
+                      Edit
                     </Button>
                   </TableCell>
                   <TableCell>
