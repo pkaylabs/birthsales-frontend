@@ -9,7 +9,13 @@ import {
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { CircularProgress, TextField } from "@mui/material";
-import PaymentModal from "./components/PaymentModal";
+import {
+  usePaystackCheckStatusMutation,
+  usePaystackInitializePaymentMutation,
+} from "@/redux/features/orders/orderApiSlice";
+
+const LS_BOOKING_REF = "paystack_booking_reference";
+const LS_BOOKING_URL = "paystack_booking_auth_url";
 
 const ServiceDetails: React.FC = () => {
   const { params } = useMatch<LocationGenerics>();
@@ -21,9 +27,17 @@ const ServiceDetails: React.FC = () => {
     isError,
   } = useGetCustomerServiceQuery(serviceId);
   const [bookService, { isLoading: booking }] = useBookServiceMutation();
+  const [initializePaystack, { isLoading: initLoading }] =
+    usePaystackInitializePaymentMutation();
+  const [checkPaystackStatus, { isLoading: statusLoading }] =
+    usePaystackCheckStatusMutation();
 
-  const [bookingId, setBookingId] = useState<number | null>(null);
-  const [payOpen, setPayOpen] = useState(false);
+  const [pendingPaystackRef, setPendingPaystackRef] = useState<string | null>(
+    null
+  );
+  const [pendingPaystackUrl, setPendingPaystackUrl] = useState<string | null>(
+    null
+  );
 
   // default to today
   const today = new Date().toISOString().split("T")[0];
@@ -40,7 +54,80 @@ const ServiceDetails: React.FC = () => {
     if (service) setMainImage(`${BASE_URL}${service.image}`);
   }, [service]);
 
+  const isRecord = (v: unknown): v is Record<string, unknown> =>
+    typeof v === "object" && v !== null;
+
+  const extractErrorMessage = (err: unknown, fallback: string): string => {
+    if (!err) return fallback;
+    if (typeof err === "string") return err;
+
+    if (isRecord(err)) {
+      const data = err.data;
+      if (typeof data === "string") return data;
+      if (isRecord(data)) {
+        const message = data.message;
+        if (typeof message === "string") return message;
+        const detail = data.detail;
+        if (typeof detail === "string") return detail;
+        const errorMessage = (data as any).error_message;
+        if (typeof errorMessage === "string") return errorMessage;
+      }
+      const message = err.message;
+      if (typeof message === "string") return message;
+    }
+
+    return fallback;
+  };
+
+  const isPaidStatus = (status: string): boolean => {
+    const s = status.toLowerCase();
+    return (
+      s === "success" ||
+      s === "successful" ||
+      s === "paid" ||
+      s === "completed" ||
+      s === "complete"
+    );
+  };
+
+  const clearPendingPaystack = () => {
+    localStorage.removeItem(LS_BOOKING_REF);
+    localStorage.removeItem(LS_BOOKING_URL);
+    setPendingPaystackRef(null);
+    setPendingPaystackUrl(null);
+  };
+
+  // Auto-check booking payment status when Paystack redirects back.
+  useEffect(() => {
+    const ref = localStorage.getItem(LS_BOOKING_REF);
+    const url = localStorage.getItem(LS_BOOKING_URL);
+    if (!ref) return;
+
+    setPendingPaystackRef(ref);
+    if (url) setPendingPaystackUrl(url);
+
+    (async () => {
+      try {
+        const res = await checkPaystackStatus({ reference: ref }).unwrap();
+        if (res.status && isPaidStatus(res.status)) {
+          clearPendingPaystack();
+          toast.success("Payment confirmed");
+          navigate({ to: "/" });
+          return;
+        }
+        toast.info(res.message || `Payment status: ${res.status || "unknown"}`);
+      } catch (err: unknown) {
+        toast.error(extractErrorMessage(err, "Failed to check payment status"));
+      }
+    })();
+  }, [checkPaystackStatus, navigate]);
+
   const handleBooking = async () => {
+    if (pendingPaystackRef) {
+      toast.info("A Paystack payment is already in progress.");
+      return;
+    }
+
     if (!date) {
       toast.error("Please select date");
       return;
@@ -61,11 +148,24 @@ const ServiceDetails: React.FC = () => {
         time,
         location,
       }).unwrap();
-      setBookingId(res.data.id);
-      toast.success(res.message);
-      setPayOpen(true);
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to book");
+
+      const bookingId = Number(res?.data?.id);
+      if (!Number.isFinite(bookingId)) {
+        toast.error("Booking created, but missing booking id");
+        return;
+      }
+
+      const init = await initializePaystack({ booking: bookingId }).unwrap();
+      if (init.status === "failed") {
+        toast.error(init.message || "Payment initialization failed");
+        return;
+      }
+
+      localStorage.setItem(LS_BOOKING_REF, init.reference);
+      localStorage.setItem(LS_BOOKING_URL, init.authorization_url);
+      window.location.assign(init.authorization_url);
+    } catch (err: unknown) {
+      toast.error(extractErrorMessage(err, "Failed to book"));
     }
   };
 
@@ -178,15 +278,59 @@ const ServiceDetails: React.FC = () => {
           <div className="mt-6 grid grid-cols-1  gap-4 w-full">
             <button
               onClick={handleBooking}
-              disabled={booking}
+              disabled={booking || initLoading || statusLoading || !!pendingPaystackRef}
               className="w-full py-3 bg-rose-600 text-white rounded-md hover:bg-rose-700 transition"
             >
-              {booking ? (
+              {booking || initLoading ? (
                 <CircularProgress size={20} sx={{ color: "white" }} />
               ) : (
                 "Book & Pay"
               )}
             </button>
+
+            {pendingPaystackRef && (
+              <div className="p-3 rounded border border-gray-200 bg-gray-50">
+                <p className="text-sm text-gray-700">
+                  Paystack payment in progress. We'll check automatically when you return.
+                </p>
+                {pendingPaystackUrl && (
+                  <button
+                    className="mt-2 text-blue-600 underline break-all"
+                    onClick={() => window.location.assign(pendingPaystackUrl)}
+                  >
+                    Continue payment
+                  </button>
+                )}
+                <div className="mt-2 flex gap-2">
+                  <button
+                    className="px-3 py-1 text-sm border rounded"
+                    disabled={statusLoading}
+                    onClick={async () => {
+                      const ref = pendingPaystackRef;
+                      if (!ref) return;
+                      try {
+                        const res = await checkPaystackStatus({ reference: ref }).unwrap();
+                        if (res.status && isPaidStatus(res.status)) {
+                          window.location.reload();
+                          return;
+                        }
+                        toast.info(res.message || `Payment status: ${res.status || "unknown"}`);
+                      } catch (err: unknown) {
+                        toast.error(extractErrorMessage(err, "Failed to check payment status"));
+                      }
+                    }}
+                  >
+                    {statusLoading ? "Checking..." : "Check status"}
+                  </button>
+                  <button
+                    className="px-3 py-1 text-sm border rounded"
+                    onClick={clearPendingPaystack}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
             {/* <Link
               to="#"
               className="w-full py-3 flex items-center justify-center border border-gray-300 rounded-md hover:bg-gray-100 transition"
@@ -200,14 +344,6 @@ const ServiceDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* Payment modal when booking succeeds */}
-      {bookingId && (
-        <PaymentModal
-          open={payOpen}
-          bookingId={bookingId}
-          onClose={() => setPayOpen(false)}
-        />
-      )}
     </main>
   );
 };

@@ -2,11 +2,12 @@ import { LOGIN } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/redux";
 import { clearCart, removeFromCart } from "@/redux/features/cart/cartSlice";
 import {
-  useMobilePaymentMutation,
+  usePaystackCheckStatusMutation,
+  usePaystackInitializePaymentMutation,
   usePlaceOrderMutation,
 } from "@/redux/features/orders/orderApiSlice";
 import { CircularProgress } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-location";
 import { toast } from "react-toastify";
@@ -14,24 +15,189 @@ import { resolveProductImageUrl } from "@/utils/resolve-image-url";
 
 const GH_PHONE = /^(?:0|233)(?:24|25|54|55|20|26|27|50|56|57|28)\d{7}$/;
 
+const LS_ORDER_IDS = "paystack_order_pending_order_ids";
+const LS_ORDER_INDEX = "paystack_order_pending_index";
+const LS_ORDER_REF = "paystack_order_reference";
+const LS_ORDER_URL = "paystack_order_auth_url";
+
 const Checkout = () => {
   const items = useAppSelector((state) => state.cart.items);
   const user = useAppSelector((state) => state.auth.user);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState("");
-  const [network, setNetwork] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [location, setLocation] = useState("");
   const [customerPhone, setcustomerPhone] = useState("");
 
   const [placeOrder, { isLoading: placing }] = usePlaceOrderMutation();
-  const [payment, { isLoading: paying }] = useMobilePaymentMutation();
+  const [initializePaystack, { isLoading: initLoading }] =
+    usePaystackInitializePaymentMutation();
+  const [checkPaystackStatus, { isLoading: statusLoading }] =
+    usePaystackCheckStatusMutation();
+
+  const [pendingPaystackRef, setPendingPaystackRef] = useState<string | null>(
+    null
+  );
+  const [pendingPaystackUrl, setPendingPaystackUrl] = useState<string | null>(
+    null
+  );
+  const autoCheckRanRef = useRef(false);
 
   const subTotal = items.reduce(
     (sum, { product, quantity }) => sum + product.price * quantity,
     0
   );
+
+  const isPaidStatus = (status: string): boolean => {
+    const s = status.toLowerCase();
+    return (
+      s === "success" ||
+      s === "successful" ||
+      s === "paid" ||
+      s === "completed" ||
+      s === "complete"
+    );
+  };
+
+  const isRecord = (v: unknown): v is Record<string, unknown> =>
+    typeof v === "object" && v !== null;
+
+  const extractErrorMessage = (err: unknown, fallback: string): string => {
+    if (!err) return fallback;
+    if (typeof err === "string") return err;
+
+    if (isRecord(err)) {
+      const data = err.data;
+      if (typeof data === "string") return data;
+      if (Array.isArray(data) && typeof data[0] === "string") return data[0];
+      if (isRecord(data)) {
+        const message = data.message;
+        if (typeof message === "string") return message;
+        const detail = data.detail;
+        if (typeof detail === "string") return detail;
+        const errorMessage = (data as any).error_message;
+        if (typeof errorMessage === "string") return errorMessage;
+      }
+      const message = err.message;
+      if (typeof message === "string") return message;
+    }
+
+    return fallback;
+  };
+
+  const extractOrderIds = (payload: unknown): number[] => {
+    if (!payload) return [];
+
+    const getId = (v: unknown): number | null => {
+      if (!isRecord(v)) return null;
+      const rawId = v.id;
+      const id = Number(rawId);
+      return Number.isFinite(id) ? id : null;
+    };
+
+    if (Array.isArray(payload)) {
+      return payload
+        .map(getId)
+        .filter((id): id is number => typeof id === "number");
+    }
+
+    if (isRecord(payload)) {
+      const maybeList = (payload as any).orders ?? (payload as any).data;
+      if (Array.isArray(maybeList)) {
+        return maybeList
+          .map(getId)
+          .filter((id): id is number => typeof id === "number");
+      }
+
+      const id = getId(payload);
+      if (id != null) return [id];
+
+      if (isRecord(payload.data)) {
+        const nestedId = getId(payload.data);
+        if (nestedId != null) return [nestedId];
+      }
+    }
+
+    return [];
+  };
+
+  const startPaystackForOrderIds = async (orderIds: number[], index: number) => {
+    const orderId = orderIds[index];
+    const init = await initializePaystack({ order: orderId }).unwrap();
+    if (init.status === "failed") {
+      throw new Error(init.message || "Payment initialization failed");
+    }
+
+    localStorage.setItem(LS_ORDER_IDS, JSON.stringify(orderIds));
+    localStorage.setItem(LS_ORDER_INDEX, String(index));
+    localStorage.setItem(LS_ORDER_REF, init.reference);
+    localStorage.setItem(LS_ORDER_URL, init.authorization_url);
+
+    window.location.assign(init.authorization_url);
+  };
+
+  const clearPendingPaystack = () => {
+    localStorage.removeItem(LS_ORDER_IDS);
+    localStorage.removeItem(LS_ORDER_INDEX);
+    localStorage.removeItem(LS_ORDER_REF);
+    localStorage.removeItem(LS_ORDER_URL);
+    setPendingPaystackRef(null);
+    setPendingPaystackUrl(null);
+  };
+
+  // Auto-check payment status when Paystack redirects back.
+  useEffect(() => {
+    if (autoCheckRanRef.current) return;
+    autoCheckRanRef.current = true;
+
+    const ref = localStorage.getItem(LS_ORDER_REF);
+    const url = localStorage.getItem(LS_ORDER_URL);
+    const idsJson = localStorage.getItem(LS_ORDER_IDS);
+    const idxStr = localStorage.getItem(LS_ORDER_INDEX);
+
+    if (!ref || !idsJson) return;
+
+    setPendingPaystackRef(ref);
+    if (url) setPendingPaystackUrl(url);
+
+    let orderIds: number[] = [];
+    try {
+      orderIds = JSON.parse(idsJson);
+      if (!Array.isArray(orderIds)) orderIds = [];
+    } catch {
+      orderIds = [];
+    }
+    const index = Number(idxStr ?? "0");
+    const safeIndex = Number.isFinite(index) ? index : 0;
+
+    (async () => {
+      try {
+        const res = await checkPaystackStatus({ reference: ref }).unwrap();
+        if (!res.status || !isPaidStatus(res.status)) {
+          toast.info(res.message || `Payment status: ${res.status || "unknown"}`);
+          return;
+        }
+
+        // Current payment confirmed.
+        const nextIndex = safeIndex + 1;
+        if (orderIds.length > 0 && nextIndex < orderIds.length) {
+          toast.success("Payment confirmed. Continuing to next order...");
+          await startPaystackForOrderIds(orderIds, nextIndex);
+          return;
+        }
+
+        // All done.
+        clearPendingPaystack();
+        toast.success("Payment successful! Thank you for your purchase.");
+        setcustomerPhone("");
+        setLocation("");
+        dispatch(clearCart());
+        navigate({ to: "/" });
+      } catch (err: unknown) {
+        toast.error(extractErrorMessage(err, "Failed to check payment status"));
+      }
+    })();
+  }, [checkPaystackStatus, dispatch, navigate]);
 
   const handleRemove = (productId: number) => {
     dispatch(removeFromCart(productId));
@@ -39,6 +205,11 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = async () => {
+    if (pendingPaystackRef) {
+      toast.info("A Paystack payment is already in progress.");
+      return;
+    }
+
     if (!user) {
       toast.error("You must be logged in to place an order");
       navigate({ to: LOGIN });
@@ -50,81 +221,10 @@ const Checkout = () => {
       return;
     }
 
-    if (paymentMethod === "mobileMoney") {
-      if (!network || !phoneNumber) {
-        toast.error("Please select network and enter your phone number");
-        return;
-      }
-      if (!GH_PHONE.test(phoneNumber)) {
-        toast.error("Please enter a valid phone number");
-        return;
-      }
-    }
-
     if (!location) {
       toast.error("Please enter your delivery location");
       return;
     }
-
-    const isRecord = (v: unknown): v is Record<string, unknown> =>
-      typeof v === "object" && v !== null;
-
-    const extractOrderIds = (payload: unknown): number[] => {
-      if (!payload) return [];
-
-      const getId = (v: unknown): number | null => {
-        if (!isRecord(v)) return null;
-        const rawId = v.id;
-        const id = Number(rawId);
-        return Number.isFinite(id) ? id : null;
-      };
-
-      if (Array.isArray(payload)) {
-        return payload
-          .map(getId)
-          .filter((id): id is number => typeof id === "number");
-      }
-
-      if (isRecord(payload)) {
-        const maybeList = payload.orders ?? payload.data;
-        if (Array.isArray(maybeList)) {
-          return maybeList
-            .map(getId)
-            .filter((id): id is number => typeof id === "number");
-        }
-
-        const id = getId(payload);
-        if (id != null) return [id];
-
-        if (isRecord(payload.data)) {
-          const nestedId = getId(payload.data);
-          if (nestedId != null) return [nestedId];
-        }
-      }
-
-      return [];
-    };
-
-    const extractErrorMessage = (err: unknown, fallback: string): string => {
-      if (!err) return fallback;
-      if (typeof err === "string") return err;
-
-      if (isRecord(err)) {
-        const data = err.data;
-        if (typeof data === "string") return data;
-        if (Array.isArray(data) && typeof data[0] === "string") return data[0];
-        if (isRecord(data)) {
-          const message = data.message;
-          if (typeof message === "string") return message;
-          const detail = data.detail;
-          if (typeof detail === "string") return detail;
-        }
-        const message = err.message;
-        if (typeof message === "string") return message;
-      }
-
-      return fallback;
-    };
 
     let orderIds: number[] = [];
     try {
@@ -155,23 +255,11 @@ const Checkout = () => {
       return;
     }
 
-    if (paymentMethod === "mobileMoney") {
+    if (paymentMethod === "paystack") {
       try {
-        for (const orderId of orderIds) {
-          await payment({
-            order: orderId,
-            network,
-            phone: phoneNumber,
-          }).unwrap();
-        }
-        toast.success("Payment successful! Thank you for your purchase.");
-        setcustomerPhone("");
-        setLocation("");
-        dispatch(clearCart());
-        navigate({ to: "/" });
+        await startPaystackForOrderIds(orderIds, 0);
       } catch (err: unknown) {
-        toast.error(extractErrorMessage(err, "Payment failed"));
-        return;
+        toast.error(extractErrorMessage(err, "Payment initialization failed"));
       }
     }
   };
@@ -202,6 +290,52 @@ const Checkout = () => {
         {/* Left: Payment Method */}
         <section className="flex-1 bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
+
+          {pendingPaystackRef && (
+            <div className="mb-4 p-3 rounded border border-gray-200 bg-gray-50">
+              <p className="text-sm text-gray-700">
+                Paystack payment in progress. When you return here, we'll check automatically.
+              </p>
+              {pendingPaystackUrl && (
+                <button
+                  className="mt-2 text-blue-600 underline break-all"
+                  onClick={() => window.location.assign(pendingPaystackUrl)}
+                >
+                  Continue payment
+                </button>
+              )}
+              <div className="mt-2 flex gap-2">
+                <button
+                  className="px-3 py-1 text-sm border rounded"
+                  disabled={statusLoading}
+                  onClick={async () => {
+                    const ref = pendingPaystackRef;
+                    if (!ref) return;
+                    try {
+                      const res = await checkPaystackStatus({ reference: ref }).unwrap();
+                      if (res.status && isPaidStatus(res.status)) {
+                        // Re-run auto-check logic by reloading.
+                        window.location.reload();
+                        return;
+                      }
+                      toast.info(res.message || `Payment status: ${res.status || "unknown"}`);
+                    } catch (err: unknown) {
+                      toast.error(extractErrorMessage(err, "Failed to check payment status"));
+                    }
+                  }}
+                >
+                  {statusLoading ? "Checking..." : "Check status"}
+                </button>
+                <button
+                  className="px-3 py-1 text-sm border rounded"
+                  onClick={clearPendingPaystack}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-4">
             <label className="flex items-center">
               <input
@@ -217,50 +351,20 @@ const Checkout = () => {
               <input
                 type="radio"
                 name="paymentMethod"
-                value="mobileMoney"
+                value="paystack"
                 className="mr-2 accent-[#DB4444]"
                 onChange={(e) => setPaymentMethod(e.target.value)}
               />
-              Mobile Money
+              Paystack
             </label>
 
-            {paymentMethod === "mobileMoney" && (
-              <div className="space-y-3">
-                <select
-                  value={network}
-                  onChange={(e) => setNetwork(e.target.value)}
-                  aria-label="Select network"
-                  className="w-full border border-gray-300 rounded p-2"
-                >
-                  <option value="" disabled>
-                    -- Select Network --
-                  </option>
-                  <option value="MTN">MTN</option>
-                  <option value="Vodafone">Vodafone</option>
-                  <option value="AirtelTigo">AirtelTigo</option>
-                </select>
-                <input
-                  type="tel"
-                  placeholder="Phone Number"
-                  className="w-full border border-gray-300 rounded p-2"
-                  value={phoneNumber}
-                  maxLength={10}
-                  onChange={(e) => {
-                    setPhoneNumber(e.target.value.replace(/\D/g, ""));
-                  }}
-                  onKeyDown={(e) => {
-                    if (!/[0-9]/.test(e.key)) {
-                      e.preventDefault();
-                    }
-                  }}
-                />
-                <p className="text-gray-400">
-                  Payment will be done through this number
-                </p>
-              </div>
+            {paymentMethod === "paystack" && (
+              <p className="text-gray-500 text-sm">
+                You'll be redirected to Paystack to complete payment.
+              </p>
             )}
           </div>
-          {paymentMethod === "mobileMoney" && <hr className="border mt-4 " />}
+
           <div className="my-5">
             <input
               type="tel"
@@ -337,17 +441,27 @@ const Checkout = () => {
 
           <button
             onClick={handlePlaceOrder}
-            disabled={placing || paying || items.length === 0}
+            disabled={
+              placing ||
+              initLoading ||
+              statusLoading ||
+              items.length === 0 ||
+              !!pendingPaystackRef
+            }
             className={`mt-6 w-full py-2 rounded text-white 
           ${
-            placing || items.length === 0
+            placing ||
+            initLoading ||
+            statusLoading ||
+            items.length === 0 ||
+            !!pendingPaystackRef
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-[#DB4444] hover:bg-[#c33]"
           }`}
           >
             {paymentMethod === "onDelivery" ? (
               "Place Order"
-            ) : paying ? (
+            ) : placing || initLoading ? (
               <CircularProgress size={24} />
             ) : (
               "Make Payment"
