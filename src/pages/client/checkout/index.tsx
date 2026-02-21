@@ -49,36 +49,6 @@ const Checkout = () => {
       return;
     }
 
-    if (!location) {
-      toast.error("Please enter your delivery location");
-      return;
-    }
-
-    let orderId: number;
-    try {
-      const { data } = await placeOrder({
-        items: items.map(({ product, quantity }) => ({
-          product: Number(product.id),
-          quantity,
-        })),
-        location,
-        customer_phone: customerPhone,
-      }).unwrap();
-      setcustomerPhone("");
-      setLocation("");
-      dispatch(clearCart());
-      navigate({ to: "/" });
-      orderId = data.id;
-    } catch (err: any) {
-      toast.error(err.data[0] || "Failed to place order");
-      return;
-    }
-
-    if (paymentMethod === "onDelivery") {
-      toast.success("Order placed! Pay on delivery when the rider arrives.");
-      return;
-    }
-
     if (paymentMethod === "mobileMoney") {
       if (!network || !phoneNumber) {
         toast.error("Please select network and enter your phone number");
@@ -88,17 +58,118 @@ const Checkout = () => {
         toast.error("Please enter a valid phone number");
         return;
       }
+    }
+
+    if (!location) {
+      toast.error("Please enter your delivery location");
+      return;
+    }
+
+    const isRecord = (v: unknown): v is Record<string, unknown> =>
+      typeof v === "object" && v !== null;
+
+    const extractOrderIds = (payload: unknown): number[] => {
+      if (!payload) return [];
+
+      const getId = (v: unknown): number | null => {
+        if (!isRecord(v)) return null;
+        const rawId = v.id;
+        const id = Number(rawId);
+        return Number.isFinite(id) ? id : null;
+      };
+
+      if (Array.isArray(payload)) {
+        return payload
+          .map(getId)
+          .filter((id): id is number => typeof id === "number");
+      }
+
+      if (isRecord(payload)) {
+        const maybeList = payload.orders ?? payload.data;
+        if (Array.isArray(maybeList)) {
+          return maybeList
+            .map(getId)
+            .filter((id): id is number => typeof id === "number");
+        }
+
+        const id = getId(payload);
+        if (id != null) return [id];
+
+        if (isRecord(payload.data)) {
+          const nestedId = getId(payload.data);
+          if (nestedId != null) return [nestedId];
+        }
+      }
+
+      return [];
+    };
+
+    const extractErrorMessage = (err: unknown, fallback: string): string => {
+      if (!err) return fallback;
+      if (typeof err === "string") return err;
+
+      if (isRecord(err)) {
+        const data = err.data;
+        if (typeof data === "string") return data;
+        if (Array.isArray(data) && typeof data[0] === "string") return data[0];
+        if (isRecord(data)) {
+          const message = data.message;
+          if (typeof message === "string") return message;
+          const detail = data.detail;
+          if (typeof detail === "string") return detail;
+        }
+        const message = err.message;
+        if (typeof message === "string") return message;
+      }
+
+      return fallback;
+    };
+
+    let orderIds: number[] = [];
+    try {
+      const res = await placeOrder({
+        items: items.map(({ product, quantity }) => ({
+          product: Number(product.id),
+          quantity,
+        })),
+        location,
+        customer_phone: customerPhone,
+      }).unwrap();
+
+      orderIds = extractOrderIds(res?.data);
+      if (orderIds.length === 0) {
+        throw new Error("Unexpected order response");
+      }
+    } catch (err: unknown) {
+      toast.error(extractErrorMessage(err, "Failed to place order"));
+      return;
+    }
+
+    if (paymentMethod === "onDelivery") {
+      toast.success("Order placed! Pay on delivery when the rider arrives.");
+      setcustomerPhone("");
+      setLocation("");
+      dispatch(clearCart());
+      navigate({ to: "/" });
+      return;
+    }
+
+    if (paymentMethod === "mobileMoney") {
       try {
-        await payment({
-          order: orderId,
-          network,
-          phone: phoneNumber,
-        }).unwrap();
+        for (const orderId of orderIds) {
+          await payment({
+            order: orderId,
+            network,
+            phone: phoneNumber,
+          }).unwrap();
+        }
         toast.success("Payment successful! Thank you for your purchase.");
+        setcustomerPhone("");
+        setLocation("");
         dispatch(clearCart());
         navigate({ to: "/" });
-      } catch (err: any) {
-        toast.error(err?.data?.message || "Payment failed");
+      } catch (err: unknown) {
+        toast.error(extractErrorMessage(err, "Payment failed"));
         return;
       }
     }
@@ -157,6 +228,7 @@ const Checkout = () => {
                 <select
                   value={network}
                   onChange={(e) => setNetwork(e.target.value)}
+                  aria-label="Select network"
                   className="w-full border border-gray-300 rounded p-2"
                 >
                   <option value="" disabled>
@@ -237,6 +309,8 @@ const Checkout = () => {
                     </span>
                     <button
                       onClick={() => handleRemove(Number(product.id))}
+                      aria-label={`Remove ${product.name} from cart`}
+                      type="button"
                       className="p-1 text-red-600 hover:text-red-800"
                     >
                       <FaTrash />
@@ -262,7 +336,7 @@ const Checkout = () => {
 
           <button
             onClick={handlePlaceOrder}
-            disabled={paying || items.length === 0}
+            disabled={placing || paying || items.length === 0}
             className={`mt-6 w-full py-2 rounded text-white 
           ${
             placing || items.length === 0

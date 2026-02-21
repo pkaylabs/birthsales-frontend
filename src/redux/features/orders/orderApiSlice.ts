@@ -19,7 +19,7 @@ export interface PlaceOrderRequest {
 
 export interface OrderResponse {
   message: string;
-  data: Order;
+  data: Order | Order[];
 }
 
 interface TransType {
