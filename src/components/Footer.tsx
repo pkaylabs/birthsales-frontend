@@ -11,7 +11,7 @@ const Footer = () => {
         <div className="block desktop-up:hidden space-y-8">
           {/* Company Info */}
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">BirthNon</h3>
+            <h3 className="text-white text-lg font-semibold mb-4">Birthnon</h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/about" className="hover:text-white transition">
@@ -153,7 +153,7 @@ const Footer = () => {
         <div className="hidden desktop-up:flex items-start justify-between gap-8">
           {/* Company Info */}
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">BirthNon</h3>
+            <h3 className="text-white text-lg font-semibold mb-4">Birthnon</h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/about" className="hover:text-white transition">
@@ -294,7 +294,7 @@ const Footer = () => {
         {/* Copyright */}
         <div className="mt-8 border-t border-gray-700 pt-4 text-center text-sm">
           <p>
-            &copy; {new Date().getFullYear()} BirthNon site. All rights
+            &copy; {new Date().getFullYear()} Birthnon site. All rights
             reserved.
           </p>
         </div>

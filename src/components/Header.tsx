@@ -41,7 +41,7 @@ const Header: React.FC = () => {
               to="/"
               className="ml-3 text-2xl font-bold text-gray-800 hover:text-rose-500 transition"
             >
-              BirthNon
+              Birthnon
             </Link>
           </div>
 
