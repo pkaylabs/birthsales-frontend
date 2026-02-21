@@ -1,6 +1,14 @@
 import { api } from "@/app/api/auth";
 import { Product } from "@/redux/type";
 
+export interface ProductImage {
+  id?: number | string;
+  image_id?: number | string;
+  pk?: number | string;
+  image?: string;
+  url?: string;
+}
+
 export const productsApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getProducts: builder.query<Product[], void>({
@@ -43,6 +51,57 @@ export const productsApi = api.injectEndpoints({
       }),
       invalidatesTags: ["Products"],
     }),
+
+    addProductImages: builder.mutation<
+      unknown,
+      { productId: string | number; images: File[] }
+    >({
+      query: ({ productId, images }) => {
+        const fd = new FormData();
+        fd.append("product_id", String(productId));
+        images.forEach((file) => {
+          fd.append("images", file);
+        });
+
+        return {
+          url: `products/${productId}/images/`,
+          method: "POST",
+          body: fd,
+        };
+      },
+      invalidatesTags: ["Products"],
+    }),
+
+    getProductImages: builder.query<ProductImage[], string | number>({
+      query: (productId) => `products/${productId}/images/`,
+      transformResponse: (response: unknown): ProductImage[] => {
+        if (Array.isArray(response)) return response as ProductImage[];
+        if (response && typeof response === "object") {
+          const obj = response as Record<string, unknown>;
+          const images = obj["images"];
+          if (Array.isArray(images)) return images as ProductImage[];
+          const results = obj["results"];
+          if (Array.isArray(results)) return results as ProductImage[];
+        }
+        return [];
+      },
+      providesTags: ["Products"],
+    }),
+
+    deleteProductImage: builder.mutation<
+      unknown,
+      { productId: string | number; imageId: string | number }
+    >({
+      query: ({ productId, imageId }) => ({
+        url: `products/${productId}/images/${imageId}/`,
+        method: "DELETE",
+        body: {
+          product_id: Number(productId),
+          image_id: Number(imageId),
+        },
+      }),
+      invalidatesTags: ["Products"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -53,4 +112,7 @@ export const {
   useDeleteProductMutation,
   useUpdateProductMutation,
   useGetProductQuery,
+  useAddProductImagesMutation,
+  useGetProductImagesQuery,
+  useDeleteProductImageMutation,
 } = productsApi;

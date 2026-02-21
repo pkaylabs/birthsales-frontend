@@ -14,6 +14,7 @@ import {
   TextField,
   TablePagination,
   CircularProgress,
+  IconButton,
   FormControl,
   InputLabel,
   Select,
@@ -27,8 +28,12 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
   useAddProductMutation,
+  useAddProductImagesMutation,
+  useDeleteProductImageMutation,
+  useGetProductImagesQuery,
   useGetProductsQuery,
   useDeleteProductMutation,
   useUpdateProductMutation,
@@ -94,6 +99,36 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
+function extractImagePath(value: unknown): string | null {
+  if (!value) return null;
+  if (typeof value === "string") return value;
+  if (typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    const image = obj["image"];
+    if (typeof image === "string") return image;
+    const url = obj["url"];
+    if (typeof url === "string") return url;
+  }
+  return null;
+}
+
+function resolveImageUrl(path: string): string {
+  const trimmed = path.trim();
+  if (!trimmed) return trimmed;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `${BASE_URL}${trimmed}`;
+}
+
+function revokeIfBlobUrl(url: string) {
+  if (url && url.startsWith("blob:")) {
+    try {
+      URL.revokeObjectURL(url);
+    } catch {
+      // ignore
+    }
+  }
+}
+
 export default function ProductsPage() {
   // auth user
   const user = useAppSelector((state: RootState) => state.auth.user);
@@ -105,10 +140,14 @@ export default function ProductsPage() {
     refetch,
   } = useGetProductsQuery();
   const [addProduct, { isLoading: adding }] = useAddProductMutation();
+  const [addProductImages, { isLoading: uploadingImages }] =
+    useAddProductImagesMutation();
+  const [deleteProductImage, { isLoading: deletingProductImage }] =
+    useDeleteProductImageMutation();
   const { data: categories = [] } = useGetCategoriesQuery();
   const { data: allVendors = [] } = useGetVendorsQuery(undefined, {
     skip:
-      !user?.is_superuser || !user?.is_staff || user?.user_type === "VENDOR",
+      !(user?.is_superuser || user?.is_staff || user?.user_type === "ADMIN"),
   });
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
   const [updateProduct, { isLoading: isPublishing }] =
@@ -126,12 +165,39 @@ export default function ProductsPage() {
   );
 
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
+  const [deletingImageId, setDeletingImageId] = useState<string | number | null>(
+    null
+  );
+
+  const { data: productImages = [] } = useGetProductImagesQuery(
+    detailProduct?.id ?? "",
+    { skip: !detailProduct?.id }
+  );
+
+  const handleDeleteImage = async (imageId: string | number | undefined) => {
+    if (!detailProduct?.id || imageId == null) return;
+    const ok = window.confirm("Delete this product image?");
+    if (!ok) return;
+    setDeletingImageId(imageId);
+    try {
+      await deleteProductImage({
+        productId: detailProduct.id,
+        imageId,
+      }).unwrap();
+      toast.success("Image deleted");
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, "Failed to delete image"));
+    } finally {
+      setDeletingImageId(null);
+    }
+  };
 
   // dialog state for "Add Product"
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [form, setForm] = useState({
+
+  const getEmptyForm = () => ({
     name: "",
     description: "",
     price: "",
@@ -142,7 +208,22 @@ export default function ProductsPage() {
     imagePreview: "",
     available_sizes: [] as string[],
     available_colors: [] as string[],
+    extraImages: [] as File[],
   });
+
+  const [form, setForm] = useState(getEmptyForm);
+
+  const resetForm = () => {
+    revokeIfBlobUrl(form.imagePreview);
+    setForm(getEmptyForm());
+  };
+
+  const openAdd = () => {
+    setEditingProduct(null);
+    setEditOpen(false);
+    resetForm();
+    setOpen(true);
+  };
 
   // upload spinner
   const [uploading, setUploading] = useState(false);
@@ -179,6 +260,16 @@ export default function ProductsPage() {
     }
   };
 
+  const handleExtraImagesChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    const limited = files.slice(0, 7);
+    if (files.length > 7) {
+      toast.error("You can upload up to 7 images per product.");
+    }
+    setForm((f) => ({ ...f, extraImages: limited }));
+    e.target.value = "";
+  };
+
   const handleSave = async () => {
     const fd = new FormData();
     fd.append("name", form.name);
@@ -196,22 +287,23 @@ export default function ProductsPage() {
     }
 
     try {
-      await addProduct(fd).unwrap();
+      const created = await addProduct(fd).unwrap();
+
+      if (form.extraImages.length > 0) {
+        try {
+          await addProductImages({
+            productId: created.id,
+            images: form.extraImages,
+          }).unwrap();
+        } catch (e: unknown) {
+          toast.error(getErrorMessage(e, "Product created, but image upload failed"));
+        }
+      }
+
       setOpen(false);
       setToastMessage("Product created successfully");
       setToastSeverity("success");
-      setForm({
-        name: "",
-        description: "",
-        price: "",
-        vendor: "",
-        category: "",
-        in_stock: true,
-        imageFile: null,
-        imagePreview: "",
-        available_sizes: [],
-        available_colors: [],
-      });
+      resetForm();
       refetch();
     } catch (err) {
       console.error(err);
@@ -225,6 +317,7 @@ export default function ProductsPage() {
 
   const openEdit = (p: Product) => {
     setEditingProduct(p);
+    revokeIfBlobUrl(form.imagePreview);
     setForm({
       name: p.name ?? "",
       description: p.description ?? "",
@@ -233,9 +326,13 @@ export default function ProductsPage() {
       vendor: p.vendor != null ? String(p.vendor) : "",
       in_stock: Boolean(p.in_stock),
       imageFile: null,
-      imagePreview: p.image ? `${BASE_URL}${p.image}` : "",
+      imagePreview: (() => {
+        const main = p.image ?? (p as unknown as { main_image_url?: string }).main_image_url;
+        return main ? resolveImageUrl(String(main)) : "";
+      })(),
       available_sizes: parseFlexibleList(p.available_sizes),
       available_colors: parseFlexibleList(p.available_colors),
+      extraImages: [],
     });
     setEditOpen(true);
   };
@@ -261,10 +358,23 @@ export default function ProductsPage() {
 
     try {
       await updateProduct(fd).unwrap();
+
+      if (form.extraImages.length > 0) {
+        try {
+          await addProductImages({
+            productId: editingProduct.id,
+            images: form.extraImages,
+          }).unwrap();
+        } catch (e: unknown) {
+          toast.error(getErrorMessage(e, "Product updated, but image upload failed"));
+        }
+      }
+
       setEditOpen(false);
       setEditingProduct(null);
       setToastMessage("Product updated successfully");
       setToastSeverity("success");
+      resetForm();
       refetch();
     } catch (err: unknown) {
       setToastMessage(getErrorMessage(err, "Failed to update product"));
@@ -348,7 +458,7 @@ export default function ProductsPage() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Button variant="contained" onClick={() => setOpen(true)}>
+        <Button variant="contained" onClick={openAdd}>
           Add New Product
         </Button>
       </Box>
@@ -356,7 +466,10 @@ export default function ProductsPage() {
       {/* Add‐product dialog */}
       <Dialog
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          setOpen(false);
+          resetForm();
+        }}
         fullWidth
         maxWidth="sm"
       >
@@ -450,18 +563,34 @@ export default function ProductsPage() {
                   }
                 >
                   {allVendors?.map((v) => (
-                    <MenuItem key={v.id} value={v.user}>
+                    <MenuItem key={v.id} value={String(v.user)}>
                       {v.vendor_name}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             )}
+
+            <Button component="label" variant="outlined" disabled={uploadingImages}>
+              {uploadingImages ? "Uploading Images…" : "Upload More Images (max 7)"}
+              <input
+                hidden
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleExtraImagesChange}
+              />
+            </Button>
+            {form.extraImages.length > 0 && (
+              <Typography variant="body2" color="text.secondary">
+                Selected: {form.extraImages.length}/7
+              </Typography>
+            )}
             <Button
               variant="contained"
               color="primary"
               onClick={handleSave}
-              disabled={adding || uploading}
+              disabled={adding || uploading || uploadingImages}
             >
               {adding || uploading ? "Saving…" : "Save"}
             </Button>
@@ -475,6 +604,7 @@ export default function ProductsPage() {
         onClose={() => {
           setEditOpen(false);
           setEditingProduct(null);
+          resetForm();
         }}
         fullWidth
         maxWidth="sm"
@@ -571,7 +701,7 @@ export default function ProductsPage() {
                   }
                 >
                   {allVendors?.map((v) => (
-                    <MenuItem key={v.id} value={v.user}>
+                    <MenuItem key={v.id} value={String(v.user)}>
                       {v.vendor_name}
                     </MenuItem>
                   ))}
@@ -579,11 +709,27 @@ export default function ProductsPage() {
               </FormControl>
             )}
 
+            <Button component="label" variant="outlined" disabled={uploadingImages}>
+              {uploadingImages ? "Uploading Images…" : "Upload More Images (max 7)"}
+              <input
+                hidden
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleExtraImagesChange}
+              />
+            </Button>
+            {form.extraImages.length > 0 && (
+              <Typography variant="body2" color="text.secondary">
+                Selected: {form.extraImages.length}/7
+              </Typography>
+            )}
+
             <Button
               variant="contained"
               color="primary"
               onClick={handleUpdate}
-              disabled={isPublishing || uploading}
+              disabled={isPublishing || uploading || uploadingImages}
             >
               {isPublishing || uploading ? "Saving…" : "Save"}
             </Button>
@@ -605,18 +751,93 @@ export default function ProductsPage() {
         <DialogContent dividers>
           <Box display="flex" flexDirection="column" gap={2}>
             {/* Image */}
-            {detailProduct?.image && (
-              <Box
-                component="img"
-                src={`${BASE_URL}${detailProduct.image}`}
-                alt={detailProduct.name}
-                sx={{
-                  width: "100%",
-                  height: 200,
-                  objectFit: "cover",
-                  borderRadius: 1,
-                }}
-              />
+            {(() => {
+              const main =
+                detailProduct?.image ??
+                (detailProduct as unknown as { main_image_url?: string })
+                  ?.main_image_url;
+              const mainPath = main ? String(main) : "";
+              if (!mainPath) return null;
+              return (
+                <Box
+                  component="img"
+                  src={resolveImageUrl(mainPath)}
+                  alt={detailProduct?.name ?? "Product"}
+                  sx={{
+                    width: "100%",
+                    height: 200,
+                    objectFit: "cover",
+                    borderRadius: 1,
+                  }}
+                />
+              );
+            })()}
+
+            {/* Extra Images */}
+            {productImages && productImages.length > 0 && (
+              <Box>
+                <Typography variant="subtitle2" color="textSecondary" mb={1}>
+                  More Images
+                </Typography>
+                <Box
+                  display="grid"
+                  gridTemplateColumns="repeat(3, 1fr)"
+                  gap={1}
+                >
+                  {productImages.slice(0, 7).map((img) => {
+                    const path = extractImagePath(img);
+                    if (!path || !path.trim()) return null;
+                    const rec = img as Record<string, unknown>;
+                    const imageId =
+                      (rec["id"] as string | number | undefined) ??
+                      (rec["image_id"] as string | number | undefined) ??
+                      (rec["pk"] as string | number | undefined);
+                    const busy =
+                      deletingProductImage && deletingImageId === imageId;
+                    return (
+                      <Box
+                        key={String(imageId ?? path)}
+                        position="relative"
+                        sx={{ borderRadius: 1, overflow: "hidden" }}
+                      >
+                        <Box
+                          component="img"
+                          src={resolveImageUrl(path)}
+                          alt="Product"
+                          sx={{
+                            width: "100%",
+                            height: 90,
+                            objectFit: "cover",
+                            borderRadius: 1,
+                            display: "block",
+                          }}
+                        />
+
+                        {imageId != null && (
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDeleteImage(imageId)}
+                            disabled={deletingProductImage}
+                            sx={{
+                              position: "absolute",
+                              top: 4,
+                              right: 4,
+                              bgcolor: "background.paper",
+                            }}
+                            aria-label="Delete image"
+                          >
+                            {busy ? (
+                              <CircularProgress size={16} />
+                            ) : (
+                              <DeleteOutlineIcon fontSize="small" />
+                            )}
+                          </IconButton>
+                        )}
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </Box>
             )}
 
             {/* Details Grid */}
@@ -663,7 +884,7 @@ export default function ProductsPage() {
                   <Typography>
                     {
                       allVendors.find(
-                        (v) => String(v.id) === String(detailProduct?.vendor)
+                        (v) => String(v.user) === String(detailProduct?.vendor)
                       )?.vendor_name
                     }
                   </Typography>
