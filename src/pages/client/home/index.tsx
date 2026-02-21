@@ -4,7 +4,6 @@ import {
   useSearchProductsQuery,
 } from "@/redux/features/homepage/homepageApiSlice";
 import { Box, CircularProgress, TextField, Typography } from "@mui/material";
-import { BASE_URL } from "@/constants";
 import CardCarousel from "./components/cards-carousel";
 import ProductCard from "./components/cards/product";
 import Carousel from "./components/swiper";
@@ -12,6 +11,7 @@ import CategoryCard from "./components/cards/category";
 import Countdown from "./components/countdown";
 import BottomCards from "./components/bottom-cards";
 import { useNavigate } from "react-location";
+import { resolveProductImageUrl } from "@/utils/resolve-image-url";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -43,11 +43,11 @@ const Home: React.FC = () => {
   const bestSellers = data.best_selling_products;
 
 
-  const renderCarousel = (
+  const renderCarousel = <T,>(
     section: "flash" | "categories" | "best",
     title: string,
-    items: any[],
-    renderFn: (item: any) => React.ReactNode
+    items: T[],
+    renderFn: (item: T) => React.ReactNode
   ) => {
     // if expanded, show full-width responsive grid
     if (expandedSection === section) {
@@ -173,7 +173,7 @@ const Home: React.FC = () => {
             </div>
             <div className="flex-1">
               <img
-                src={`${BASE_URL}${allProducts[4].image}`}
+                src={resolveProductImageUrl(allProducts[4])}
                 alt="speaker"
                 className="w-full h-auto object-contain rounded-lg"
               />
@@ -198,7 +198,7 @@ const Home: React.FC = () => {
                   className="relative rounded overflow-hidden h-64 sm:h-80"
                 >
                   <img
-                    src={`${BASE_URL}${item.image}`}
+                    src={resolveProductImageUrl(item)}
                     alt={item.name}
                     className="w-full h-full object-cover"
                   />

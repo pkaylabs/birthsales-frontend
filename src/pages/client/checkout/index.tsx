@@ -1,4 +1,4 @@
-import { BASE_URL, LOGIN } from "@/constants";
+import { LOGIN } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/redux";
 import { clearCart, removeFromCart } from "@/redux/features/cart/cartSlice";
 import {
@@ -10,6 +10,7 @@ import React, { useState } from "react";
 import { FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-location";
 import { toast } from "react-toastify";
+import { resolveProductImageUrl } from "@/utils/resolve-image-url";
 
 const GH_PHONE = /^(?:0|233)(?:24|25|54|55|20|26|27|50|56|57|28)\d{7}$/;
 
@@ -295,7 +296,7 @@ const Checkout = () => {
                 >
                   <div className="flex items-center gap-3">
                     <img
-                      src={`${BASE_URL}${product.image}`}
+                      src={resolveProductImageUrl(product)}
                       alt={product.name}
                       className="w-12 h-12 rounded-full object-cover"
                     />

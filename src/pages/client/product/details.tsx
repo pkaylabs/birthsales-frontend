@@ -7,10 +7,13 @@ import { MdOutlineFavoriteBorder } from "react-icons/md";
 import { motion } from "framer-motion";
 import { useGetProductQuery } from "@/redux/features/products/productsApi";
 import { Box, CircularProgress } from "@mui/material";
-import { BASE_URL } from "@/constants";
 import { useAppDispatch } from "@/redux";
 import { addToCart } from "@/redux/features/cart/cartSlice";
 import { toast } from "react-toastify";
+import {
+  resolveImageUrl,
+  resolveProductImageUrl,
+} from "@/utils/resolve-image-url";
 
 const ProductDetails: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -18,21 +21,30 @@ const ProductDetails: React.FC = () => {
   const prodId = Number(params.id);
   const { data: product, isLoading, isError } = useGetProductQuery(prodId);
 
-  console.log(product)
-
   const [gallery, setGallery] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string>("");
 
   useEffect(() => {
     if (!product) return;
-    const imgs = Array.isArray(product.image)
-      ? product.image
-      : product.image
-      ? [product.image]
+    const raw = (product as unknown as { image?: unknown; main_image_url?: unknown }).image;
+    const rawMain = (product as unknown as { main_image_url?: unknown }).main_image_url;
+
+    const imgs = Array.isArray(raw)
+      ? raw.filter((x): x is string => typeof x === "string")
+      : typeof raw === "string"
+      ? [raw]
+      : typeof rawMain === "string"
+      ? [rawMain]
       : [];
+
     setGallery(imgs);
     if (imgs.length) setSelectedImage(imgs[0]);
+    else setSelectedImage("");
   }, [product]);
+
+  const mainImageSrc = selectedImage
+    ? resolveImageUrl(selectedImage)
+    : resolveProductImageUrl(product);
 
   const handleAddToCart = () => {
     if (!product) return toast.error("Product unavailable");
@@ -80,7 +92,7 @@ const ProductDetails: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
               >
                 <img
-                  src={`${BASE_URL}${img}`}
+                  src={resolveImageUrl(img)}
                   alt={`thumb-${idx}`}
                   className="w-full h-full object-cover"
                 />
@@ -98,7 +110,7 @@ const ProductDetails: React.FC = () => {
           transition={{ duration: 0.4, ease: "easeInOut" }}
         >
           <img
-            src={`${BASE_URL}${selectedImage || product.image}`}
+            src={mainImageSrc}
             alt={product.name}
             className="max-w-full max-h-96 object-contain"
           />

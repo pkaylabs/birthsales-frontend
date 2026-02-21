@@ -1,4 +1,4 @@
-import { BASE_URL, CHECKOUT } from "@/constants";
+import { CHECKOUT } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/redux";
 import {
   clearCart,
@@ -8,6 +8,7 @@ import {
 import { FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-location";
 import { toast } from "react-toastify";
+import { resolveProductImageUrl } from "@/utils/resolve-image-url";
 
 const CartPage = () => {
   const dispatch = useAppDispatch();
@@ -66,7 +67,7 @@ const CartPage = () => {
               <tr key={product.id} className="even:bg-gray-50">
                 <td className="p-3 flex items-center gap-2">
                   <img
-                    src={`${BASE_URL}${product.image}`}
+                    src={resolveProductImageUrl(product)}
                     alt={product.name}
                     className="w-10 h-10 rounded-full object-cover hidden sm:block"
                   />
@@ -103,6 +104,8 @@ const CartPage = () => {
                 <td className="p-3 text-center">
                   <button
                     onClick={() => handleRemove(Number(product.id))}
+                    aria-label={`Remove ${product.name} from cart`}
+                    type="button"
                     className="p-1 rounded-full hover:bg-red-100"
                   >
                     <FaTrash className="text-red-600" />

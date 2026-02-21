@@ -1,9 +1,9 @@
 import React from "react";
 import { useAppSelector, useAppDispatch } from "@/redux";
 import { Link, useNavigate } from "react-location";
-import { BASE_URL } from "@/constants";
 import { FiTrash2 } from "react-icons/fi";
 import { removeFromWishlist } from "@/redux/features/wishlist/wishlistSlice";
+import { resolveProductImageUrl } from "@/utils/resolve-image-url";
 
 const WishlistPage: React.FC = () => {
   const navigate = useNavigate();
@@ -52,20 +52,25 @@ const WishlistPage: React.FC = () => {
             {/* product image */}
             <div className="bg-gray-100 h-48 flex items-center justify-center">
               <img
-                src={`${BASE_URL}${product.image}`}
+                src={resolveProductImageUrl(product)}
                 alt={product.name}
                 className="max-h-full max-w-full object-contain"
               />
             </div>
+
             {/* product info */}
             <div className="flex-1 p-4 flex flex-col">
               <h2
                 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2 cursor-pointer hover:text-red-600"
-                onClick={() => navigate({ to: `/product-details/${product.id}` })}
+                onClick={() =>
+                  navigate({ to: `/product-details/${product.id}` })
+                }
               >
                 {product.name}
               </h2>
-              <p className="mt-auto text-red-600 font-bold">GHC{product.price}</p>
+              <p className="mt-auto text-red-600 font-bold">
+                GHC{product.price}
+              </p>
             </div>
             {/* remove button */}
             <div className="p-2 border-t border-gray-200">

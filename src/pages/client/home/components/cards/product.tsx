@@ -5,11 +5,11 @@ import { motion } from "framer-motion";
 import { IoStar } from "react-icons/io5";
 import { useNavigate } from "react-location";
 import { Product } from "@/redux/type";
-import { BASE_URL } from "@/constants";
 import { useAppDispatch } from "@/redux";
 import { addToCart } from "@/redux/features/cart/cartSlice";
 import { toast } from "react-toastify";
 import { addToWishlist } from "@/redux/features/wishlist/wishlistSlice";
+import { resolveProductImageUrl } from "@/utils/resolve-image-url";
 
 interface ProductCardProps {
   product: Product;
@@ -21,13 +21,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const {
     id,
     name,
-    image,
     price,
     original_price,
     rating,
     reviews_count,
     vendor_name,
   } = product;
+
+  const imageSrc = resolveProductImageUrl(product);
 
   const handleView = () => {
     navigate({ to: `/product-details/${id}` });
@@ -49,6 +50,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="absolute top-2 right-2 flex space-x-1 sm:space-x-2">
           <button
             onClick={handleAddToWishlist}
+            aria-label={`Add ${name} to wishlist`}
+            type="button"
             className="
               bg-white p-1 sm:p-2 rounded-full shadow
               hover:bg-gray-200 transition
@@ -58,6 +61,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </button>
           <button
             onClick={handleView}
+            aria-label={`View details for ${name}`}
+            type="button"
             className="
               bg-white p-1 sm:p-2 rounded-full shadow
               hover:bg-gray-200 transition
@@ -71,7 +76,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         <div className="flex items-center justify-center w-full h-full">
           <img
-            src={`${BASE_URL}${image}`}
+            src={imageSrc}
             alt={name}
             className="w-full h-full object-cover"
           />
