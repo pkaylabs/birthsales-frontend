@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import { Navigate } from "react-location";
 import { useRegisterMutation } from "@/redux/features/auth/authApiSlice";
 import {
@@ -19,13 +19,70 @@ import {
   DialogContent,
   DialogTitle,
 } from "@mui/material";
-import { useMobilePaymentMutation } from "@/redux/features/orders/orderApiSlice";
+import {
+  usePaystackCheckStatusMutation,
+  usePaystackInitializePaymentMutation,
+} from "@/redux/features/orders/orderApiSlice";
 
 const GH_PHONE = /^(?:0|233)(?:24|25|54|55|20|26|27|50|56|57|28)\d{7}$/;
 const STRONG_PWD =
   /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
 
+const LS_VENDOR_PAYSTACK_REF = "paystack_vendor_onboarding_reference";
+const LS_VENDOR_PAYSTACK_URL = "paystack_vendor_onboarding_auth_url";
+
 const VendorAccount: React.FC = () => {
+  const isRecord = (v: unknown): v is Record<string, unknown> =>
+    typeof v === "object" && v !== null;
+
+  const extractErrorMessage = (err: unknown, fallback: string): string => {
+    if (!err) return fallback;
+    if (typeof err === "string") return err;
+
+    const fromStringArray = (v: unknown): string | null => {
+      if (!Array.isArray(v) || v.length === 0) return null;
+      const strings = v.filter((x): x is string => typeof x === "string");
+      return strings.length ? strings.join(" ") : null;
+    };
+
+    const fromRecord = (obj: Record<string, unknown>): string | null => {
+      for (const value of Object.values(obj)) {
+        if (typeof value === "string" && value.trim()) return value;
+        const joined = fromStringArray(value);
+        if (joined) return joined;
+      }
+      return null;
+    };
+
+    if (isRecord(err)) {
+      const data = err.data;
+      if (typeof data === "string") return data;
+      if (isRecord(data)) {
+        const errorMessage = data.error_message;
+        if (typeof errorMessage === "string") return errorMessage;
+        const detail = data.detail;
+        if (typeof detail === "string") return detail;
+        const message = data.message;
+        if (typeof message === "string") return message;
+
+        // Some APIs return field validation errors, e.g. { error: { vendor_phone: ["..."] } }
+        const nestedError = data.error;
+        if (isRecord(nestedError)) {
+          const nestedMsg = fromRecord(nestedError);
+          if (nestedMsg) return nestedMsg;
+        }
+
+        // Or validation errors at the top-level of data, e.g. { vendor_phone: ["..."] }
+        const flatMsg = fromRecord(data);
+        if (flatMsg) return flatMsg;
+      }
+      const message = err.message;
+      if (typeof message === "string") return message;
+    }
+
+    return fallback;
+  };
+
   const token = useAppSelector((state: RootState) => state.auth.token);
   const [step, setStep] = useState(1);
   const [accountData, setAccountData] = useState({
@@ -43,9 +100,11 @@ const VendorAccount: React.FC = () => {
   });
   const [viewingPlan, setViewingPlan] = useState<Plan | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState("");
-  const [mobileNumber, setMobileNumber] = useState("");
-  const [network, setNetwork] = useState("");
+  const [paystackReference, setPaystackReference] = useState<string | null>(
+    null
+  );
+  const [paystackAuthUrl, setPaystackAuthUrl] = useState<string | null>(null);
+  const [paystackDialogOpen, setPaystackDialogOpen] = useState(false);
 
   const [accountError, setAccountError] = useState<string | null>(null);
   const [businessError, setBusinessError] = useState<string | null>(null);
@@ -62,7 +121,53 @@ const VendorAccount: React.FC = () => {
     error: plansError,
   } = useGetPlansQuery(undefined, { skip: !token || step < 3 });
   const [subscribePlan, { isLoading: subLoading }] = useSubscribePlanMutation();
-  const [makePayment, { isLoading: payLoading }] = useMobilePaymentMutation();
+  const [initializePaystack, { isLoading: initLoading }] =
+    usePaystackInitializePaymentMutation();
+  const [checkPaystackStatus, { isLoading: statusLoading }] =
+    usePaystackCheckStatusMutation();
+
+  const isPaidStatus = (status: string): boolean => {
+    const s = status.toLowerCase();
+    return (
+      s === "success" ||
+      s === "successful" ||
+      s === "paid" ||
+      s === "completed" ||
+      s === "complete"
+    );
+  };
+
+  // If Paystack redirects back to this page, auto-check the last pending reference
+  // so users don't need to manually click "Check status".
+  useEffect(() => {
+    const pendingRef = localStorage.getItem(LS_VENDOR_PAYSTACK_REF);
+    if (!pendingRef) return;
+
+    const pendingUrl = localStorage.getItem(LS_VENDOR_PAYSTACK_URL);
+    setPaystackReference(pendingRef);
+    if (pendingUrl) setPaystackAuthUrl(pendingUrl);
+    setStep(4);
+
+    (async () => {
+      try {
+        const res = await checkPaystackStatus({ reference: pendingRef }).unwrap();
+        if (res.status && isPaidStatus(res.status)) {
+          localStorage.removeItem(LS_VENDOR_PAYSTACK_REF);
+          localStorage.removeItem(LS_VENDOR_PAYSTACK_URL);
+          toast.success("Payment confirmed");
+          setPaystackDialogOpen(false);
+          setStep(5);
+          return;
+        }
+
+        setPaystackDialogOpen(true);
+        toast.info(res.message || `Payment status: ${res.status || "unknown"}`);
+      } catch (err: unknown) {
+        setPaystackDialogOpen(true);
+        toast.error(extractErrorMessage(err, "Failed to check payment status"));
+      }
+    })();
+  }, [checkPaystackStatus]);
 
   const handleAccountChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -96,11 +201,8 @@ const VendorAccount: React.FC = () => {
       }).unwrap();
       toast.success("Success: Proceed to create business profile");
       setStep(2);
-    } catch (err: any) {
-      const msg =
-        err?.data?.error_message ||
-        err?.data?.detail ||
-        "Failed to create account";
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err, "Failed to create account");
       setAccountError(msg);
       toast.error(msg);
     }
@@ -117,11 +219,8 @@ const VendorAccount: React.FC = () => {
       await createBusiness(vendorData).unwrap();
       toast.success("Success: Select a subscription plan");
       setStep(3);
-    } catch (err: any) {
-      const msg =
-        err?.data?.error_message ||
-        err?.data?.detail ||
-        "Failed to create vendor profile";
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err, "Failed to create vendor profile");
       setBusinessError(msg);
       toast.error(msg);
     }
@@ -134,9 +233,8 @@ const VendorAccount: React.FC = () => {
       setSubscriptionId(res.id);
       toast.success("Proceed to make payment");
       setStep(4);
-    } catch (err: any) {
-      const msg =
-        err?.data?.error_message || err?.data?.detail || "Subscription Failed";
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err, "Subscription Failed");
       setSubscribeError(msg);
       toast.error(msg);
     }
@@ -148,30 +246,57 @@ const VendorAccount: React.FC = () => {
       setPaymentError("No plan selected");
       return;
     }
-    if (!paymentMethod) {
-      setPaymentError("Please select a payment method");
+
+    if (!subscriptionId) {
+      setPaymentError("Subscription not found. Please re-select your plan.");
       return;
     }
-    if (!network) {
-      toast.error("Please select a network");
-      return;
-    }
-    if (paymentMethod === "mobile_money" && !mobileNumber) {
-      setPaymentError("Please enter your mobile number");
-    }
+
     try {
-      await makePayment({
-        subscription: subscriptionId ?? undefined,
-        network,
-        phone: mobileNumber,
-      }).unwrap();
-      toast.success("Payment successful");
-      setStep(5);
-    } catch (err: any) {
-      const msg =
-        err?.data?.error_message || err?.data?.message || "Payment failed";
+      const res = await initializePaystack({ subscription: subscriptionId }).unwrap();
+
+      if (res.status === "failed") {
+        const msg = res.message || "Payment initialization failed";
+        setPaymentError(msg);
+        toast.error(msg);
+        return;
+      }
+
+      setPaystackReference(res.reference);
+      setPaystackAuthUrl(res.authorization_url);
+
+      // Persist so we can auto-check after Paystack redirects back
+      localStorage.setItem(LS_VENDOR_PAYSTACK_REF, res.reference);
+      localStorage.setItem(LS_VENDOR_PAYSTACK_URL, res.authorization_url);
+
+      // Keep the user in the same tab for a smoother flow.
+      window.location.assign(res.authorization_url);
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err, "Payment failed");
       setPaymentError(msg);
       toast.error(msg);
+    }
+  };
+
+  const handleCheckPaymentStatus = async () => {
+    if (!paystackReference) {
+      toast.error("No payment reference found");
+      return;
+    }
+
+    try {
+      const res = await checkPaystackStatus({ reference: paystackReference }).unwrap();
+      if (res.status && isPaidStatus(res.status)) {
+        toast.success("Payment confirmed");
+        localStorage.removeItem(LS_VENDOR_PAYSTACK_REF);
+        localStorage.removeItem(LS_VENDOR_PAYSTACK_URL);
+        setPaystackDialogOpen(false);
+        setStep(5);
+        return;
+      }
+      toast.info(res.message || `Payment status: ${res.status || "unknown"}`);
+    } catch (err: unknown) {
+      toast.error(extractErrorMessage(err, "Failed to check payment status"));
     }
   };
 
@@ -294,34 +419,48 @@ const VendorAccount: React.FC = () => {
           {step === 2 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="vendor_name"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Vendor Name
                 </label>
                 <input
+                  id="vendor_name"
                   name="vendor_name"
                   type="text"
                   value={vendorData.vendor_name}
                   onChange={handleVendorChange}
                   className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  placeholder="Enter vendor name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="vendor_email"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Vendor Email
                 </label>
                 <input
+                  id="vendor_email"
                   name="vendor_email"
                   type="email"
                   value={vendorData.vendor_email}
                   onChange={handleVendorChange}
                   className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  placeholder="Enter vendor email"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="vendor_phone"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Vendor Phone
                 </label>
                 <input
+                  id="vendor_phone"
                   name="vendor_phone"
                   type="tel"
                   maxLength={10}
@@ -331,18 +470,24 @@ const VendorAccount: React.FC = () => {
                     if (!/[0-9]/.test(e.key)) e.preventDefault();
                   }}
                   className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  placeholder="0546573849"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="vendor_address"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Vendor Address
                 </label>
                 <input
+                  id="vendor_address"
                   name="vendor_address"
                   type="text"
                   value={vendorData.vendor_address}
                   onChange={handleVendorChange}
                   className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  placeholder="Enter vendor address"
                 />
               </div>
               {businessError && (
@@ -427,48 +572,9 @@ const VendorAccount: React.FC = () => {
           )}
           {step === 4 && (
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Payment Method
-                </label>
-                <select
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  <option value="">Select</option>
-                  <option value="mobile_money">Mobile Money</option>
-                </select>
-              </div>
-              {paymentMethod === "mobile_money" && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Network
-                  </label>
-                  <select
-                    value={network}
-                    onChange={(e) => setNetwork(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    <option value="">Select</option>
-                    <option value="MTN">MTN</option>
-                    <option value="VOD">TELECEL</option>
-                    <option value="AIR">AIRTELTIGO</option>
-                  </select>
-                </div>
-              )}
-              {paymentMethod === "mobile_money" && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Mobile Number
-                  </label>
-                  <input
-                    value={mobileNumber}
-                    onChange={(e) => setMobileNumber(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
-              )}
+              <p className="text-sm text-gray-700">
+                Payments are processed via Paystack. Clicking the button will open a Paystack payment page in a new tab.
+              </p>
               {paymentError && (
                 <p className="text-red-600 text-sm">{paymentError}</p>
               )}
@@ -481,14 +587,59 @@ const VendorAccount: React.FC = () => {
                 </button>
                 <button
                   onClick={handlePayment}
-                  disabled={payLoading || !paymentMethod || !mobileNumber}
+                  disabled={initLoading || statusLoading}
                   className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                 >
-                  {payLoading ? <CircularProgress size={15} /> : "Pay & Finish"}
+                  {initLoading ? <CircularProgress size={15} /> : "Pay with Paystack"}
                 </button>
               </div>
             </div>
           )}
+
+          <Dialog
+            open={paystackDialogOpen}
+            onClose={() => setPaystackDialogOpen(false)}
+            fullWidth
+            maxWidth="sm"
+          >
+            <DialogTitle>Complete Payment</DialogTitle>
+            <DialogContent dividers className="space-y-3">
+              <p className="text-sm text-gray-700">
+                  Complete your payment on Paystack. When you return here, we'll automatically check the status.
+              </p>
+              {paystackAuthUrl && (
+                <a
+                  href={paystackAuthUrl}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.location.assign(paystackAuthUrl);
+                    }}
+                  className="text-blue-600 underline break-all"
+                >
+                    Continue payment
+                </a>
+              )}
+              {paystackReference && (
+                <p className="text-xs text-gray-500 break-all">
+                  Reference: {paystackReference}
+                </p>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setPaystackDialogOpen(false)}>Close</Button>
+              <Button
+                onClick={handleCheckPaymentStatus}
+                variant="contained"
+                disabled={!paystackReference || statusLoading}
+              >
+                {statusLoading ? (
+                  <CircularProgress size={20} sx={{ color: "white" }} />
+                ) : (
+                  "Check status"
+                )}
+              </Button>
+            </DialogActions>
+          </Dialog>
           {/* PLAN DETAILS MODAL */}
           <Dialog
             open={!!viewingPlan}

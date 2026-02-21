@@ -32,6 +32,36 @@ export interface PaymentResponse {
   transaction: null | TransType;
 }
 
+export interface PaystackInitSuccessResponse {
+  status: "initialized";
+  authorization_url: string;
+  reference: string;
+  transaction: unknown;
+  api_status: number;
+}
+
+export interface PaystackInitFailedResponse {
+  status: "failed";
+  message: string;
+  api_status: number;
+}
+
+export type PaystackInitResponse =
+  | PaystackInitSuccessResponse
+  | PaystackInitFailedResponse;
+
+export interface PaystackStatusRequest {
+  reference: string;
+}
+
+export interface PaystackStatusResponse {
+  status: string;
+  message?: string;
+  reference?: string;
+  transaction?: unknown;
+  api_status?: number;
+}
+
 export interface PaymentRequest {
   subscription?: number;
   order?: number;
@@ -39,6 +69,11 @@ export interface PaymentRequest {
   network: string;
   phone: string;
 }
+
+export type PaystackInitRequest =
+  | { subscription: number; order?: never; booking?: never }
+  | { order: number; subscription?: never; booking?: never }
+  | { booking: number; subscription?: never; order?: never };
 
 export const ordersApi = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -70,6 +105,25 @@ export const ordersApi = api.injectEndpoints({
         body,
       }),
     }),
+
+    paystackInitializePayment: builder.mutation<PaystackInitResponse, PaystackInitRequest>(
+      {
+        query: (body) => ({
+          url: `makepayment/paystack/`,
+          method: "POST",
+          body,
+        }),
+      }
+    ),
+
+    paystackCheckStatus: builder.mutation<PaystackStatusResponse, PaystackStatusRequest>(
+      {
+        query: ({ reference }) => ({
+          url: `paystack/status/?reference=${encodeURIComponent(reference)}`,
+          method: "GET",
+        }),
+      }
+    ),
     cashout: builder.mutation<
       { status: string; transaction: TransType },
       CashoutRequest
@@ -89,5 +143,7 @@ export const {
   useGetOrdersQuery,
   usePlaceOrderMutation,
   useMobilePaymentMutation,
+  usePaystackInitializePaymentMutation,
+  usePaystackCheckStatusMutation,
   useCashoutMutation,
 } = ordersApi;

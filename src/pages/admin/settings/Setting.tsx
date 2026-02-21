@@ -1,8 +1,11 @@
 import { useChangePasswordMutation } from "@/redux/features/auth/authApiSlice";
 import {
   useGetSubscriptionsQuery,
-  useRenewSubscriptionsMutation,
 } from "@/redux/features/subscriptions/subscriptionSlice";
+import {
+  usePaystackCheckStatusMutation,
+  usePaystackInitializePaymentMutation,
+} from "@/redux/features/orders/orderApiSlice";
 import { useUpdateUserProfileMutation } from "@/redux/features/users/usersApi";
 import {
   useGetVendorProfileQuery,
@@ -17,14 +20,14 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
   Typography,
 } from "@mui/material";
 import { ChangeEvent, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+
+const LS_RENEWAL_PAYSTACK_REF = "paystack_subscription_renewal_reference";
+const LS_RENEWAL_PAYSTACK_URL = "paystack_subscription_renewal_auth_url";
 
 export interface ProfileForm {
   name: string;
@@ -41,16 +44,42 @@ interface VendorForm {
 }
 
 const Setting = () => {
+  const isRecord = (v: unknown): v is Record<string, unknown> =>
+    typeof v === "object" && v !== null;
+
+  const extractErrorMessage = (err: unknown, fallback: string): string => {
+    if (!err) return fallback;
+    if (typeof err === "string") return err;
+    if (isRecord(err)) {
+      const data = err.data;
+      if (typeof data === "string") return data;
+      if (isRecord(data)) {
+        const message = data.message;
+        if (typeof message === "string") return message;
+        const detail = data.detail;
+        if (typeof detail === "string") return detail;
+      }
+      const message = err.message;
+      if (typeof message === "string") return message;
+    }
+    return fallback;
+  };
+
   const [visible, setVisible] = useState(false);
   const [updateUserProfile, { isLoading: updating }] =
     useUpdateUserProfileMutation();
 
-  const [renew, { isLoading: renewing }] = useRenewSubscriptionsMutation();
-
   // Renewal modal state
   const [openModal, setOpenModal] = useState(false);
-  const [phone, setPhone] = useState("");
-  const [network, setNetwork] = useState<"MTN" | "VOD" | "AIR">("MTN");
+  const [paystackReference, setPaystackReference] = useState<string | null>(
+    null
+  );
+  const [paystackAuthUrl, setPaystackAuthUrl] = useState<string | null>(null);
+
+  const [initializePaystack, { isLoading: initLoading }] =
+    usePaystackInitializePaymentMutation();
+  const [checkPaystackStatus, { isLoading: statusLoading }] =
+    usePaystackCheckStatusMutation();
 
   // Basic Profile
   const [profile, setProfile] = useState<ProfileForm>({
@@ -122,10 +151,10 @@ const Setting = () => {
 
   const submitProfile = async () => {
     try {
-      updateUserProfile(profile).unwrap();
+      await updateUserProfile(profile).unwrap();
       toast.success("Profile updated successfully");
-    } catch (error) {
-      console.log(error);
+    } catch (err: unknown) {
+      toast.error(extractErrorMessage(err, "Failed to update profile"));
     }
   };
 
@@ -167,19 +196,89 @@ const Setting = () => {
       .catch(() => toast.error("Password change failed"));
   };
 
+  const isPaidStatus = (status: string): boolean => {
+    const s = status.toLowerCase();
+    return (
+      s === "success" ||
+      s === "successful" ||
+      s === "paid" ||
+      s === "completed" ||
+      s === "complete"
+    );
+  };
+
+  // Auto-check status after Paystack redirects back.
+  useEffect(() => {
+    const pendingRef = localStorage.getItem(LS_RENEWAL_PAYSTACK_REF);
+    if (!pendingRef) return;
+
+    const pendingUrl = localStorage.getItem(LS_RENEWAL_PAYSTACK_URL);
+    setPaystackReference(pendingRef);
+    if (pendingUrl) setPaystackAuthUrl(pendingUrl);
+    setOpenModal(true);
+
+    (async () => {
+      try {
+        const res = await checkPaystackStatus({ reference: pendingRef }).unwrap();
+        if (res.status && isPaidStatus(res.status)) {
+          localStorage.removeItem(LS_RENEWAL_PAYSTACK_REF);
+          localStorage.removeItem(LS_RENEWAL_PAYSTACK_URL);
+          toast.success("Payment confirmed");
+          setOpenModal(false);
+          setPaystackReference(null);
+          setPaystackAuthUrl(null);
+          return;
+        }
+        toast.info(res.message || `Payment status: ${res.status || "unknown"}`);
+      } catch (err: unknown) {
+        toast.error(extractErrorMessage(err, "Failed to check payment status"));
+      }
+    })();
+  }, [checkPaystackStatus]);
+
   const handleRenew = async () => {
     if (!mySubscriptions) return;
     try {
-      const res = await renew({
-        subscription: mySubscriptions?.id,
-        phone,
-        network,
-      }).unwrap();
-      toast.success(res.message || "Renewal successful");
-      setPhone("");
-      setOpenModal(false);
-    } catch (err: any) {
-      toast.error(err.data.message || "Renewal failed");
+      const res = await initializePaystack({ subscription: mySubscriptions.id }).unwrap();
+
+      if (res.status === "failed") {
+        toast.error(res.message || "Payment initialization failed");
+        return;
+      }
+
+      setPaystackReference(res.reference);
+      setPaystackAuthUrl(res.authorization_url);
+
+      localStorage.setItem(LS_RENEWAL_PAYSTACK_REF, res.reference);
+      localStorage.setItem(LS_RENEWAL_PAYSTACK_URL, res.authorization_url);
+
+      // Same-tab redirect for a smoother flow.
+      window.location.assign(res.authorization_url);
+    } catch (err: unknown) {
+      toast.error(extractErrorMessage(err, "Renewal failed"));
+    }
+  };
+
+  const handleCheckRenewalStatus = async () => {
+    if (!paystackReference) {
+      toast.error("No payment reference found");
+      return;
+    }
+
+    try {
+      const res = await checkPaystackStatus({ reference: paystackReference }).unwrap();
+      if (res.status && isPaidStatus(res.status)) {
+        toast.success("Payment confirmed");
+        localStorage.removeItem(LS_RENEWAL_PAYSTACK_REF);
+        localStorage.removeItem(LS_RENEWAL_PAYSTACK_URL);
+        setOpenModal(false);
+        setPaystackReference(null);
+        setPaystackAuthUrl(null);
+        return;
+      }
+      toast.info(res.message || `Payment status: ${res.status || "unknown"}`);
+    } catch (err: unknown) {
+      toast.error(extractErrorMessage(err, "Failed to check payment status"));
     }
   };
 
@@ -188,16 +287,26 @@ const Setting = () => {
       {/* Basic Profile */}
       <section className="bg-white p-4 rounded shadow">
         <h2 className="text-lg font-semibold mb-2">Basic Profile</h2>
-        {["name", "email", "phone", "address"].map((field) => (
+        {([
+          "name",
+          "email",
+          "phone",
+          "address",
+        ] as const satisfies ReadonlyArray<keyof ProfileForm>).map((field) => (
           <div key={field} className="mb-3">
-            <label className="block text-sm font-medium capitalize">
+            <label
+              htmlFor={`profile-${field}`}
+              className="block text-sm font-medium capitalize"
+            >
               {field}
             </label>
             <input
+              id={`profile-${field}`}
               name={field}
-              value={(profile as any)[field]}
+              value={profile[field]}
               onChange={handleProfileChange}
               className="mt-1 w-full px-2 py-1 border rounded"
+              placeholder={`Enter ${field}`}
             />
           </div>
         ))}
@@ -216,21 +325,26 @@ const Setting = () => {
           <p>Loading…</p>
         ) : (
           <>
-            {[
+            {([
               "vendor_name",
               "vendor_email",
               "vendor_phone",
               "vendor_address",
-            ].map((field) => (
+            ] as const satisfies ReadonlyArray<keyof VendorForm>).map((field) => (
               <div key={field} className="mb-3">
-                <label className="block text-sm font-medium">
+                <label
+                  htmlFor={`vendor-${field}`}
+                  className="block text-sm font-medium"
+                >
                   {field.replace("vendor_", "").replace("_", " ")}
                 </label>
                 <input
+                  id={`vendor-${field}`}
                   name={field}
-                  value={(vendorForm as any)[field]}
+                  value={vendorForm[field]}
                   onChange={handleVendorChange}
                   className="mt-1 w-full px-2 py-1 border rounded"
+                  placeholder={`Enter ${field.replace("vendor_", "").replace("_", " ")}`}
                 />
               </div>
             ))}
@@ -249,13 +363,13 @@ const Setting = () => {
       <section className="bg-white p-4 rounded shadow">
         <h2 className="text-lg font-semibold mb-2">Reset Password</h2>
         <form
-          autoComplete="off"
           onSubmit={(e) => {
             e.preventDefault();
             submitPassword();
           }}
         >
           {["old_password", "new_password", "confirm_password"].map((field) => {
+            const inputId = `password-${field}`;
             const label =
               field === "old_password"
                 ? "Current Password"
@@ -263,21 +377,45 @@ const Setting = () => {
                 ? "New Password"
                 : "Confirm New Password";
 
-            const autoCompleteAttr =
-              field === "old_password" ? "current-password" : "new-password";
-
             return (
               <div key={field} className="mb-4 relative">
-                <label className="block text-sm font-medium">{label}</label>
-                <input
-                  type={visible ? "text" : "password"}
-                  name={field}
-                  value={(passwords as any)[field]}
-                  onChange={handlePwdChange}
-                  className="mt-1 w-full px-3 py-2 border rounded pr-10"
-                  placeholder=""
-                  autoComplete={autoCompleteAttr}
-                />
+                <label htmlFor={inputId} className="block text-sm font-medium">
+                  {label}
+                </label>
+                {visible ? (
+                  <input
+                    id={inputId}
+                    type="text"
+                    name={field}
+                    value={passwords[field as keyof typeof passwords]}
+                    onChange={handlePwdChange}
+                    className="mt-1 w-full px-3 py-2 border rounded pr-10"
+                    placeholder={label}
+                    autoComplete="off"
+                  />
+                ) : field === "old_password" ? (
+                  <input
+                    id={inputId}
+                    type="password"
+                    name={field}
+                    value={passwords[field as keyof typeof passwords]}
+                    onChange={handlePwdChange}
+                    className="mt-1 w-full px-3 py-2 border rounded pr-10"
+                    placeholder={label}
+                    autoComplete="current-password"
+                  />
+                ) : (
+                  <input
+                    id={inputId}
+                    type="password"
+                    name={field}
+                    value={passwords[field as keyof typeof passwords]}
+                    onChange={handlePwdChange}
+                    className="mt-1 w-full px-3 py-2 border rounded pr-10"
+                    placeholder={label}
+                    autoComplete="new-password"
+                  />
+                )}
                 <button
                   type="button"
                   onClick={() => setVisible((v) => !v)}
@@ -345,24 +483,31 @@ const Setting = () => {
                 </DialogTitle>
                 <DialogContent dividers>
                   <Box display={"flex"} flexDirection={"column"} gap={2}>
-                    <InputLabel>Select network</InputLabel>
-                    <Select
-                      label="Select network"
-                      value={network}
-                      onChange={(e: any) => setNetwork(e.target.value)}
-                      fullWidth
-                    >
-                      <MenuItem value="MTN">MTN</MenuItem>
-                      <MenuItem value="VOD">TELECEL</MenuItem>
-                      <MenuItem value="AIR">AIRTEL</MenuItem>
-                    </Select>
-                    <TextField
-                      label="phone"
-                      fullWidth
-                      value={phone}
-                      onChange={(e: any) => setPhone(e.target.value)}
-                      required
-                    />
+                    <Typography variant="body2" color="textSecondary">
+                      Renewal payments are processed via Paystack. Clicking “Pay with Paystack” will redirect you to the Paystack payment page in this tab.
+                    </Typography>
+
+                    {paystackAuthUrl && (
+                      <a
+                        href={paystackAuthUrl}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          window.location.assign(paystackAuthUrl);
+                        }}
+                        className="text-blue-600 underline break-all"
+                      >
+                        Continue payment
+                      </a>
+                    )}
+
+                    {paystackReference && (
+                      <TextField
+                        label="Reference"
+                        fullWidth
+                        value={paystackReference}
+                        InputProps={{ readOnly: true }}
+                      />
+                    )}
                   </Box>
                 </DialogContent>
 
@@ -372,11 +517,24 @@ const Setting = () => {
                     onClick={handleRenew}
                     type="submit"
                     variant="contained"
+                    disabled={initLoading || statusLoading}
                   >
-                    {renewing ? (
+                    {initLoading ? (
                       <CircularProgress size={20} sx={{ color: "white" }} />
                     ) : (
-                      "Renew Subscription"
+                      "Pay with Paystack"
+                    )}
+                  </Button>
+
+                  <Button
+                    onClick={handleCheckRenewalStatus}
+                    variant="outlined"
+                    disabled={!paystackReference || statusLoading}
+                  >
+                    {statusLoading ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      "Check status"
                     )}
                   </Button>
                 </DialogActions>

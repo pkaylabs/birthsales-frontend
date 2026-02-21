@@ -37,8 +37,12 @@ export const authApiSlice = api.injectEndpoints({
         token: res.token,
       }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        const { data } = await queryFulfilled;
-        dispatch({ type: "auth/setCredentials", payload: data });
+        try {
+          const { data } = await queryFulfilled;
+          dispatch({ type: "auth/setCredentials", payload: data });
+        } catch {
+          // Allow the calling component to handle the error (e.g., via unwrap()).
+        }
       },
     }),
     register: builder.mutation<AuthResponse, AuthCredentials>({
@@ -52,8 +56,12 @@ export const authApiSlice = api.injectEndpoints({
         token: res.token,
       }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        const { data } = await queryFulfilled;
-        dispatch({ type: "auth/setCredentials", payload: data });
+        try {
+          const { data } = await queryFulfilled;
+          dispatch({ type: "auth/setCredentials", payload: data });
+        } catch {
+          // Allow the calling component to handle the error (e.g., via unwrap()).
+        }
       },
     }),
     changePassword: builder.mutation<{ status: string }, ChangePasswordRequest>(

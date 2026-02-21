@@ -21,7 +21,26 @@ export default class ErrorBoundary extends React.Component<
       this.setState({ error: reason });
       return;
     }
-    this.setState({ error: new Error(typeof reason === "string" ? reason : "Unhandled promise rejection") });
+
+    // RTK Query and other libraries often reject with plain objects.
+    // Preserve the original payload for dev inspection.
+    let message = "Unhandled promise rejection";
+    if (typeof reason === "string") {
+      message = reason;
+    } else if (reason !== undefined) {
+      try {
+        message = JSON.stringify(reason);
+      } catch {
+        message = String(reason);
+      }
+    }
+
+    const err = new Error(message);
+    (err as any).cause = reason;
+
+    // eslint-disable-next-line no-console
+    console.error("Unhandled promise rejection", reason);
+    this.setState({ error: err });
   };
 
   private onWindowError = (event: ErrorEvent) => {
