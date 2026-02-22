@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
-import { Navigate } from "react-location";
+import { Navigate, useLocation } from "react-location";
 import { useRegisterMutation } from "@/redux/features/auth/authApiSlice";
 import {
   useCreateBusinessMutation,
@@ -32,6 +32,7 @@ const LS_VENDOR_PAYSTACK_REF = "paystack_vendor_onboarding_reference";
 const LS_VENDOR_PAYSTACK_URL = "paystack_vendor_onboarding_auth_url";
 
 const VendorAccount: React.FC = () => {
+  const location = useLocation();
   const isRecord = (v: unknown): v is Record<string, unknown> =>
     typeof v === "object" && v !== null;
 
@@ -136,6 +137,27 @@ const VendorAccount: React.FC = () => {
       s === "complete"
     );
   };
+
+  const parseStepFromSearch = (search: unknown): number | null => {
+    if (!search || typeof search !== "object") return null;
+    const raw = (search as Record<string, unknown>).step;
+    const n = typeof raw === "number" ? raw : typeof raw === "string" ? Number(raw) : NaN;
+    if (!Number.isFinite(n)) return null;
+    const stepNum = Math.trunc(n);
+    // Supported UI steps: 1=Account, 2=Business Profile, 3=Plan, 4=Payment
+    if (stepNum < 1 || stepNum > 4) return null;
+    return stepNum;
+  };
+
+  // Allow deep-linking into a specific onboarding step (e.g. vendors subscribing later: ?step=3)
+  useEffect(() => {
+    const desired = parseStepFromSearch(location.current.search);
+    if (!desired) return;
+    // Step 3+ requires auth token to fetch plans/subscribe.
+    if (desired >= 3 && !token) return;
+    setStep(desired);
+    // Only run when URL/search changes or token becomes available.
+  }, [location.current.search, token]);
 
   // If Paystack redirects back to this page, auto-check the last pending reference
   // so users don't need to manually click "Check status".

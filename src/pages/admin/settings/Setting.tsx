@@ -24,7 +24,9 @@ import {
   Typography,
 } from "@mui/material";
 import { ChangeEvent, useEffect, useState } from "react";
+import { useNavigate } from "react-location";
 import { toast } from "react-toastify";
+import { VENDOR_SIGN_UP } from "@/constants";
 
 const LS_RENEWAL_PAYSTACK_REF = "paystack_subscription_renewal_reference";
 const LS_RENEWAL_PAYSTACK_URL = "paystack_subscription_renewal_auth_url";
@@ -44,6 +46,8 @@ interface VendorForm {
 }
 
 const Setting = () => {
+  const navigate = useNavigate();
+
   const isRecord = (v: unknown): v is Record<string, unknown> =>
     typeof v === "object" && v !== null;
 
@@ -137,9 +141,6 @@ const Setting = () => {
   const { data: subscriptions = [] } = useGetSubscriptionsQuery(undefined, {
     skip: false,
   });
-
-
-  console.log(subscriptions)
 
   const mySubscriptions = subscriptions.find(
     (s) => s.vendor === vendorProfile?.vendor?.id
@@ -444,7 +445,16 @@ const Setting = () => {
       <section className="bg-white p-4 rounded shadow flex flex-col justify-between">
         <h2 className="text-lg font-semibold mb-2">Subscription</h2>
         {!mySubscriptions ? (
-          <p>No subscription found.</p>
+          <div className="flex flex-col gap-3">
+            <p>No subscription found.</p>
+            <button
+              type="button"
+              onClick={() => navigate({ to: VENDOR_SIGN_UP, search: { step: 3 } })}
+              className="w-full bg-yellow-600 text-white py-1 rounded hover:bg-yellow-700 transition"
+            >
+              Subscribe to a plan
+            </button>
+          </div>
         ) : (
           <>
             <p>
