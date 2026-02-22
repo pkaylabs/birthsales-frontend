@@ -10,6 +10,7 @@ export type LocationGenerics = MakeGenerics<{
     searchField?: string;
     sort?: string;
     id?: string;
+    categoryName?: string;
   };
   Params: {
     id?: string;

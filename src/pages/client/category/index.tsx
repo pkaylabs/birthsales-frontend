@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useMatch, useNavigate } from "react-location";
 import { Box, CircularProgress } from "@mui/material";
-import { useGetProductsQuery } from "@/redux/features/products/productsApi";
+import { useGetCustomerProductsQuery } from "@/redux/features/products/productsApi";
 import { useGetCategoriesQuery } from "@/redux/features/category/productCategoryApiSlice";
 import type { Product } from "@/redux/type";
 import ProductCard from "@/pages/client/home/components/cards/product";
@@ -10,20 +10,29 @@ type SortOption = "relevance" | "price-asc" | "price-desc" | "rating-desc" | "na
 
 const CategoryProductsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { params } = useMatch();
+  const { params, search } = useMatch();
   const categoryId = String(params.id ?? "");
 
-  const { data: products = [], isLoading, isError } = useGetProductsQuery();
-  const { data: categories = [] } = useGetCategoriesQuery();
+  const { data: products = [], isLoading, isError } = useGetCustomerProductsQuery();
+
+  const categoryNameFromSearch = useMemo(() => {
+    const name = search?.categoryName;
+    return typeof name === "string" && name.trim() ? name : undefined;
+  }, [search?.categoryName]);
+
+  const { data: categories = [] } = useGetCategoriesQuery(undefined, {
+    skip: !!categoryNameFromSearch,
+  });
 
   const [query, setQuery] = useState("");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sort, setSort] = useState<SortOption>("relevance");
 
   const categoryName = useMemo(() => {
+    if (categoryNameFromSearch) return categoryNameFromSearch;
     const found = categories.find((c) => String(c.id) === categoryId);
     return found?.name ?? `Category ${categoryId}`;
-  }, [categories, categoryId]);
+  }, [categories, categoryId, categoryNameFromSearch]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

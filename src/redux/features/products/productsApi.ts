@@ -11,8 +11,18 @@ export interface ProductImage {
 
 export const productsApi = api.injectEndpoints({
   endpoints: (builder) => ({
+    // Authenticated vendor/admin route
     getProducts: builder.query<Product[], void>({
       query: () => `products/`,
+      providesTags: (result = []) =>
+        result
+          .map(({ id }) => ({ type: "Products" as const, id }))
+          .concat([{ type: "Products", id: "LIST" }]),
+    }),
+
+    // Public/customer route (same response shape as /products/)
+    getCustomerProducts: builder.query<Product[], void>({
+      query: () => `customerproducts/`,
       providesTags: (result = []) =>
         result
           .map(({ id }) => ({ type: "Products" as const, id }))
@@ -108,6 +118,7 @@ export const productsApi = api.injectEndpoints({
 
 export const {
   useGetProductsQuery,
+  useGetCustomerProductsQuery,
   useAddProductMutation,
   useDeleteProductMutation,
   useUpdateProductMutation,

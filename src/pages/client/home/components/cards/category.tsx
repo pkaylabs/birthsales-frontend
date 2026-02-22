@@ -11,7 +11,10 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ id, name, image }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate({ to: CLIENT_CATEGORY_DETAILS.replace(":id", String(id)) });
+    navigate({
+      to: CLIENT_CATEGORY_DETAILS.replace(":id", String(id)),
+      search: { categoryName: name },
+    });
   };
 
   return (
