@@ -57,6 +57,7 @@ import VideoAdsPage from "@/pages/admin/videoAds";
 import PayoutsPage from "@/pages/admin/payouts";
 const WishList = lazy(() => import("@/pages/client/wishList"));
 const ProductDetails = lazy(() => import("@/pages/client/product/details"));
+const CategoryProductsPage = lazy(() => import("@/pages/client/category"));
 const AdminHomePage = lazy(() => import("@/pages/admin/home"));
 const CartPage = lazy(() => import("@/pages/client/cart"));
 const Account = lazy(() => import("@/pages/client/account"));
@@ -108,7 +109,11 @@ const routes: RouteProps[] = [
   },
   {
     path: CLIENT_CATEGORY_DETAILS,
-    element: <Home />,
+    element: (
+      <Suspense fallback={<div>Loading...</div>}>
+        <CategoryProductsPage />
+      </Suspense>
+    ),
     meta: { layout: "App" },
   },
   {

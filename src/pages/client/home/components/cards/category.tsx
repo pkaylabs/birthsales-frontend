@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate } from "react-location";
 import { IoPhonePortraitOutline } from "react-icons/io5";
 import { Category } from "@/redux/type";
+import { CLIENT_CATEGORY_DETAILS } from "@/constants";
 
 interface CategoryCardProps extends Category {}
 
@@ -10,8 +11,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ id, name, image }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    // navigate({ to: `/categories/${id}` });
-    navigate({ to: `/` });
+    navigate({ to: CLIENT_CATEGORY_DETAILS.replace(":id", String(id)) });
   };
 
   return (
