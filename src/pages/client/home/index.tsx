@@ -38,9 +38,11 @@ const Home: React.FC = () => {
     return <Box className="p-8 text-red-500">Error loading home page.</Box>;
   }
 
-  const allProducts = data.products;
-  const allCategories = data.categories;
-  const bestSellers = data.best_selling_products;
+  const allProducts = data.products ?? [];
+  const allCategories = data.categories ?? [];
+  const bestSellers = data.best_selling_products ?? [];
+  const newArrivals = (data.new_arrivals ?? []).filter(Boolean);
+  const promoProduct = allProducts[4] ?? allProducts[0];
 
 
   const renderCarousel = <T,>(
@@ -153,32 +155,34 @@ const Home: React.FC = () => {
           </section>
 
           {/* promo banner */}
-          <section className="mb-12 p-6 bg-black rounded-lg flex flex-col lg:flex-row items-center gap-6">
-            <div className="flex-1 text-center lg:text-left space-y-4">
-              <p className="text-green-400 uppercase text-sm">Categories</p>
-              <h1 className="text-white font-bold text-2xl sm:text-3xl lg:text-5xl">
-                {allProducts[4].name}
-              </h1>
-              <div className="hidden md:block">
-                <Countdown showInCat endDateTime="2025-01-20T23:59:59" />
+          {promoProduct ? (
+            <section className="mb-12 p-6 bg-black rounded-lg flex flex-col lg:flex-row items-center gap-6">
+              <div className="flex-1 text-center lg:text-left space-y-4">
+                <p className="text-green-400 uppercase text-sm">Categories</p>
+                <h1 className="text-white font-bold text-2xl sm:text-3xl lg:text-5xl">
+                  {promoProduct.name}
+                </h1>
+                <div className="hidden md:block">
+                  <Countdown showInCat endDateTime="2025-01-20T23:59:59" />
+                </div>
+                <button
+                  className="bg-green-400 text-black font-medium rounded-md px-6 py-2"
+                  onClick={() =>
+                    navigate({ to: `/product-details/${promoProduct.id}` })
+                  }
+                >
+                  Buy Now!
+                </button>
               </div>
-              <button
-                className="bg-green-400 text-black font-medium rounded-md px-6 py-2"
-                onClick={() =>
-                  navigate({ to: `/product-details/${allProducts[4].id}` })
-                }
-              >
-                Buy Now!
-              </button>
-            </div>
-            <div className="flex-1">
-              <img
-                src={resolveProductImageUrl(allProducts[4])}
-                alt="speaker"
-                className="w-full h-auto object-contain rounded-lg"
-              />
-            </div>
-          </section>
+              <div className="flex-1">
+                <img
+                  src={resolveProductImageUrl(promoProduct)}
+                  alt={promoProduct.name}
+                  className="w-full h-auto object-contain rounded-lg"
+                />
+              </div>
+            </section>
+          ) : null}
 
           {/* new arrivals */}
           <section className="mb-12">
@@ -192,7 +196,7 @@ const Home: React.FC = () => {
               </h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {data.new_arrivals.map((item) => (
+              {newArrivals.map((item) => (
                 <div
                   key={item.id}
                   className="relative rounded overflow-hidden h-64 sm:h-80"
