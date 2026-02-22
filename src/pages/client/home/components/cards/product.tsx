@@ -35,6 +35,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   const handleAddToCart = () => {
+    const hasColors =
+      Array.isArray(product.available_colors) &&
+      product.available_colors.some((c) => (c ?? "").trim().length > 0);
+    const hasSizes =
+      Array.isArray(product.available_sizes) &&
+      product.available_sizes.some((s) => (s ?? "").trim().length > 0);
+
+    if (hasColors || hasSizes) {
+      toast.info("Please select options before adding to cart");
+      navigate({ to: `/product-details/${id}` });
+      return;
+    }
+
     dispatch(addToCart({ product, quantity: 1 }));
     toast.success(`Added “${name}” to cart`);
   };
@@ -133,7 +146,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             ))}
           </div>
           <span className="text-gray-600 text-sm sm:text-base">
-            ({reviews_count})
+            ({reviews_count ?? 0})
           </span>
         </div>
       </div>

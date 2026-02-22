@@ -15,14 +15,14 @@ const CartPage = () => {
   const navigate = useNavigate();
   const items = useAppSelector((s) => s.cart.items);
 
-  const handleRemove = (productId: number) => {
-    dispatch(removeFromCart(productId));
+  const handleRemove = (key: string) => {
+    dispatch(removeFromCart(key));
     toast.success("Removed item from cart");
   };
 
-  const handleQuantityChange = (productId: number, qty: number) => {
+  const handleQuantityChange = (key: string, qty: number) => {
     if (qty < 0) return;
-    dispatch(updateQuantity({ productId, quantity: qty }));
+    dispatch(updateQuantity({ key, quantity: qty }));
     toast.info(`Quantity updated to ${qty}`);
   };
 
@@ -63,15 +63,24 @@ const CartPage = () => {
             </tr>
           </thead>
           <tbody>
-            {items.length ? items.map(({ product, quantity }) => (
-              <tr key={product.id} className="even:bg-gray-50">
+            {items.length ? items.map(({ key, product, quantity, color, size }) => (
+              <tr key={key} className="even:bg-gray-50">
                 <td className="p-3 flex items-center gap-2">
                   <img
                     src={resolveProductImageUrl(product)}
                     alt={product.name}
                     className="w-10 h-10 rounded-full object-cover hidden sm:block"
                   />
-                  <span>{product.name}</span>
+                  <div>
+                    <div>{product.name}</div>
+                    {(color || size) && (
+                      <div className="text-xs text-gray-500">
+                        {color ? `Color: ${color}` : ""}
+                        {color && size ? " • " : ""}
+                        {size ? `Size: ${size}` : ""}
+                      </div>
+                    )}
+                  </div>
                 </td>
                 <td className="p-3 text-right hidden sm:table-cell">
                   GHC{Math.round(product.price)}
@@ -80,7 +89,7 @@ const CartPage = () => {
                   <div className="inline-flex items-center border border-gray-300 rounded">
                     <button
                       onClick={() =>
-                        handleQuantityChange(Number(product.id), quantity - 1)
+                        handleQuantityChange(key, quantity - 1)
                       }
                       disabled={quantity === 0}
                       className="px-2 py-1 hover:bg-gray-200 disabled:opacity-50"
@@ -90,7 +99,7 @@ const CartPage = () => {
                     <span className="px-3">{quantity}</span>
                     <button
                       onClick={() =>
-                        handleQuantityChange(Number(product.id), quantity + 1)
+                        handleQuantityChange(key, quantity + 1)
                       }
                       className="px-2 py-1 hover:bg-gray-200"
                     >
@@ -103,7 +112,7 @@ const CartPage = () => {
                 </td>
                 <td className="p-3 text-center">
                   <button
-                    onClick={() => handleRemove(Number(product.id))}
+                    onClick={() => handleRemove(key)}
                     aria-label={`Remove ${product.name} from cart`}
                     type="button"
                     className="p-1 rounded-full hover:bg-red-100"

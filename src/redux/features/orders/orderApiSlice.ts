@@ -10,6 +10,8 @@ export interface CashoutRequest {
 export interface NewOrderItem {
   product: number;
   quantity: number;
+  color?: string;
+  size?: string;
 }
 export interface PlaceOrderRequest {
   items: NewOrderItem[];

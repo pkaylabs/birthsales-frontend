@@ -5,7 +5,10 @@ import { MdOutlineFavoriteBorder } from "react-icons/md";
 // import { TbTruckDelivery } from "react-icons/tb";
 // import { GrPowerCycle } from "react-icons/gr";
 import { motion } from "framer-motion";
-import { useGetProductQuery } from "@/redux/features/products/productsApi";
+import {
+  useGetProductImagesQuery,
+  useGetProductQuery,
+} from "@/redux/features/products/productsApi";
 import { Box, CircularProgress } from "@mui/material";
 import { useAppDispatch } from "@/redux";
 import { addToCart } from "@/redux/features/cart/cartSlice";
@@ -20,27 +23,68 @@ const ProductDetails: React.FC = () => {
   const { params } = useMatch();
   const prodId = Number(params.id);
   const { data: product, isLoading, isError } = useGetProductQuery(prodId);
+  const { data: productImages } = useGetProductImagesQuery(prodId, {
+    skip: !Number.isFinite(prodId) || prodId <= 0,
+  });
 
   const [gallery, setGallery] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string>("");
+  const [selectedColor, setSelectedColor] = useState<string>("");
+  const [selectedSize, setSelectedSize] = useState<string>("");
 
   useEffect(() => {
     if (!product) return;
-    const raw = (product as unknown as { image?: unknown; main_image_url?: unknown }).image;
-    const rawMain = (product as unknown as { main_image_url?: unknown }).main_image_url;
 
-    const imgs = Array.isArray(raw)
-      ? raw.filter((x): x is string => typeof x === "string")
-      : typeof raw === "string"
-      ? [raw]
-      : typeof rawMain === "string"
-      ? [rawMain]
+    const collectStrings = (v: unknown): string[] => {
+      if (typeof v === "string") return [v];
+      if (Array.isArray(v)) return v.filter((x): x is string => typeof x === "string");
+      return [];
+    };
+
+    const raw = (product as unknown as { image?: unknown }).image;
+    const rawMain = (product as unknown as { main_image_url?: unknown; image_url?: unknown })
+      .main_image_url;
+    const rawMainAlt = (product as unknown as { image_url?: unknown }).image_url;
+
+    const fromProduct = [
+      ...collectStrings(rawMain),
+      ...collectStrings(rawMainAlt),
+      ...collectStrings(raw),
+      ...collectStrings((product as unknown as { images?: unknown }).images),
+      ...collectStrings((product as unknown as { extra_images?: unknown }).extra_images),
+      ...collectStrings(
+        (product as unknown as { additionalImages?: unknown }).additionalImages
+      ),
+    ];
+
+    const fromEndpoint = Array.isArray(productImages)
+      ? productImages
+          .flatMap((img) => {
+            const rec = img as unknown as Record<string, unknown>;
+            const url = rec["url"];
+            const image = rec["image"];
+            return [...collectStrings(url), ...collectStrings(image)];
+          })
+          .filter((s) => typeof s === "string")
       : [];
 
-    setGallery(imgs);
-    if (imgs.length) setSelectedImage(imgs[0]);
-    else setSelectedImage("");
-  }, [product]);
+    const deduped = Array.from(
+      new Set(
+        [...fromProduct, ...fromEndpoint]
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0)
+      )
+    );
+
+    setGallery(deduped);
+    setSelectedImage((prev) => {
+      if (prev && deduped.includes(prev)) return prev;
+      return deduped[0] ?? "";
+    });
+
+    setSelectedColor("");
+    setSelectedSize("");
+  }, [product, productImages]);
 
   const mainImageSrc = selectedImage
     ? resolveImageUrl(selectedImage)
@@ -48,7 +92,40 @@ const ProductDetails: React.FC = () => {
 
   const handleAddToCart = () => {
     if (!product) return toast.error("Product unavailable");
-    dispatch(addToCart({ product, quantity: 1 }));
+
+    const availableColors = Array.isArray((product as any).available_colors)
+      ? ((product as any).available_colors as string[]).filter(
+          (c) => typeof c === "string" && c.trim().length > 0
+        )
+      : [];
+    const availableSizes = Array.isArray((product as any).available_sizes)
+      ? ((product as any).available_sizes as string[]).filter(
+          (s) => typeof s === "string" && s.trim().length > 0
+        )
+      : [];
+
+    if (!product.in_stock) {
+      toast.error("This product is out of stock");
+      return;
+    }
+
+    if (availableColors.length > 0 && !selectedColor) {
+      toast.error("Please select a color");
+      return;
+    }
+    if (availableSizes.length > 0 && !selectedSize) {
+      toast.error("Please select a size");
+      return;
+    }
+
+    dispatch(
+      addToCart({
+        product,
+        quantity: 1,
+        color: selectedColor || undefined,
+        size: selectedSize || undefined,
+      })
+    );
     toast.success(`Added "${product.name}" to cart`);
   };
 
@@ -135,7 +212,7 @@ const ProductDetails: React.FC = () => {
             ))}
           </div>
           <span className="text-gray-500">
-            ({product.reviews_count ?? 0} reviews)
+            ({(product as any).ratings_count ?? product.reviews_count ?? 0} reviews)
           </span>
           <span className="text-green-600 font-medium">
             {product.in_stock ? "In Stock" : "Out of Stock"}
@@ -143,6 +220,58 @@ const ProductDetails: React.FC = () => {
         </div>
         <p className="text-2xl font-bold">GHC{product.price}</p>
         <p className="text-gray-700">{product.description || "No description available."}</p>
+
+        {Array.isArray(product.available_colors) &&
+          product.available_colors.filter((c) => (c ?? "").trim().length > 0)
+            .length > 0 && (
+            <div>
+              <div className="font-medium mb-2">Color</div>
+              <div className="flex flex-wrap gap-2">
+                {product.available_colors
+                  .filter((c) => (c ?? "").trim().length > 0)
+                  .map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setSelectedColor(c)}
+                      className={`px-3 py-1 rounded border text-sm transition ${
+                        selectedColor === c
+                          ? "border-rose-500 bg-rose-50"
+                          : "border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+              </div>
+            </div>
+          )}
+
+        {Array.isArray(product.available_sizes) &&
+          product.available_sizes.filter((s) => (s ?? "").trim().length > 0)
+            .length > 0 && (
+            <div>
+              <div className="font-medium mb-2">Size</div>
+              <div className="flex flex-wrap gap-2">
+                {product.available_sizes
+                  .filter((s) => (s ?? "").trim().length > 0)
+                  .map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setSelectedSize(s)}
+                      className={`px-3 py-1 rounded border text-sm transition ${
+                        selectedSize === s
+                          ? "border-rose-500 bg-rose-50"
+                          : "border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+              </div>
+            </div>
+          )}
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">

@@ -1,13 +1,15 @@
 import { LOGIN } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/redux";
 import { clearCart, removeFromCart } from "@/redux/features/cart/cartSlice";
+import { useGetLocationsQuery } from "@/redux/features/locations/locationsApi";
 import {
   usePaystackCheckStatusMutation,
   usePaystackInitializePaymentMutation,
   usePlaceOrderMutation,
 } from "@/redux/features/orders/orderApiSlice";
+import type { Location } from "@/redux/type";
 import { CircularProgress } from "@mui/material";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-location";
 import { toast } from "react-toastify";
@@ -20,14 +22,92 @@ const LS_ORDER_INDEX = "paystack_order_pending_index";
 const LS_ORDER_REF = "paystack_order_reference";
 const LS_ORDER_URL = "paystack_order_auth_url";
 
+const isPaidStatus = (status: string): boolean => {
+  const s = status.toLowerCase();
+  return (
+    s === "success" ||
+    s === "successful" ||
+    s === "paid" ||
+    s === "completed" ||
+    s === "complete"
+  );
+};
+
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === "object" && v !== null;
+
+const extractErrorMessage = (err: unknown, fallback: string): string => {
+  if (!err) return fallback;
+  if (typeof err === "string") return err;
+
+  if (isRecord(err)) {
+    const data = err.data;
+    if (typeof data === "string") return data;
+    if (Array.isArray(data) && typeof data[0] === "string") return data[0];
+    if (isRecord(data)) {
+      const message = data.message;
+      if (typeof message === "string") return message;
+      const detail = data.detail;
+      if (typeof detail === "string") return detail;
+      const errorMessage = data["error_message"];
+      if (typeof errorMessage === "string") return errorMessage;
+    }
+    const message = err.message;
+    if (typeof message === "string") return message;
+  }
+
+  return fallback;
+};
+
+const extractOrderIds = (payload: unknown): number[] => {
+  if (!payload) return [];
+
+  const getId = (v: unknown): number | null => {
+    if (!isRecord(v)) return null;
+    const rawId = v.id;
+    const id = Number(rawId);
+    return Number.isFinite(id) ? id : null;
+  };
+
+  if (Array.isArray(payload)) {
+    return payload
+      .map(getId)
+      .filter((id): id is number => typeof id === "number");
+  }
+
+  if (isRecord(payload)) {
+    const orders = payload["orders"];
+    const data = payload["data"];
+    const maybeList = Array.isArray(orders) ? orders : Array.isArray(data) ? data : null;
+    if (maybeList) {
+      return maybeList
+        .map(getId)
+        .filter((id): id is number => typeof id === "number");
+    }
+
+    const id = getId(payload);
+    if (id != null) return [id];
+
+    if (isRecord(data)) {
+      const nestedId = getId(data);
+      if (nestedId != null) return [nestedId];
+    }
+  }
+
+  return [];
+};
+
 const Checkout = () => {
   const items = useAppSelector((state) => state.cart.items);
   const user = useAppSelector((state) => state.auth.user);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState("");
-  const [location, setLocation] = useState("");
+  const [locationId, setLocationId] = useState("");
   const [customerPhone, setcustomerPhone] = useState("");
+
+  const { data: locationsData, isLoading: locationsLoading } =
+    useGetLocationsQuery();
 
   const [placeOrder, { isLoading: placing }] = usePlaceOrderMutation();
   const [initializePaystack, { isLoading: initLoading }] =
@@ -48,93 +128,28 @@ const Checkout = () => {
     0
   );
 
-  const isPaidStatus = (status: string): boolean => {
-    const s = status.toLowerCase();
-    return (
-      s === "success" ||
-      s === "successful" ||
-      s === "paid" ||
-      s === "completed" ||
-      s === "complete"
-    );
-  };
+  const locations: Location[] = locationsData ?? [];
+  const selectedLocation = locations.find((l) => String(l.id) === locationId);
+  const deliveryFee = selectedLocation?.delivery_fee_price ?? 0;
+  const total = subTotal + deliveryFee;
 
-  const isRecord = (v: unknown): v is Record<string, unknown> =>
-    typeof v === "object" && v !== null;
-
-  const extractErrorMessage = (err: unknown, fallback: string): string => {
-    if (!err) return fallback;
-    if (typeof err === "string") return err;
-
-    if (isRecord(err)) {
-      const data = err.data;
-      if (typeof data === "string") return data;
-      if (Array.isArray(data) && typeof data[0] === "string") return data[0];
-      if (isRecord(data)) {
-        const message = data.message;
-        if (typeof message === "string") return message;
-        const detail = data.detail;
-        if (typeof detail === "string") return detail;
-        const errorMessage = (data as any).error_message;
-        if (typeof errorMessage === "string") return errorMessage;
-      }
-      const message = err.message;
-      if (typeof message === "string") return message;
-    }
-
-    return fallback;
-  };
-
-  const extractOrderIds = (payload: unknown): number[] => {
-    if (!payload) return [];
-
-    const getId = (v: unknown): number | null => {
-      if (!isRecord(v)) return null;
-      const rawId = v.id;
-      const id = Number(rawId);
-      return Number.isFinite(id) ? id : null;
-    };
-
-    if (Array.isArray(payload)) {
-      return payload
-        .map(getId)
-        .filter((id): id is number => typeof id === "number");
-    }
-
-    if (isRecord(payload)) {
-      const maybeList = (payload as any).orders ?? (payload as any).data;
-      if (Array.isArray(maybeList)) {
-        return maybeList
-          .map(getId)
-          .filter((id): id is number => typeof id === "number");
+  const startPaystackForOrderIds = useCallback(
+    async (orderIds: number[], index: number) => {
+      const orderId = orderIds[index];
+      const init = await initializePaystack({ order: orderId }).unwrap();
+      if (init.status === "failed") {
+        throw new Error(init.message || "Payment initialization failed");
       }
 
-      const id = getId(payload);
-      if (id != null) return [id];
+      localStorage.setItem(LS_ORDER_IDS, JSON.stringify(orderIds));
+      localStorage.setItem(LS_ORDER_INDEX, String(index));
+      localStorage.setItem(LS_ORDER_REF, init.reference);
+      localStorage.setItem(LS_ORDER_URL, init.authorization_url);
 
-      if (isRecord(payload.data)) {
-        const nestedId = getId(payload.data);
-        if (nestedId != null) return [nestedId];
-      }
-    }
-
-    return [];
-  };
-
-  const startPaystackForOrderIds = async (orderIds: number[], index: number) => {
-    const orderId = orderIds[index];
-    const init = await initializePaystack({ order: orderId }).unwrap();
-    if (init.status === "failed") {
-      throw new Error(init.message || "Payment initialization failed");
-    }
-
-    localStorage.setItem(LS_ORDER_IDS, JSON.stringify(orderIds));
-    localStorage.setItem(LS_ORDER_INDEX, String(index));
-    localStorage.setItem(LS_ORDER_REF, init.reference);
-    localStorage.setItem(LS_ORDER_URL, init.authorization_url);
-
-    window.location.assign(init.authorization_url);
-  };
+      window.location.assign(init.authorization_url);
+    },
+    [initializePaystack]
+  );
 
   const clearPendingPaystack = () => {
     localStorage.removeItem(LS_ORDER_IDS);
@@ -190,17 +205,17 @@ const Checkout = () => {
         clearPendingPaystack();
         toast.success("Payment successful! Thank you for your purchase.");
         setcustomerPhone("");
-        setLocation("");
+        setLocationId("");
         dispatch(clearCart());
         navigate({ to: "/" });
       } catch (err: unknown) {
         toast.error(extractErrorMessage(err, "Failed to check payment status"));
       }
     })();
-  }, [checkPaystackStatus, dispatch, navigate]);
+  }, [checkPaystackStatus, dispatch, navigate, startPaystackForOrderIds]);
 
-  const handleRemove = (productId: number) => {
-    dispatch(removeFromCart(productId));
+  const handleRemove = (key: string) => {
+    dispatch(removeFromCart(key));
     toast.success("Removed item from cart");
   };
 
@@ -221,19 +236,26 @@ const Checkout = () => {
       return;
     }
 
-    if (!location) {
-      toast.error("Please enter your delivery location");
+    if (!locationId) {
+      toast.error("Please select your delivery location");
+      return;
+    }
+
+    if (customerPhone && !GH_PHONE.test(customerPhone)) {
+      toast.error("Please enter a valid Ghana phone number");
       return;
     }
 
     let orderIds: number[] = [];
     try {
       const res = await placeOrder({
-        items: items.map(({ product, quantity }) => ({
+        items: items.map(({ product, quantity, color, size }) => ({
           product: Number(product.id),
           quantity,
+          color,
+          size,
         })),
-        location,
+        location: locationId,
         customer_phone: customerPhone,
       }).unwrap();
 
@@ -249,7 +271,7 @@ const Checkout = () => {
     if (paymentMethod === "onDelivery") {
       toast.success("Order placed! Pay on delivery when the rider arrives.");
       setcustomerPhone("");
-      setLocation("");
+      setLocationId("");
       dispatch(clearCart());
       navigate({ to: "/" });
       return;
@@ -377,15 +399,6 @@ const Checkout = () => {
               The vendor will call you on this number
             </p>
           </div>
-          <div className="my-5">
-            <textarea
-              className="w-full border border-gray-300 rounded p-2"
-              placeholder="Enter location"
-              name="location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
-          </div>
         </section>
 
         {/* Right: Order Summary */}
@@ -393,9 +406,9 @@ const Checkout = () => {
           <h2 className="text-xl font-semibold mb-4">Your Items</h2>
           <div className="flex-1 space-y-4 overflow-auto mb-4">
             {items.length ? (
-              items.map(({ product, quantity }) => (
+              items.map(({ key, product, quantity, color, size }) => (
                 <div
-                  key={product.id}
+                  key={key}
                   className="flex justify-between items-center"
                 >
                   <div className="flex items-center gap-3">
@@ -404,16 +417,25 @@ const Checkout = () => {
                       alt={product.name}
                       className="w-12 h-12 rounded-full object-cover"
                     />
-                    <span className="font-medium">
-                      {product.name} × {quantity}
-                    </span>
+                    <div>
+                      <div className="font-medium">
+                        {product.name} × {quantity}
+                      </div>
+                      {(color || size) && (
+                        <div className="text-xs text-gray-500">
+                          {color ? `Color: ${color}` : ""}
+                          {color && size ? " • " : ""}
+                          {size ? `Size: ${size}` : ""}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-medium">
                       GHC{Math.round(product.price * quantity)}
                     </span>
                     <button
-                      onClick={() => handleRemove(Number(product.id))}
+                      onClick={() => handleRemove(key)}
                       aria-label={`Remove ${product.name} from cart`}
                       type="button"
                       className="p-1 text-red-600 hover:text-red-800"
@@ -428,14 +450,42 @@ const Checkout = () => {
             )}
           </div>
 
-          <div className="border-t border-gray-200 pt-4 space-y-2">
-            <div className="flex justify-between">
-              <span>Subtotal</span>
-              <span>GHC{Math.round(subTotal)}</span>
+          <div className="border-t border-gray-200 pt-4 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Delivery Location
+              </label>
+              <select
+                className="w-full border border-gray-300 rounded p-2"
+                aria-label="Delivery Location"
+                value={locationId}
+                onChange={(e) => setLocationId(e.target.value)}
+                disabled={locationsLoading}
+              >
+                <option value="">
+                  {locationsLoading ? "Loading locations..." : "Select location"}
+                </option>
+                {locations.map((l) => (
+                  <option key={String(l.id)} value={String(l.id)}>
+                    {l.name}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="flex justify-between font-semibold">
-              <span>Total</span>
-              <span>GHC{Math.round(subTotal)}</span>
+
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>GHC{Math.round(subTotal)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Delivery fee</span>
+                <span>GHC{Math.round(deliveryFee)}</span>
+              </div>
+              <div className="flex justify-between font-semibold">
+                <span>Total</span>
+                <span>GHC{Math.round(total)}</span>
+              </div>
             </div>
           </div>
 
