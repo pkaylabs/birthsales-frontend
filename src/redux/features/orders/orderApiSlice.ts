@@ -124,6 +124,10 @@ export const ordersApi = api.injectEndpoints({
           url: `paystack/status/?reference=${encodeURIComponent(reference)}`,
           method: "GET",
         }),
+        invalidatesTags: [
+          { type: "Dashboard", id: "STATUS" },
+          { type: "Payments", id: "LIST" },
+        ],
       }
     ),
     cashout: builder.mutation<
