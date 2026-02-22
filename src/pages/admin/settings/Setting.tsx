@@ -31,6 +31,27 @@ import { VENDOR_SIGN_UP } from "@/constants";
 const LS_RENEWAL_PAYSTACK_REF = "paystack_subscription_renewal_reference";
 const LS_RENEWAL_PAYSTACK_URL = "paystack_subscription_renewal_auth_url";
 
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === "object" && v !== null;
+
+const extractErrorMessage = (err: unknown, fallback: string): string => {
+  if (!err) return fallback;
+  if (typeof err === "string") return err;
+  if (isRecord(err)) {
+    const data = err.data;
+    if (typeof data === "string") return data;
+    if (isRecord(data)) {
+      const message = data.message;
+      if (typeof message === "string") return message;
+      const detail = data.detail;
+      if (typeof detail === "string") return detail;
+    }
+    const message = err.message;
+    if (typeof message === "string") return message;
+  }
+  return fallback;
+};
+
 export interface ProfileForm {
   name: string;
   email: string;
@@ -47,27 +68,6 @@ interface VendorForm {
 
 const Setting = () => {
   const navigate = useNavigate();
-
-  const isRecord = (v: unknown): v is Record<string, unknown> =>
-    typeof v === "object" && v !== null;
-
-  const extractErrorMessage = (err: unknown, fallback: string): string => {
-    if (!err) return fallback;
-    if (typeof err === "string") return err;
-    if (isRecord(err)) {
-      const data = err.data;
-      if (typeof data === "string") return data;
-      if (isRecord(data)) {
-        const message = data.message;
-        if (typeof message === "string") return message;
-        const detail = data.detail;
-        if (typeof detail === "string") return detail;
-      }
-      const message = err.message;
-      if (typeof message === "string") return message;
-    }
-    return fallback;
-  };
 
   const [visible, setVisible] = useState(false);
   const [updateUserProfile, { isLoading: updating }] =
