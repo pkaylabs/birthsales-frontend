@@ -1,6 +1,14 @@
 import { api } from "@/app/api/auth";
 import type { Service } from "@/redux/type";
 
+export interface ServiceImage {
+  id?: number | string;
+  image_id?: number | string;
+  pk?: number | string;
+  image?: string;
+  url?: string;
+}
+
 export interface ServiceDto {
   id?: number | string;
   name: string;
@@ -60,9 +68,73 @@ export const serviceApi = api.injectEndpoints({
       query: (id) => `services/${id}/`,
       providesTags: (result, error, id) => [{ type: "Service", id }],
     }),
-    addService: builder.mutation<Service, ServiceDto>({
-      query: (service) => ({ url: "services/", method: "POST", body: service }),
+    addService: builder.mutation<Service, FormData>({
+      query: (formData) => ({
+        url: "services/",
+        method: "POST",
+        body: formData,
+      }),
       invalidatesTags: [{ type: "Service", id: "LIST" }],
+    }),
+
+    updateService: builder.mutation<Service, FormData>({
+      query: (formData) => ({
+        url: "services/",
+        method: "PUT",
+        body: formData,
+      }),
+      invalidatesTags: ["Service"],
+    }),
+
+    addServiceImages: builder.mutation<
+      unknown,
+      { serviceId: string | number; images: File[] }
+    >({
+      query: ({ serviceId, images }) => {
+        const fd = new FormData();
+        fd.append("service_id", String(serviceId));
+        images.forEach((file) => {
+          fd.append("images", file);
+        });
+
+        return {
+          url: `services/${serviceId}/images/`,
+          method: "POST",
+          body: fd,
+        };
+      },
+      invalidatesTags: ["Service"],
+    }),
+
+    getServiceImages: builder.query<ServiceImage[], string | number>({
+      query: (serviceId) => `services/${serviceId}/images/`,
+      transformResponse: (response: unknown): ServiceImage[] => {
+        if (Array.isArray(response)) return response as ServiceImage[];
+        if (response && typeof response === "object") {
+          const obj = response as Record<string, unknown>;
+          const images = obj["images"];
+          if (Array.isArray(images)) return images as ServiceImage[];
+          const results = obj["results"];
+          if (Array.isArray(results)) return results as ServiceImage[];
+        }
+        return [];
+      },
+      providesTags: ["Service"],
+    }),
+
+    deleteServiceImage: builder.mutation<
+      unknown,
+      { serviceId: string | number; imageId: string | number }
+    >({
+      query: ({ serviceId, imageId }) => ({
+        url: `services/${serviceId}/images/${imageId}/`,
+        method: "DELETE",
+        body: {
+          service_id: Number(serviceId),
+          image_id: Number(imageId),
+        },
+      }),
+      invalidatesTags: ["Service"],
     }),
     publishService: builder.mutation<
       { message: string; service: Service },
@@ -101,9 +173,13 @@ export const {
   useGetServicesQuery,
   useGetServiceQuery,
   useAddServiceMutation,
+  useUpdateServiceMutation,
   useDeleteServiceMutation,
   useBookServiceMutation,
   useGetCustomerServicesQuery,
   useGetCustomerServiceQuery,
-  usePublishServiceMutation
+  usePublishServiceMutation,
+  useAddServiceImagesMutation,
+  useGetServiceImagesQuery,
+  useDeleteServiceImageMutation,
 } = serviceApi;

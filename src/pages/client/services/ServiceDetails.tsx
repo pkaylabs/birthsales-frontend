@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useMatch, useNavigate } from "react-location";
 import { LocationGenerics } from "@/router/location";
-import { BASE_URL } from "@/constants";
 import {
   useBookServiceMutation,
   useGetCustomerServiceQuery,
+  useGetServiceImagesQuery,
 } from "@/redux/features/services/servicesApi";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
@@ -13,6 +13,7 @@ import {
   usePaystackCheckStatusMutation,
   usePaystackInitializePaymentMutation,
 } from "@/redux/features/orders/orderApiSlice";
+import { resolveImageUrl } from "@/utils/resolve-image-url";
 
 const LS_BOOKING_REF = "paystack_booking_reference";
 const LS_BOOKING_URL = "paystack_booking_auth_url";
@@ -26,6 +27,9 @@ const ServiceDetails: React.FC = () => {
     isLoading,
     isError,
   } = useGetCustomerServiceQuery(serviceId);
+  const { data: serviceImages } = useGetServiceImagesQuery(serviceId, {
+    skip: !Number.isFinite(serviceId) || serviceId <= 0,
+  });
   const [bookService, { isLoading: booking }] = useBookServiceMutation();
   const [initializePaystack, { isLoading: initLoading }] =
     usePaystackInitializePaymentMutation();
@@ -45,14 +49,8 @@ const ServiceDetails: React.FC = () => {
   const [time, setTime] = useState("08:30");
   const [location, setLocation] = useState("");
 
-  const [mainImage, setMainImage] = useState<string | undefined>(
-    service ? `${BASE_URL}${(service as any).image}` : undefined
-  );
-
-  // refresh mainImage if service loads later
-  useEffect(() => {
-    if (service) setMainImage(`${BASE_URL}${service.image}`);
-  }, [service]);
+  const [gallery, setGallery] = useState<string[]>([]);
+  const [selectedImage, setSelectedImage] = useState<string>("");
 
   const isRecord = (v: unknown): v is Record<string, unknown> =>
     typeof v === "object" && v !== null;
@@ -89,6 +87,53 @@ const ServiceDetails: React.FC = () => {
       s === "complete"
     );
   };
+
+  useEffect(() => {
+    if (!service) return;
+
+    const collectStrings = (v: unknown): string[] => {
+      if (typeof v === "string") return [v];
+      if (Array.isArray(v))
+        return v.filter((x): x is string => typeof x === "string");
+      return [];
+    };
+
+    const fromService = [
+      ...collectStrings((service as unknown as { image?: unknown }).image),
+      ...collectStrings((service as unknown as { images?: unknown }).images),
+      ...collectStrings(
+        (service as unknown as { extra_images?: unknown }).extra_images
+      ),
+      ...collectStrings(
+        (service as unknown as { additionalImages?: unknown }).additionalImages
+      ),
+    ];
+
+    const fromEndpoint = Array.isArray(serviceImages)
+      ? serviceImages
+          .flatMap((img) => {
+            const rec = img as unknown as Record<string, unknown>;
+            const url = rec["url"];
+            const image = rec["image"];
+            return [...collectStrings(url), ...collectStrings(image)];
+          })
+          .filter((s) => typeof s === "string")
+      : [];
+
+    const deduped = Array.from(
+      new Set(
+        [...fromService, ...fromEndpoint]
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0)
+      )
+    );
+
+    setGallery(deduped);
+    setSelectedImage((prev) => {
+      if (prev && deduped.includes(prev)) return prev;
+      return deduped[0] ?? "";
+    });
+  }, [service, serviceImages]);
 
   const clearPendingPaystack = () => {
     localStorage.removeItem(LS_BOOKING_REF);
@@ -176,6 +221,10 @@ const ServiceDetails: React.FC = () => {
     );
   if (!service) return <p className="py-12 text-center">Service not found.</p>;
 
+  const mainImageSrc = selectedImage
+    ? resolveImageUrl(selectedImage)
+    : resolveImageUrl((service as any).image);
+
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb */}
@@ -205,15 +254,24 @@ const ServiceDetails: React.FC = () => {
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Thumbnails (hidden on small) */}
-        <div className="hidden lg:flex flex-col gap-4 w-24">
-          <motion.img
-            src={`${BASE_URL}${service.image}`}
-            alt={service.name}
-            className="w-full h-24 object-cover rounded cursor-pointer border-2 border-gray-200"
-            whileHover={{ scale: 1.05 }}
-            onClick={() => setMainImage(`${BASE_URL}${service.image}`)}
-          />
-        </div>
+        {gallery.length > 1 && (
+          <div className="hidden lg:flex flex-col gap-4 w-24">
+            {gallery.map((img, idx) => (
+              <motion.img
+                key={idx}
+                src={resolveImageUrl(img)}
+                alt={service.name}
+                className={`w-full h-24 object-cover rounded cursor-pointer border-2 ${
+                  img === selectedImage
+                    ? "border-rose-500"
+                    : "border-gray-200"
+                }`}
+                whileHover={{ scale: 1.05 }}
+                onClick={() => setSelectedImage(img)}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Main Image */}
         <motion.div
@@ -223,7 +281,7 @@ const ServiceDetails: React.FC = () => {
           transition={{ duration: 0.5 }}
         >
           <img
-            src={mainImage}
+            src={mainImageSrc}
             alt={service.name}
             className="w-full h-auto object-contain"
           />

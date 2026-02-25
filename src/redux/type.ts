@@ -145,6 +145,7 @@ export interface ServiceForm {
   vendor_id: string;
   imageFile?: File | null;
   imagePreview?: string;
+  extraImages?: File[];
 }
 
 export interface Banner {
