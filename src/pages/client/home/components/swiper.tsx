@@ -1,8 +1,8 @@
-import { BASE_URL } from "@/constants";
 import { Banner } from "@/redux/type";
 import React, { useEffect, useState } from "react";
 import { GoArrowLeft, GoArrowRight } from "react-icons/go";
 import { useSwipeable } from "react-swipeable";
+import { resolveImageUrl } from "@/utils/resolve-image-url";
 
 interface CarouselProps {
   banners: Banner[];
@@ -54,9 +54,9 @@ const Carousel: React.FC<CarouselProps> = ({
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {activeBanners.map((b, idx) => (
-            <div key={idx} className="min-w-full h-full relative">
+            <div key={b.id ?? idx} className="min-w-full h-full relative">
               <img
-                src={`${BASE_URL}${b.image}`}
+                src={resolveImageUrl(b.image)}
                 alt={b.title}
                 className="w-full h-full object-cover"
               />

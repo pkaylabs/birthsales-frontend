@@ -1,7 +1,7 @@
-import { BASE_URL } from "@/constants";
 import { Service } from "@/redux/type";
 import React from "react";
 import { useNavigate } from "react-location";
+import { resolveImageUrl } from "@/utils/resolve-image-url";
 
 interface ServiceCardProps {
   service: Service;
@@ -23,7 +23,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {
       {/* Image */}
       <div className="bg-gray-100 flex items-center justify-center h-48 sm:h-56 md:h-64">
         <img
-          src={`${BASE_URL}${service.image}`}
+          src={resolveImageUrl(service.image)}
           alt={service.name}
           className="max-h-full max-w-full object-contain"
         />

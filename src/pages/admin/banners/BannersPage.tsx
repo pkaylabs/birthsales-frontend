@@ -25,7 +25,7 @@ import {
   useGetBannersQuery,
   useUpdateBannerMutation,
 } from "@/redux/features/banners/bannersApiSlice";
-import { BASE_URL } from "@/constants";
+import { resolveImageUrl } from "@/utils/resolve-image-url";
 
 export default function BannersPage() {
   const { data: banners = [], isLoading, isError } = useGetBannersQuery();
@@ -170,7 +170,9 @@ export default function BannersPage() {
               }}
             >
               <img
-                src={`${BASE_URL}${b.image}`}
+                src={
+                  typeof b.image === "string" ? resolveImageUrl(b.image) : ""
+                }
                 alt={b.title}
                 style={{ width: "100%", height: 120, objectFit: "cover" }}
               />
