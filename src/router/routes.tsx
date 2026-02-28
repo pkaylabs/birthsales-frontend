@@ -34,6 +34,7 @@ import {
   ADMIN_BANNERS,
   ADMIN_LOCATIONS,
   ADMIN_DELIVERY_FEES,
+  ADMIN_SERVICE_FEES,
   ADMIN_VIDEO_ADS,
   ADMIN_PAYOUTS,
   ADMIN_PAYMENTS,
@@ -89,6 +90,7 @@ const VendorProfile = lazy(
 );
 const LocationsPage = lazy(() => import("@/pages/admin/locations"));
 const DeliveryFeesPage = lazy(() => import("@/pages/admin/deliveryFees"));
+const ServiceFeesPage = lazy(() => import("@/pages/admin/serviceFees"));
 const PaymentsPage = lazy(() => import("@/pages/admin/payments"));
 
 export type RouteProps = Omit<Route, "children"> & {
@@ -438,6 +440,17 @@ const routes: RouteProps[] = [
       <RequireAuth roles={["ADMIN"]}>
         <Suspense fallback={<div>Loading...</div>}>
           <DeliveryFeesPage />
+        </Suspense>
+      </RequireAuth>
+    ),
+    meta: { layout: "Admin" },
+  },
+  {
+    path: ADMIN_SERVICE_FEES,
+    element: (
+      <RequireAuth roles={["ADMIN"]}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <ServiceFeesPage />
         </Suspense>
       </RequireAuth>
     ),

@@ -23,6 +23,7 @@ export const ADMIN_SUBSCRIPTIONS = "/admin-subscriptions";
 export const ADMIN_PLANS = "/admin-plans";
 export const ADMIN_LOCATIONS = "/admin-locations";
 export const ADMIN_DELIVERY_FEES = "/admin-delivery-fees";
+export const ADMIN_SERVICE_FEES = "/admin-service-fees";
 export const ADMIN_VIDEO_ADS = "/admin-video-ads";
 export const ADMIN_PAYOUTS = "/admin-payouts";
 export const ADMIN_PAYMENTS = "/admin-payments";

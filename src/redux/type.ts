@@ -57,6 +57,15 @@ export interface DeliveryFee {
   updated_at: string;
 }
 
+export interface ServiceFee {
+  id: number;
+  fee_type: "PERCENTAGE" | "FLAT" | string;
+  value: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface VideoAd {
   id: number;
   title: string;

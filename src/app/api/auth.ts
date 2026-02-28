@@ -39,6 +39,7 @@ export const api = createApi({
     "Products",
     "Locations",
     "DeliveryFees",
+    "ServiceFees",
     "VideoAds",
     "Category",
     "Plan",
