@@ -2,9 +2,27 @@ import { api } from "@/app/api/auth";
 import type { Order } from "@/redux/type";
 
 export interface CashoutRequest {
-  amount: number;
-  phone: string;
-  network: string;
+  amount: string;
+  recipient_type: "mobile_money" | "ghipss";
+  name: string;
+  account_number: string;
+  bank_code: string;
+  currency: "GHS";
+  reason: string;
+}
+
+export interface SupportedInstitution {
+  id: number;
+  name: string;
+  code: string;
+  active: boolean;
+  type?: string;
+}
+
+export interface SupportedInstitutionsResponse {
+  status: boolean;
+  message: string;
+  data: SupportedInstitution[];
 }
 
 export interface NewOrderItem {
@@ -32,6 +50,13 @@ export interface PaymentResponse {
   message: string;
   status: string;
   transaction: null | TransType;
+}
+
+export interface CashoutResponse {
+  status?: boolean | string;
+  message?: string;
+  data?: unknown;
+  transaction?: unknown;
 }
 
 export interface PaystackInitSuccessResponse {
@@ -79,6 +104,23 @@ export type PaystackInitRequest =
 
 export const ordersApi = api.injectEndpoints({
   endpoints: (builder) => ({
+    getTelcos: builder.query<SupportedInstitution[], void>({
+      query: () => ({
+        url: `telcos/`,
+        method: "GET",
+      }),
+      transformResponse: (response: SupportedInstitutionsResponse) =>
+        response?.data ?? [],
+    }),
+
+    getBanks: builder.query<SupportedInstitution[], void>({
+      query: () => ({
+        url: `banks/`,
+        method: "GET",
+      }),
+      transformResponse: (response: SupportedInstitutionsResponse) =>
+        response?.data ?? [],
+    }),
     getOrders: builder.query<Order[], void>({
       query: () => ({
         url: `orders/`,
@@ -131,11 +173,11 @@ export const ordersApi = api.injectEndpoints({
       }
     ),
     cashout: builder.mutation<
-      { status: string; transaction: TransType },
+      CashoutResponse,
       CashoutRequest
     >({
       query: (body) => ({
-        url: `cashout/`,
+        url: `cashout/paystack/`,
         method: "POST",
         body,
       }),
@@ -146,6 +188,8 @@ export const ordersApi = api.injectEndpoints({
 });
 
 export const {
+  useGetTelcosQuery,
+  useGetBanksQuery,
   useGetOrdersQuery,
   usePlaceOrderMutation,
   useMobilePaymentMutation,

@@ -22,14 +22,16 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({
   }
 
   if (roles) {
+    const userType =
+      typeof user.user_type === "string" ? user.user_type.toUpperCase() : "";
     const isAdmin =
-      user.is_superuser || user.is_staff || user.user_type === "ADMIN";
-    const isVendor = user.user_type === "VENDOR";
-    const isClient = !isAdmin && !isVendor;
+      user.is_superuser || user.is_staff || userType === "ADMIN";
+    const isVendor = userType === "VENDOR";
+    const isDelivery = userType === "DELIVERY";
     const ok =
       (roles.includes("ADMIN") && isAdmin) ||
       (roles.includes("VENDOR") && isVendor) ||
-      (roles.includes("DELIVERY") && isClient);
+      (roles.includes("DELIVERY") && isDelivery);
     if (!ok) {
       return <AccessDenied />;
     }
