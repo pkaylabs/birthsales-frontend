@@ -35,7 +35,7 @@ export const productsApi = api.injectEndpoints({
       //     .map(({ id }) => ({ type: "Products" as const, id }))
       //     .concat([{ type: "Products", id: "LIST" }]),
     }),
-    addProduct: builder.mutation<Product, FormData>({
+    addProduct: builder.mutation<unknown, FormData>({
       query: (formData) => ({
         url: `products/`,
         method: "POST",

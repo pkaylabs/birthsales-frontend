@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Link, useNavigate } from "react-location";
@@ -8,6 +8,7 @@ import {
   type AuthCredentials,
 } from "@/redux/features/auth/authApiSlice";
 import { CircularProgress } from "@mui/material";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { toast } from "react-toastify";
 
 const ghanaPhoneRegex = /^(?:0|233)(?:24|25|54|55|20|26|27|50|56|57|28)\d{7}$/;
@@ -15,6 +16,7 @@ const ghanaPhoneRegex = /^(?:0|233)(?:24|25|54|55|20|26|27|50|56|57|28)\d{7}$/;
 const SignUp = () => {
   const navigate = useNavigate();
   const [register, { isLoading, error }] = useRegisterMutation();
+  const [showPassword, setShowPassword] = useState(false);
 
   const formik = useFormik<AuthCredentials>({
     initialValues: {
@@ -197,48 +199,36 @@ const SignUp = () => {
             >
               Password
             </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              disabled={isLoading}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              value={formik.values.password}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400"
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                disabled={isLoading}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.password}
+                className="w-full px-4 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-600"
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="w-5 h-5" />
+                ) : (
+                  <EyeIcon className="w-5 h-5" />
+                )}
+              </button>
+            </div>
             {formik.touched.password && formik.errors.password && (
               <p className="mt-1 text-xs text-rose-500">
                 {formik.errors.password}
               </p>
             )}
-          </div>
-
-          {/** Submit */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full flex items-center justify-center bg-rose-500 hover:bg-rose-600 text-white font-medium py-2 rounded-lg transition-colors"
-          >
-            {isLoading ? (
-              <CircularProgress size={24} color="inherit" />
-            ) : (
-              "Sign Up"
-            )}
-          </button>
-
-          {error && (
-            <div className="text-center text-sm text-rose-600">
-              {(error as any).data?.detail || "Registration failed"}
-            </div>
-          )}
-
-          <div className="text-center text-sm">
-            Already have an account?{" "}
-            <Link to={LOGIN} className="text-rose-500 hover:underline">
-              Log in
-            </Link>
           </div>
         </form>
       </div>

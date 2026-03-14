@@ -23,6 +23,7 @@ import {
   usePaystackCheckStatusMutation,
   usePaystackInitializePaymentMutation,
 } from "@/redux/features/orders/orderApiSlice";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 const GH_PHONE = /^(?:0|233)(?:24|25|54|55|20|26|27|50|56|57|28)\d{7}$/;
 const STRONG_PWD =
@@ -112,6 +113,7 @@ const VendorAccount: React.FC = () => {
   const [subscribeError, setSubscribeError] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [subscriptionId, setSubscriptionId] = useState<number | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [register, { isLoading: regLoading }] = useRegisterMutation();
   const [createBusiness, { isLoading: bizLoading }] =
@@ -411,14 +413,28 @@ const VendorAccount: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700">
                   Password
                 </label>
-                <input
-                  name="password"
-                  type="password"
-                  value={accountData.password}
-                  onChange={handleAccountChange}
-                  className="mt-1 block w-full px-3 py-2 border rounded-md focus:ring-blue-400"
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+                  <input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={accountData.password}
+                    onChange={handleAccountChange}
+                    className="mt-1 block w-full px-3 py-2 pr-10 border rounded-md focus:ring-blue-400"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-600"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="w-5 h-5" />
+                    ) : (
+                      <EyeIcon className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
               </div>
               {accountError && (
                 <p className="text-red text-sm">{accountError}</p>

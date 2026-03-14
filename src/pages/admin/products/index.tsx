@@ -129,6 +129,24 @@ function revokeIfBlobUrl(url: string) {
   }
 }
 
+function extractCreatedProductId(response: unknown): string | number | undefined {
+  if (!response || typeof response !== "object") return undefined;
+  const r = response as Record<string, unknown>;
+  // Direct id fields
+  if (r["id"] != null) return r["id"] as string | number;
+  if (r["product_id"] != null) return r["product_id"] as string | number;
+  if (r["pk"] != null) return r["pk"] as string | number;
+  // Nested under "product" or "data"
+  const nested = r["product"] ?? r["data"];
+  if (nested && typeof nested === "object") {
+    const n = nested as Record<string, unknown>;
+    if (n["id"] != null) return n["id"] as string | number;
+    if (n["product_id"] != null) return n["product_id"] as string | number;
+    if (n["pk"] != null) return n["pk"] as string | number;
+  }
+  return undefined;
+}
+
 export default function ProductsPage() {
   // auth user
   const user = useAppSelector((state: RootState) => state.auth.user);
@@ -203,6 +221,7 @@ export default function ProductsPage() {
     price: "",
     category: "",
     vendor: "",
+    vendor_id: "",
     in_stock: true as boolean,
     imageFile: null as File | null,
     imagePreview: "",
@@ -276,8 +295,10 @@ export default function ProductsPage() {
     fd.append("description", form.description);
     fd.append("price", form.price);
     fd.append("category", form.category);
-    if (user?.is_superuser || user?.is_staff || user?.user_type === "ADMIN")
+    if (user?.is_superuser || user?.is_staff || user?.user_type === "ADMIN") {
       fd.append("vendor", form.vendor);
+      fd.append("vendor_id", form.vendor_id);
+    }
     fd.append("in_stock", String(form.in_stock));
     fd.append("available_sizes", JSON.stringify(form.available_sizes));
     fd.append("available_colors", JSON.stringify(form.available_colors));
@@ -288,13 +309,18 @@ export default function ProductsPage() {
 
     try {
       const created = await addProduct(fd).unwrap();
+      const createdId = extractCreatedProductId(created);
 
       if (form.extraImages.length > 0) {
         try {
-          await addProductImages({
-            productId: created.id,
-            images: form.extraImages,
-          }).unwrap();
+          if (createdId == null) {
+            toast.error("Product created, but could not determine product ID for image upload");
+          } else {
+            await addProductImages({
+              productId: createdId,
+              images: form.extraImages,
+            }).unwrap();
+          }
         } catch (e: unknown) {
           toast.error(getErrorMessage(e, "Product created, but image upload failed"));
         }
@@ -305,9 +331,9 @@ export default function ProductsPage() {
       setToastSeverity("success");
       resetForm();
       refetch();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
-      setToastMessage("Failed to add product");
+      setToastMessage(getErrorMessage(err, "Failed to add product"));
       setToastSeverity("error");
     } finally {
       setUploading(false);
@@ -324,6 +350,10 @@ export default function ProductsPage() {
       price: p.price != null ? String(p.price) : "",
       category: p.category != null ? String(p.category) : "",
       vendor: p.vendor != null ? String(p.vendor) : "",
+      vendor_id: (() => {
+        const found = allVendors?.find((v) => String(v.id) === String(p.vendor));
+        return found?.vendor_id ?? "";
+      })(),
       in_stock: Boolean(p.in_stock),
       imageFile: null,
       imagePreview: (() => {
@@ -347,6 +377,7 @@ export default function ProductsPage() {
     fd.append("category", form.category);
     if (user?.is_superuser || user?.is_staff || user?.user_type === "ADMIN") {
       if (form.vendor) fd.append("vendor", form.vendor);
+      if (form.vendor_id) fd.append("vendor_id", form.vendor_id);
     }
     fd.append("in_stock", String(form.in_stock));
     fd.append("available_sizes", JSON.stringify(form.available_sizes));
@@ -558,12 +589,14 @@ export default function ProductsPage() {
                 <InputLabel>Vendor</InputLabel>
                 <Select
                   value={form.vendor}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, vendor: e.target.value }))
-                  }
+                  onChange={(e) => {
+                    const dbId = e.target.value;
+                    const found = allVendors?.find((v) => String(v.id) === dbId);
+                    setForm((f) => ({ ...f, vendor: dbId, vendor_id: found?.vendor_id ?? "" }));
+                  }}
                 >
                   {allVendors?.map((v) => (
-                    <MenuItem key={v.id} value={String(v.user)}>
+                    <MenuItem key={v.id} value={String(v.id)}>
                       {v.vendor_name}
                     </MenuItem>
                   ))}
@@ -696,12 +729,14 @@ export default function ProductsPage() {
                 <InputLabel>Vendor</InputLabel>
                 <Select
                   value={form.vendor}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, vendor: e.target.value }))
-                  }
+                  onChange={(e) => {
+                    const dbId = e.target.value;
+                    const found = allVendors?.find((v) => String(v.id) === dbId);
+                    setForm((f) => ({ ...f, vendor: dbId, vendor_id: found?.vendor_id ?? "" }));
+                  }}
                 >
                   {allVendors?.map((v) => (
-                    <MenuItem key={v.id} value={String(v.user)}>
+                    <MenuItem key={v.id} value={String(v.id)}>
                       {v.vendor_name}
                     </MenuItem>
                   ))}
@@ -898,6 +933,14 @@ export default function ProductsPage() {
                   {detailProduct?.is_published ? "Yes" : "No"}
                 </Typography>
               </Box>
+              <Box>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Is Deleted
+                </Typography>
+                <Typography>
+                  {detailProduct?.is_deleted ? "Yes" : "No"}
+                </Typography>
+              </Box>
             </Box>
           </Box>
         </DialogContent>
@@ -957,6 +1000,7 @@ export default function ProductsPage() {
                 <TableCell>Price</TableCell>
                 <TableCell>Stock</TableCell>
                 <TableCell>Published</TableCell>
+                <TableCell>Is Deleted</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -999,6 +1043,7 @@ export default function ProductsPage() {
                   <TableCell>GHC{p.price}</TableCell>
                   <TableCell>{p.in_stock ? "Yes" : "No"}</TableCell>
                   <TableCell>{p.is_published ? "✅" : "⏳"}</TableCell>
+                  <TableCell>{p.is_deleted ? "Yes" : "No"}</TableCell>
                   <TableCell>
                     <Button size="small" onClick={() => setDetailProduct(p)}>
                       View

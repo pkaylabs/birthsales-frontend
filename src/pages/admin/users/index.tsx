@@ -13,6 +13,8 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  IconButton,
+  InputAdornment,
   TextField,
   TablePagination,
   Box,
@@ -25,7 +27,7 @@ import {
   Typography,
   DialogActions,
 } from "@mui/material";
-
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import ShimmerTable from "../components/Shimmer";
 import {
   useAddUserMutation,
@@ -41,7 +43,6 @@ export default function Users() {
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Toast state
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastSeverity, setToastSeverity] = useState<"success" | "error">(
@@ -50,9 +51,8 @@ export default function Users() {
   const [viewOpen, setViewOpen] = useState(false);
   const [viewUser, setViewUser] = useState<User | null>(null);
 
-  // New state for search/filter
-
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [currentForm, setCurrentForm] = useState<UserForm>({
     id: 0,
@@ -222,7 +222,7 @@ export default function Users() {
                   </FormControl>
                   <TextField
                     label="Password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={currentForm.password}
                     onChange={(e) =>
                       setCurrentForm((f) => ({
@@ -231,6 +231,15 @@ export default function Users() {
                       }))
                     }
                     fullWidth
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={() => setShowPassword((v) => !v)} edge="end" size="small" tabIndex={-1}>
+                            {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
                   />
 
                   <Button variant="contained" component="label">

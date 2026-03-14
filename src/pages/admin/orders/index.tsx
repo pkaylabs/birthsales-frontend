@@ -196,7 +196,7 @@ export default function OrdersPage() {
                 Customer Phone: {selected.customer_phone}
               </Typography>
               <Typography variant="subtitle2">
-                Location: {selected.location}
+                Location: {selected.location_name}
               </Typography>
               <Typography variant="subtitle2">
                 Total: GHC{selected.total_price.toFixed(2)}

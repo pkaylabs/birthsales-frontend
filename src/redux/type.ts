@@ -186,6 +186,7 @@ export interface Product {
   price: number;
   category: string;
   in_stock: boolean;
+  is_deleted: boolean;
   vendor: string;
   image?: string;
   is_published: boolean;
@@ -238,6 +239,7 @@ export interface Order {
   vendor_phone: string;
   vendor_name: string;
   location: string;
+  location_name: string;
 }
 
 export interface Subscriptions {
@@ -245,10 +247,14 @@ export interface Subscriptions {
   vendor_name: string;
   package_name: string;
   expired: boolean;
-  payment_status?: null;
+  payment_status: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  created_at: string;
+  updated_at: string;
   vendor: number;
   package: number;
-  package_price: number
+  package_price: number;
 }
 
 export interface PayoutItem {

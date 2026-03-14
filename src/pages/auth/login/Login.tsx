@@ -16,8 +16,11 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
+  InputAdornment,
   TextField,
 } from "@mui/material";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { toast } from "react-toastify";
 
 const Login = () => {
@@ -29,6 +32,9 @@ const Login = () => {
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPwd, setShowNewPwd] = useState(false);
+  const [showConfirmPwd, setShowConfirmPwd] = useState(false);
 
   const [getOtp, { isLoading: gettingOtp }] = useGetOtpMutation();
 
@@ -146,17 +152,31 @@ const Login = () => {
             >
               Password
             </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              disabled={isLoading}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              value={formik.values.password}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400"
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                disabled={isLoading}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.password}
+                className="w-full px-4 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-600"
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="w-5 h-5" />
+                ) : (
+                  <EyeIcon className="w-5 h-5" />
+                )}
+              </button>
+            </div>
             {formik.touched.password && formik.errors.password && (
               <p className="mt-1 text-xs text-rose-500">
                 {formik.errors.password}
@@ -229,19 +249,55 @@ const Login = () => {
             <>
               <TextField
                 label="New Password"
-                type="password"
+                type={showNewPwd ? "text" : "password"}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 fullWidth
                 margin="dense"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowNewPwd((v) => !v)}
+                        edge="end"
+                        size="small"
+                        tabIndex={-1}
+                      >
+                        {showNewPwd ? (
+                          <EyeSlashIcon className="w-5 h-5" />
+                        ) : (
+                          <EyeIcon className="w-5 h-5" />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
               <TextField
                 label="Confirm Password"
-                type="password"
+                type={showConfirmPwd ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 fullWidth
                 margin="dense"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowConfirmPwd((v) => !v)}
+                        edge="end"
+                        size="small"
+                        tabIndex={-1}
+                      >
+                        {showConfirmPwd ? (
+                          <EyeSlashIcon className="w-5 h-5" />
+                        ) : (
+                          <EyeIcon className="w-5 h-5" />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
             </>
           )}
