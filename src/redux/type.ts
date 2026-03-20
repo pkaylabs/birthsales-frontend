@@ -240,6 +240,7 @@ export interface Order {
   vendor_name: string;
   location: string;
   location_name: string;
+  other_location?: string;
 }
 
 export interface Subscriptions {

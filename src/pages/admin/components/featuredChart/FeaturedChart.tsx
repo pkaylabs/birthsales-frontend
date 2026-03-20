@@ -17,7 +17,7 @@ const FeaturedChart = ({ salesToday }: FeaturedChartProps) => {
       {/* Bottom */}
       <div className="p-5 mt-10 flex flex-col items-center justify-center gap-4">
         <div className="w-24 h-24">
-          <CircularProgressbar value={70} text="70%" strokeWidth={4} />
+          <CircularProgressbar value={70} text={`${salesToday}`} strokeWidth={4} />
         </div>
         <p className="font-medium text-gray-400">Total Sales made today</p>
         <p className="text-3xl">GHC {salesToday}</p>

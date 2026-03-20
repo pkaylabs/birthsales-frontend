@@ -47,7 +47,8 @@ const CategoryProductsPage: React.FC = () => {
       list = list.filter((p) => {
         const name = String(p.name ?? "").toLowerCase();
         const desc = String(p.description ?? "").toLowerCase();
-        return name.includes(q) || desc.includes(q);
+        const vendorName = String((p as any).vendor_name ?? (p as any).vendor ?? "").toLowerCase();
+        return name.includes(q) || desc.includes(q) || vendorName.includes(q);
       });
     }
 
@@ -118,7 +119,7 @@ const CategoryProductsPage: React.FC = () => {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search products..."
+              placeholder="Search products or vendors..."
               className="w-full border border-gray-300 rounded px-3 py-2"
               type="text"
             />

@@ -35,6 +35,7 @@ export interface PlaceOrderRequest {
   items: NewOrderItem[];
   location: string;
   customer_phone: string;
+  other_location?: string;
 }
 
 export interface OrderResponse {

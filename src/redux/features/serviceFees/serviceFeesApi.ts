@@ -20,8 +20,16 @@ export interface ServiceFeePatchRequest {
   is_active?: boolean;
 }
 
+export interface GetServiceFeeResponse {
+  service_fee: ServiceFee;
+}
+
 export const serviceFeesApi = api.injectEndpoints({
   endpoints: (builder) => ({
+    // Customer-facing: active fee for using the platform
+    getServiceFee: builder.query<GetServiceFeeResponse, void>({
+      query: () => `servicefee/`,
+    }),
     getServiceFees: builder.query<ServiceFee[], void>({
       query: () => `servicefees/`,
       providesTags: (result) =>
@@ -82,6 +90,7 @@ export const serviceFeesApi = api.injectEndpoints({
 });
 
 export const {
+  useGetServiceFeeQuery,
   useGetServiceFeesQuery,
   useAddServiceFeeMutation,
   useUpdateServiceFeeMutation,

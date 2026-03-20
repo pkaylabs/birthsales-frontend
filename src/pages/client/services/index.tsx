@@ -16,7 +16,14 @@ const Services: React.FC = () => {
   const filteredSearch = useMemo(() => {
     const term = search.trim().toLowerCase();
     if (!term) return services;
-    return services.filter((s) => s.name.toLowerCase().includes(term));
+    return services.filter((s) => {
+      const name = String(s.name ?? "").toLowerCase();
+      const desc = String(s.description ?? "").toLowerCase();
+      const vendorName = String(
+        (s as any).vendor_name ?? (s as any).vendor?.vendor_name ?? ""
+      ).toLowerCase();
+      return name.includes(term) || desc.includes(term) || vendorName.includes(term);
+    });
   }, [services, search]);
 
   // number of skeleton cards to show
@@ -45,7 +52,7 @@ const Services: React.FC = () => {
         </h1>
         <TextField
           size="small"
-          placeholder="Search services"
+          placeholder="Search services or vendors"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full sm:64"

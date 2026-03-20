@@ -239,10 +239,14 @@ export default function Bookings() {
                 User: {selected.user_name}
               </Typography>
               <Typography variant="subtitle2">
+                User Phone: {selected.user_phone}
+              </Typography>
+              <Typography variant="subtitle2">
                 Service: {selected.service_name}
                 {selected.vendor_name && ` by ${selected.vendor_name}`}
               </Typography>
               <Typography variant="subtitle2">Time: {selected.time}</Typography>
+              <Typography variant="subtitle2">Location: {selected.location}</Typography>
               <Typography variant="subtitle2">
                 Status: {selected.status}
               </Typography>

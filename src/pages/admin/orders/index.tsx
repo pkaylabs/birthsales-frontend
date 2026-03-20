@@ -199,6 +199,9 @@ export default function OrdersPage() {
                 Location: {selected.location_name}
               </Typography>
               <Typography variant="subtitle2">
+                Other Location: {selected.other_location || "N/A"}
+              </Typography>
+              <Typography variant="subtitle2">
                 Total: GHC{selected.total_price.toFixed(2)}
               </Typography>
               <Typography variant="subtitle2">

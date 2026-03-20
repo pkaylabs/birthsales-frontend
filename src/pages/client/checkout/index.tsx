@@ -7,6 +7,7 @@ import {
   usePaystackInitializePaymentMutation,
   usePlaceOrderMutation,
 } from "@/redux/features/orders/orderApiSlice";
+import { useGetServiceFeeQuery } from "@/redux/features/serviceFees/serviceFeesApi";
 import type { Location } from "@/redux/type";
 import { CircularProgress } from "@mui/material";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -104,10 +105,17 @@ const Checkout = () => {
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState("");
   const [locationId, setLocationId] = useState("");
+  const [otherLocation, setOtherLocation] = useState("");
   const [customerPhone, setcustomerPhone] = useState("");
 
   const { data: locationsData, isLoading: locationsLoading } =
     useGetLocationsQuery();
+
+  const {
+    data: serviceFeeData,
+    isLoading: serviceFeeLoading,
+    isError: serviceFeeError,
+  } = useGetServiceFeeQuery();
 
   const [placeOrder, { isLoading: placing }] = usePlaceOrderMutation();
   const [initializePaystack, { isLoading: initLoading }] =
@@ -130,8 +138,53 @@ const Checkout = () => {
 
   const locations: Location[] = locationsData ?? [];
   const selectedLocation = locations.find((l) => String(l.id) === locationId);
+  const isOtherSelected =
+    String(selectedLocation?.name ?? "").trim().toLowerCase() === "other" ||
+    String(locationId).trim().toUpperCase() === "OTHER";
   const deliveryFee = selectedLocation?.delivery_fee_price ?? 0;
-  const total = subTotal + deliveryFee;
+
+  const serviceFee = serviceFeeData?.service_fee;
+  const serviceFeeType = String(serviceFee?.fee_type ?? "").toUpperCase();
+  const rawServiceFeeValue = String(serviceFee?.value ?? "").trim();
+  const parsedServiceFeeValue = Number(rawServiceFeeValue);
+  const hasValidServiceFeeValue =
+    rawServiceFeeValue.length > 0 && Number.isFinite(parsedServiceFeeValue);
+
+  const serviceFeeAmount = (() => {
+    if (serviceFeeError) return 0;
+    if (!serviceFee || serviceFee.is_active === false) return 0;
+    if (!hasValidServiceFeeValue) return 0;
+
+    if (serviceFeeType === "FLAT") return parsedServiceFeeValue;
+    if (serviceFeeType === "PERCENTAGE") {
+      return (subTotal * parsedServiceFeeValue) / 100;
+    }
+    return 0;
+  })();
+
+  const total = subTotal + deliveryFee + serviceFeeAmount;
+
+  const serviceFeeLabel = (() => {
+    if (serviceFeeLoading) return "Service fee";
+    if (serviceFeeError) return "Service fee (unavailable)";
+    return "Service fee";
+  })();
+
+  const serviceFeeDisplay = (() => {
+    if (serviceFeeLoading) return "—";
+    if (serviceFeeError) return "GHC0";
+    if (!serviceFee || serviceFee.is_active === false) return "GHC0";
+    if (!hasValidServiceFeeValue) return "GHC0";
+
+    if (serviceFeeType === "FLAT") return `GHC${rawServiceFeeValue}`;
+    if (serviceFeeType === "PERCENTAGE") return `GHC${serviceFeeAmount.toFixed(2)}`;
+    return "GHC0";
+  })();
+
+  // Clear out stale free-text when the user switches away from OTHER.
+  useEffect(() => {
+    if (!isOtherSelected && otherLocation) setOtherLocation("");
+  }, [isOtherSelected, otherLocation]);
 
   const startPaystackForOrderIds = useCallback(
     async (orderIds: number[], index: number) => {
@@ -257,6 +310,9 @@ const Checkout = () => {
         })),
         location: locationId,
         customer_phone: customerPhone,
+          ...(isOtherSelected && otherLocation.trim()
+            ? { other_location: otherLocation.trim() }
+            : {}),
       }).unwrap();
 
       orderIds = extractOrderIds(res?.data);
@@ -473,6 +529,21 @@ const Checkout = () => {
               </select>
             </div>
 
+            {isOtherSelected && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Other location (optional)
+                </label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded p-2"
+                  placeholder="Enter your location"
+                  value={otherLocation}
+                  onChange={(e) => setOtherLocation(e.target.value)}
+                />
+              </div>
+            )}
+
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span>Subtotal</span>
@@ -481,6 +552,10 @@ const Checkout = () => {
               <div className="flex justify-between">
                 <span>Delivery fee</span>
                 <span>GHC{Math.round(deliveryFee)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>{serviceFeeLabel}</span>
+                <span>{serviceFeeDisplay}</span>
               </div>
               <div className="flex justify-between font-semibold">
                 <span>Total</span>

@@ -3,6 +3,7 @@ import {
   useGetHomePageDataQuery,
   useSearchProductsQuery,
 } from "@/redux/features/homepage/homepageApiSlice";
+import { useGetCustomerProductsQuery } from "@/redux/features/products/productsApi";
 import { Box, CircularProgress, TextField, Typography } from "@mui/material";
 import CardCarousel from "./components/cards-carousel";
 import ProductCard from "./components/cards/product";
@@ -17,15 +18,67 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { data, isLoading, isError } = useGetHomePageDataQuery();
   const [search, setSearch] = useState("");
-  const { data: searchResults = [], isFetching: isSearching } =
+  const hasSearch = search.trim().length > 0;
+
+  const { data: searchResults = [], isFetching: isSearchingRemote } =
     useSearchProductsQuery(search, {
-      skip: search.trim().length === 0,
+      skip: !hasSearch,
     });
+
+  // Fallback for vendor-name search (and any backend gaps): fetch the full
+  // customer products list only when the user is searching.
+  const {
+    data: customerProducts = [],
+    isFetching: isSearchingLocal,
+  } = useGetCustomerProductsQuery(undefined, {
+    skip: !hasSearch,
+  });
 
   // track which section is expanded
   const [expandedSection, setExpandedSection] = useState<
     "flash" | "categories" | "best" | null
   >(null);
+
+  // Derive arrays safely even before the homepage query resolves. Hooks below
+  // must run on every render (including loading/error) to keep hook order stable.
+  const allProducts = data?.products ?? [];
+  const allCategories = data?.categories ?? [];
+  const bestSellers = data?.best_selling_products ?? [];
+  const newArrivals = (data?.new_arrivals ?? []).filter(Boolean);
+  const promoProduct = allProducts[4] ?? allProducts[0];
+
+  const localSearchResults = React.useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return [];
+
+    const categoryNameById = new Map<string, string>();
+    for (const c of allCategories) {
+      categoryNameById.set(String(c.id), String(c.name ?? ""));
+    }
+
+    return customerProducts.filter((p) => {
+      const name = String(p.name ?? "").toLowerCase();
+      const desc = String((p as any).description ?? "").toLowerCase();
+      const vendorName = String((p as any).vendor_name ?? "").toLowerCase();
+      const categoryName = String(
+        categoryNameById.get(String((p as any).category ?? "")) ?? ""
+      ).toLowerCase();
+
+      return (
+        name.includes(term) ||
+        desc.includes(term) ||
+        vendorName.includes(term) ||
+        categoryName.includes(term)
+      );
+    });
+  }, [allCategories, customerProducts, search]);
+
+  const combinedSearchResults = React.useMemo(() => {
+    const map = new Map<string, (typeof searchResults)[number]>();
+    for (const p of searchResults) map.set(String(p.id), p);
+    for (const p of localSearchResults) map.set(String(p.id), p as any);
+    return Array.from(map.values());
+  }, [localSearchResults, searchResults]);
 
   if (isLoading) {
     return (
@@ -37,12 +90,6 @@ const Home: React.FC = () => {
   if (isError || !data) {
     return <Box className="p-8 text-red-500">Error loading home page.</Box>;
   }
-
-  const allProducts = data.products ?? [];
-  const allCategories = data.categories ?? [];
-  const bestSellers = data.best_selling_products ?? [];
-  const newArrivals = (data.new_arrivals ?? []).filter(Boolean);
-  const promoProduct = allProducts[4] ?? allProducts[0];
 
 
   const renderCarousel = <T,>(
@@ -79,7 +126,7 @@ const Home: React.FC = () => {
       <Box className="py-4">
         <TextField
           fullWidth
-          placeholder="Search products, categories, descriptions…"
+          placeholder="Search products, vendors, categories, descriptions…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           InputProps={{ sx: { borderRadius: 1 } }}
@@ -89,11 +136,11 @@ const Home: React.FC = () => {
       {/* search results */}
       {search.trim() ? (
         <Box>
-          {isSearching ? (
+          {isSearchingRemote || isSearchingLocal ? (
             <Box className="flex justify-center py-8">
               <CircularProgress />
             </Box>
-          ) : !searchResults.length ? (
+          ) : !combinedSearchResults.length ? (
             <Typography className="text-center py-8">
               No results for “{search}”
             </Typography>
@@ -101,7 +148,7 @@ const Home: React.FC = () => {
             renderCarousel(
               "best",
               `Results for “${search}”`,
-              searchResults,
+              combinedSearchResults,
               (p) => <ProductCard key={p.id} product={p} />
             )
           )}

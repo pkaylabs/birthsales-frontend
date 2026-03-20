@@ -1,7 +1,12 @@
 import { api } from "@/app/api/auth";
 import type { Location } from "@/redux/type";
 
-export type LocationCategory = "HALL" | "DEPARTMENT";
+export type LocationCategory =
+  | "HALL"
+  | "DEPARTMENT"
+  | "HOSTEL"
+  | "OFF CAMPUS"
+  | "OTHER";
 
 export interface LocationCreateRequest {
   name: string;

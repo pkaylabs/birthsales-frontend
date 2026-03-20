@@ -36,7 +36,7 @@ import {
 } from "@/redux/features/locations/locationsApi";
 import type { Location } from "@/redux/type";
 
-const CATEGORY_OPTIONS = ["HALL", "DEPARTMENT"] as const;
+const CATEGORY_OPTIONS = ["HALL", "DEPARTMENT", "HOSTEL", "OFF CAMPUS", "OTHER"] as const;
 type CategoryOption = (typeof CATEGORY_OPTIONS)[number];
 
 function normalizeCategory(value: string): CategoryOption {
