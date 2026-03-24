@@ -38,6 +38,7 @@ import {
   ADMIN_VIDEO_ADS,
   ADMIN_PAYOUTS,
   ADMIN_PAYMENTS,
+  ADMIN_REFUNDS,
   SETTINGS,
   VERIFY_OTP,
 } from "@/constants";
@@ -92,6 +93,7 @@ const LocationsPage = lazy(() => import("@/pages/admin/locations"));
 const DeliveryFeesPage = lazy(() => import("@/pages/admin/deliveryFees"));
 const ServiceFeesPage = lazy(() => import("@/pages/admin/serviceFees"));
 const PaymentsPage = lazy(() => import("@/pages/admin/payments"));
+const RefundsPage = lazy(() => import("@/pages/admin/refunds"));
 
 export type RouteProps = Omit<Route, "children"> & {
   navigation?: boolean;
@@ -484,6 +486,17 @@ const routes: RouteProps[] = [
       <RequireAuth roles={["ADMIN"]}>
         <Suspense fallback={<div>Loading...</div>}>
           <PaymentsPage />
+        </Suspense>
+      </RequireAuth>
+    ),
+    meta: { layout: "Admin" },
+  },
+  {
+    path: ADMIN_REFUNDS,
+    element: (
+      <RequireAuth roles={["ADMIN"]}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <RefundsPage />
         </Suspense>
       </RequireAuth>
     ),

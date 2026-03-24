@@ -37,6 +37,7 @@ import {
   ADMIN_LOCATIONS,
   ADMIN_PAYMENTS,
   ADMIN_PAYOUTS,
+  ADMIN_REFUNDS,
   ADMIN_SERVICE_FEES,
   ADMIN_VIDEO_ADS,
   LOGIN,
@@ -153,6 +154,12 @@ export default function AdminLayout() {
       {
         name: "Payments",
         href: ADMIN_PAYMENTS,
+        icon: TagIcon,
+        current: false,
+      },
+      {
+        name: "Refunds",
+        href: ADMIN_REFUNDS,
         icon: TagIcon,
         current: false,
       },

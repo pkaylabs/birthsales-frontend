@@ -24,66 +24,8 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/" className="hover:text-white transition">
-                  Blog
-                </Link>
-              </li>
-              <li>
                 <Link to="/contact" className="hover:text-white transition">
                   Contact Us
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Customer Service */}
-          <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
-              Customer Service
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/" className="hover:text-white transition">
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link to="/" className="hover:text-white transition">
-                  Returns
-                </Link>
-              </li>
-              <li>
-                <Link to="/" className="hover:text-white transition">
-                  Shipping
-                </Link>
-              </li>
-              <li>
-                <Link to="/" className="hover:text-white transition">
-                  FAQ
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Information */}
-          <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
-              Information
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/" className="hover:text-white transition">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/" className="hover:text-white transition">
-                  Terms &amp; Conditions
-                </Link>
-              </li>
-              <li>
-                <Link to="/" className="hover:text-white transition">
-                  Sitemap
                 </Link>
               </li>
             </ul>
@@ -165,11 +107,7 @@ const Footer = () => {
                   Services
                 </Link>
               </li>
-              <li>
-                <Link to="/" className="hover:text-white transition">
-                  Blog
-                </Link>
-              </li>
+             
               <li>
                 <Link to="/contact" className="hover:text-white transition">
                   Contact Us
@@ -185,49 +123,11 @@ const Footer = () => {
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="hover:text-white transition">
+                <Link to="/contact" className="hover:text-white transition">
                   Help Center
                 </Link>
               </li>
-              <li>
-                <Link to="/" className="hover:text-white transition">
-                  Returns
-                </Link>
-              </li>
-              <li>
-                <Link to="/" className="hover:text-white transition">
-                  Shipping
-                </Link>
-              </li>
-              <li>
-                <Link to="/" className="hover:text-white transition">
-                  FAQ
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Information */}
-          <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
-              Information
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/" className="hover:text-white transition">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/" className="hover:text-white transition">
-                  Terms &amp; Conditions
-                </Link>
-              </li>
-              <li>
-                <Link to="/" className="hover:text-white transition">
-                  Sitemap
-                </Link>
-              </li>
+             
             </ul>
           </div>
 

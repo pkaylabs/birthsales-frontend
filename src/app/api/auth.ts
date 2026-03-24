@@ -36,6 +36,7 @@ export const api = createApi({
     "Service",
     "Vendor",
     "Payouts",
+    "Refunds",
     "Products",
     "Locations",
     "DeliveryFees",
@@ -51,7 +52,7 @@ export const api = createApi({
     "Search",
     "Banner",
     "Subscription",
-    "Payments"
+    "Payments",
   ],
   endpoints: () => ({}),
 });
