@@ -2,6 +2,8 @@ import { useChangePasswordMutation } from "@/redux/features/auth/authApiSlice";
 import {
   useGetSubscriptionsQuery,
 } from "@/redux/features/subscriptions/subscriptionSlice";
+import { useGetPlansQuery } from "@/redux/features/plans/plansApi";
+import { useSubscribePlanMutation } from "@/redux/features/business/businessApiSlice";
 import {
   usePaystackCheckStatusMutation,
   usePaystackInitializePaymentMutation,
@@ -24,12 +26,16 @@ import {
   Typography,
 } from "@mui/material";
 import { ChangeEvent, useEffect, useState } from "react";
-import { useNavigate } from "react-location";
 import { toast } from "react-toastify";
-import { VENDOR_SIGN_UP } from "@/constants";
+import type { Plan } from "@/redux/type";
 
 const LS_RENEWAL_PAYSTACK_REF = "paystack_subscription_renewal_reference";
 const LS_RENEWAL_PAYSTACK_URL = "paystack_subscription_renewal_auth_url";
+const LS_RENEWAL_PAYSTACK_VENDOR = "paystack_subscription_renewal_vendor";
+
+const LS_UPGRADE_PAYSTACK_REF = "paystack_subscription_upgrade_reference";
+const LS_UPGRADE_PAYSTACK_URL = "paystack_subscription_upgrade_auth_url";
+const LS_UPGRADE_PAYSTACK_VENDOR = "paystack_subscription_upgrade_vendor";
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null;
@@ -67,8 +73,6 @@ interface VendorForm {
 }
 
 const Setting = () => {
-  const navigate = useNavigate();
-
   const [visible, setVisible] = useState(false);
   const [updateUserProfile, { isLoading: updating }] =
     useUpdateUserProfileMutation();
@@ -80,10 +84,37 @@ const Setting = () => {
   );
   const [paystackAuthUrl, setPaystackAuthUrl] = useState<string | null>(null);
 
+  // Upgrade (subscribe) modal state
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [selectedUpgradePlan, setSelectedUpgradePlan] = useState<Plan | null>(
+    null
+  );
+
+  // Upgrade payment modal state
+  const [upgradePaymentOpen, setUpgradePaymentOpen] = useState(false);
+  const [upgradePaystackReference, setUpgradePaystackReference] = useState<
+    string | null
+  >(null);
+  const [upgradePaystackAuthUrl, setUpgradePaystackAuthUrl] = useState<
+    string | null
+  >(null);
+
   const [initializePaystack, { isLoading: initLoading }] =
     usePaystackInitializePaymentMutation();
   const [checkPaystackStatus, { isLoading: statusLoading }] =
     usePaystackCheckStatusMutation();
+
+  const [subscribePlan, { isLoading: subscribing }] = useSubscribePlanMutation();
+  const [initializePaystackUpgrade, { isLoading: upgradeInitLoading }] =
+    usePaystackInitializePaymentMutation();
+  const [checkPaystackStatusUpgrade, { isLoading: upgradeStatusLoading }] =
+    usePaystackCheckStatusMutation();
+
+  const {
+    data: plans = [],
+    isLoading: plansLoading,
+    error: plansError,
+  } = useGetPlansQuery(undefined, { skip: !upgradeModalOpen });
 
   // Basic Profile
   const [profile, setProfile] = useState<ProfileForm>({
@@ -208,10 +239,35 @@ const Setting = () => {
     );
   };
 
+  const currentVendorId = vendorProfile?.vendor?.id;
+
+  const clearPendingPayment = (
+    refKey: string,
+    urlKey: string,
+    vendorKey: string
+  ) => {
+    localStorage.removeItem(refKey);
+    localStorage.removeItem(urlKey);
+    localStorage.removeItem(vendorKey);
+  };
+
   // Auto-check status after Paystack redirects back.
   useEffect(() => {
+    if (!currentVendorId) return;
+
     const pendingRef = localStorage.getItem(LS_RENEWAL_PAYSTACK_REF);
     if (!pendingRef) return;
+
+    const ownerVendor = localStorage.getItem(LS_RENEWAL_PAYSTACK_VENDOR);
+    // If we can't attribute the pending reference to this vendor, treat as stale.
+    if (!ownerVendor || ownerVendor !== String(currentVendorId)) {
+      clearPendingPayment(
+        LS_RENEWAL_PAYSTACK_REF,
+        LS_RENEWAL_PAYSTACK_URL,
+        LS_RENEWAL_PAYSTACK_VENDOR
+      );
+      return;
+    }
 
     const pendingUrl = localStorage.getItem(LS_RENEWAL_PAYSTACK_URL);
     setPaystackReference(pendingRef);
@@ -235,7 +291,49 @@ const Setting = () => {
         toast.error(extractErrorMessage(err, "Failed to check payment status"));
       }
     })();
-  }, [checkPaystackStatus]);
+  }, [checkPaystackStatus, currentVendorId]);
+
+  // Auto-check status after Paystack redirects back (Upgrade/Subscribe).
+  useEffect(() => {
+    if (!currentVendorId) return;
+
+    const pendingRef = localStorage.getItem(LS_UPGRADE_PAYSTACK_REF);
+    if (!pendingRef) return;
+
+    const ownerVendor = localStorage.getItem(LS_UPGRADE_PAYSTACK_VENDOR);
+    // If we can't attribute the pending reference to this vendor, treat as stale.
+    if (!ownerVendor || ownerVendor !== String(currentVendorId)) {
+      clearPendingPayment(
+        LS_UPGRADE_PAYSTACK_REF,
+        LS_UPGRADE_PAYSTACK_URL,
+        LS_UPGRADE_PAYSTACK_VENDOR
+      );
+      return;
+    }
+
+    const pendingUrl = localStorage.getItem(LS_UPGRADE_PAYSTACK_URL);
+    setUpgradePaystackReference(pendingRef);
+    if (pendingUrl) setUpgradePaystackAuthUrl(pendingUrl);
+    setUpgradePaymentOpen(true);
+
+    (async () => {
+      try {
+        const res = await checkPaystackStatusUpgrade({ reference: pendingRef }).unwrap();
+        if (res.status && isPaidStatus(res.status)) {
+          localStorage.removeItem(LS_UPGRADE_PAYSTACK_REF);
+          localStorage.removeItem(LS_UPGRADE_PAYSTACK_URL);
+          toast.success("Payment confirmed");
+          setUpgradePaymentOpen(false);
+          setUpgradePaystackReference(null);
+          setUpgradePaystackAuthUrl(null);
+          return;
+        }
+        toast.info(res.message || `Payment status: ${res.status || "unknown"}`);
+      } catch (err: unknown) {
+        toast.error(extractErrorMessage(err, "Failed to check payment status"));
+      }
+    })();
+  }, [checkPaystackStatusUpgrade, currentVendorId]);
 
   const handleRenew = async () => {
     if (!mySubscriptions) return;
@@ -252,6 +350,9 @@ const Setting = () => {
 
       localStorage.setItem(LS_RENEWAL_PAYSTACK_REF, res.reference);
       localStorage.setItem(LS_RENEWAL_PAYSTACK_URL, res.authorization_url);
+      if (currentVendorId) {
+        localStorage.setItem(LS_RENEWAL_PAYSTACK_VENDOR, String(currentVendorId));
+      }
 
       // Same-tab redirect for a smoother flow.
       window.location.assign(res.authorization_url);
@@ -275,6 +376,76 @@ const Setting = () => {
         setOpenModal(false);
         setPaystackReference(null);
         setPaystackAuthUrl(null);
+        return;
+      }
+      toast.info(res.message || `Payment status: ${res.status || "unknown"}`);
+    } catch (err: unknown) {
+      toast.error(extractErrorMessage(err, "Failed to check payment status"));
+    }
+  };
+
+  const openUpgradeModal = () => {
+    setSelectedUpgradePlan(null);
+    setUpgradeModalOpen(true);
+  };
+
+  const handleUpgradeContinue = async () => {
+    if (!selectedUpgradePlan) {
+      toast.error("Please select a plan");
+      return;
+    }
+
+    try {
+      // 1) Subscribe to the chosen plan/package
+      const subscription = await subscribePlan({
+        package: selectedUpgradePlan.id,
+      }).unwrap();
+
+      // 2) Initialize Paystack for the new subscription
+      const res = await initializePaystackUpgrade({
+        subscription: subscription.id,
+      }).unwrap();
+
+      if (res.status === "failed") {
+        toast.error(res.message || "Payment initialization failed");
+        return;
+      }
+
+      setUpgradeModalOpen(false);
+      setUpgradePaystackReference(res.reference);
+      setUpgradePaystackAuthUrl(res.authorization_url);
+      setUpgradePaymentOpen(true);
+
+      localStorage.setItem(LS_UPGRADE_PAYSTACK_REF, res.reference);
+      localStorage.setItem(LS_UPGRADE_PAYSTACK_URL, res.authorization_url);
+      if (currentVendorId) {
+        localStorage.setItem(LS_UPGRADE_PAYSTACK_VENDOR, String(currentVendorId));
+      }
+
+      // Same-tab redirect for a smoother flow.
+      window.location.assign(res.authorization_url);
+    } catch (err: unknown) {
+      toast.error(extractErrorMessage(err, "Upgrade failed"));
+    }
+  };
+
+  const handleCheckUpgradeStatus = async () => {
+    if (!upgradePaystackReference) {
+      toast.error("No payment reference found");
+      return;
+    }
+
+    try {
+      const res = await checkPaystackStatusUpgrade({
+        reference: upgradePaystackReference,
+      }).unwrap();
+      if (res.status && isPaidStatus(res.status)) {
+        toast.success("Payment confirmed");
+        localStorage.removeItem(LS_UPGRADE_PAYSTACK_REF);
+        localStorage.removeItem(LS_UPGRADE_PAYSTACK_URL);
+        setUpgradePaymentOpen(false);
+        setUpgradePaystackReference(null);
+        setUpgradePaystackAuthUrl(null);
         return;
       }
       toast.info(res.message || `Payment status: ${res.status || "unknown"}`);
@@ -449,7 +620,7 @@ const Setting = () => {
             <p>No subscription found.</p>
             <button
               type="button"
-              onClick={() => navigate({ to: VENDOR_SIGN_UP, search: { step: 3 } })}
+              onClick={openUpgradeModal}
               className="w-full bg-yellow-600 text-white py-1 rounded hover:bg-yellow-700 transition"
             >
               Subscribe to a plan
@@ -472,15 +643,164 @@ const Setting = () => {
               <strong>Expired:</strong> {mySubscriptions.expired ? "Yes" : "No"}
             </p>
             {mySubscriptions.expired === true ? (
-              <button
-                onClick={() => setOpenModal(true)}
-                className="mt-4 w-full bg-red text-white py-1 rounded hover:bg-red transition"
-              >
-                Renew
-              </button>
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={() => setOpenModal(true)}
+                  className="w-full bg-red text-white py-1 rounded hover:bg-red transition"
+                >
+                  Renew
+                </button>
+                <button
+                  type="button"
+                  onClick={openUpgradeModal}
+                  className="w-full bg-yellow-600 text-white py-1 rounded hover:bg-yellow-700 transition"
+                >
+                  Upgrade
+                </button>
+              </div>
             ) : (
               <span className="mt-4 text-green-600 font-medium">Active</span>
             )}
+
+            {upgradeModalOpen && (
+              <Dialog
+                open={upgradeModalOpen}
+                onClose={() => setUpgradeModalOpen(false)}
+                maxWidth="sm"
+                fullWidth
+              >
+                <DialogTitle>
+                  <Typography variant="h6">Select a plan</Typography>
+                </DialogTitle>
+                <DialogContent dividers>
+                  <Box display={"flex"} flexDirection={"column"} gap={2}>
+                    <Typography variant="body2" color="textSecondary">
+                      Choose the plan you want to upgrade to. You’ll then continue through the existing subscription flow.
+                    </Typography>
+
+                    {plansLoading && (
+                      <Box display="flex" justifyContent="center" py={2}>
+                        <CircularProgress />
+                      </Box>
+                    )}
+
+                    {plansError && (
+                      <Typography color="error">
+                        Failed to load plans.
+                      </Typography>
+                    )}
+
+                    {!plansLoading && !plansError && plans.length === 0 && (
+                      <Typography>No plans available.</Typography>
+                    )}
+
+                    {!plansLoading && !plansError && plans.length > 0 && (
+                      <Box display={"flex"} flexDirection={"column"} gap={1.5}>
+                        {plans.map((plan) => {
+                          const isSelected = selectedUpgradePlan?.id === plan.id;
+                          return (
+                            <Box
+                              key={plan.id}
+                              display="flex"
+                              justifyContent="space-between"
+                              alignItems="center"
+                              border="1px solid rgba(0,0,0,0.12)"
+                              borderRadius={1}
+                              px={2}
+                              py={1.5}
+                            >
+                              <Box>
+                                <Typography fontWeight={600}>{plan.name}</Typography>
+                                <Typography variant="body2" color="textSecondary">
+                                  GHC{plan.price}/{plan.interval}
+                                </Typography>
+                              </Box>
+
+                              <Button
+                                onClick={() => setSelectedUpgradePlan(plan)}
+                                variant={isSelected ? "contained" : "outlined"}
+                                color={isSelected ? "success" : "inherit"}
+                              >
+                                {isSelected ? "Selected" : "Select"}
+                              </Button>
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    )}
+                  </Box>
+                </DialogContent>
+
+                <DialogActions>
+                  <Button onClick={() => setUpgradeModalOpen(false)}>Cancel</Button>
+                  <Button
+                    onClick={handleUpgradeContinue}
+                    variant="contained"
+                    disabled={!selectedUpgradePlan || subscribing || upgradeInitLoading}
+                  >
+                    Continue
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            )}
+
+            {upgradePaymentOpen && (
+              <Dialog
+                open={upgradePaymentOpen}
+                onClose={() => setUpgradePaymentOpen(false)}
+                maxWidth="sm"
+                fullWidth
+              >
+                <DialogTitle>
+                  <Typography variant="h6">Complete your upgrade</Typography>
+                </DialogTitle>
+                <DialogContent dividers>
+                  <Box display={"flex"} flexDirection={"column"} gap={2}>
+                    <Typography variant="body2" color="textSecondary">
+                      Payments are processed via Paystack. If you were redirected away, use “Continue payment” or “Check status”.
+                    </Typography>
+
+                    {upgradePaystackAuthUrl && (
+                      <a
+                        href={upgradePaystackAuthUrl}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          window.location.assign(upgradePaystackAuthUrl);
+                        }}
+                        className="text-blue-600 underline break-all"
+                      >
+                        Continue payment
+                      </a>
+                    )}
+
+                    {upgradePaystackReference && (
+                      <TextField
+                        label="Reference"
+                        fullWidth
+                        value={upgradePaystackReference}
+                        InputProps={{ readOnly: true }}
+                      />
+                    )}
+                  </Box>
+                </DialogContent>
+
+                <DialogActions>
+                  <Button onClick={() => setUpgradePaymentOpen(false)}>Close</Button>
+                  <Button
+                    onClick={handleCheckUpgradeStatus}
+                    variant="outlined"
+                    disabled={!upgradePaystackReference || upgradeStatusLoading}
+                  >
+                    {upgradeStatusLoading ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      "Check status"
+                    )}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            )}
+
             {openModal && (
               <Dialog
                 open={openModal}
