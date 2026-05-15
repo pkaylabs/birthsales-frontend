@@ -661,216 +661,210 @@ const Setting = () => {
             ) : (
               <span className="mt-4 text-green-600 font-medium">Active</span>
             )}
-
-            {upgradeModalOpen && (
-              <Dialog
-                open={upgradeModalOpen}
-                onClose={() => setUpgradeModalOpen(false)}
-                maxWidth="sm"
-                fullWidth
-              >
-                <DialogTitle>
-                  <Typography variant="h6">Select a plan</Typography>
-                </DialogTitle>
-                <DialogContent dividers>
-                  <Box display={"flex"} flexDirection={"column"} gap={2}>
-                    <Typography variant="body2" color="textSecondary">
-                      Choose the plan you want to upgrade to. You’ll then continue through the existing subscription flow.
-                    </Typography>
-
-                    {plansLoading && (
-                      <Box display="flex" justifyContent="center" py={2}>
-                        <CircularProgress />
-                      </Box>
-                    )}
-
-                    {plansError && (
-                      <Typography color="error">
-                        Failed to load plans.
-                      </Typography>
-                    )}
-
-                    {!plansLoading && !plansError && plans.length === 0 && (
-                      <Typography>No plans available.</Typography>
-                    )}
-
-                    {!plansLoading && !plansError && plans.length > 0 && (
-                      <Box display={"flex"} flexDirection={"column"} gap={1.5}>
-                        {plans.map((plan) => {
-                          const isSelected = selectedUpgradePlan?.id === plan.id;
-                          return (
-                            <Box
-                              key={plan.id}
-                              display="flex"
-                              justifyContent="space-between"
-                              alignItems="center"
-                              border="1px solid rgba(0,0,0,0.12)"
-                              borderRadius={1}
-                              px={2}
-                              py={1.5}
-                            >
-                              <Box>
-                                <Typography fontWeight={600}>{plan.name}</Typography>
-                                <Typography variant="body2" color="textSecondary">
-                                  GHC{plan.price}/{plan.interval}
-                                </Typography>
-                              </Box>
-
-                              <Button
-                                onClick={() => setSelectedUpgradePlan(plan)}
-                                variant={isSelected ? "contained" : "outlined"}
-                                color={isSelected ? "success" : "inherit"}
-                              >
-                                {isSelected ? "Selected" : "Select"}
-                              </Button>
-                            </Box>
-                          );
-                        })}
-                      </Box>
-                    )}
-                  </Box>
-                </DialogContent>
-
-                <DialogActions>
-                  <Button onClick={() => setUpgradeModalOpen(false)}>Cancel</Button>
-                  <Button
-                    onClick={handleUpgradeContinue}
-                    variant="contained"
-                    disabled={!selectedUpgradePlan || subscribing || upgradeInitLoading}
-                  >
-                    Continue
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            )}
-
-            {upgradePaymentOpen && (
-              <Dialog
-                open={upgradePaymentOpen}
-                onClose={() => setUpgradePaymentOpen(false)}
-                maxWidth="sm"
-                fullWidth
-              >
-                <DialogTitle>
-                  <Typography variant="h6">Complete your upgrade</Typography>
-                </DialogTitle>
-                <DialogContent dividers>
-                  <Box display={"flex"} flexDirection={"column"} gap={2}>
-                    <Typography variant="body2" color="textSecondary">
-                      Payments are processed via Paystack. If you were redirected away, use “Continue payment” or “Check status”.
-                    </Typography>
-
-                    {upgradePaystackAuthUrl && (
-                      <a
-                        href={upgradePaystackAuthUrl}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          window.location.assign(upgradePaystackAuthUrl);
-                        }}
-                        className="text-blue-600 underline break-all"
-                      >
-                        Continue payment
-                      </a>
-                    )}
-
-                    {upgradePaystackReference && (
-                      <TextField
-                        label="Reference"
-                        fullWidth
-                        value={upgradePaystackReference}
-                        InputProps={{ readOnly: true }}
-                      />
-                    )}
-                  </Box>
-                </DialogContent>
-
-                <DialogActions>
-                  <Button onClick={() => setUpgradePaymentOpen(false)}>Close</Button>
-                  <Button
-                    onClick={handleCheckUpgradeStatus}
-                    variant="outlined"
-                    disabled={!upgradePaystackReference || upgradeStatusLoading}
-                  >
-                    {upgradeStatusLoading ? (
-                      <CircularProgress size={20} />
-                    ) : (
-                      "Check status"
-                    )}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            )}
-
-            {openModal && (
-              <Dialog
-                open={openModal}
-                onClose={() => setOpenModal(false)}
-                maxWidth="sm"
-                fullWidth
-              >
-                <DialogTitle>
-                  <Typography variant="h6">Renew your subscription</Typography>
-                </DialogTitle>
-                <DialogContent dividers>
-                  <Box display={"flex"} flexDirection={"column"} gap={2}>
-                    <Typography variant="body2" color="textSecondary">
-                      Renewal payments are processed via Paystack. Clicking “Pay with Paystack” will redirect you to the Paystack payment page in this tab.
-                    </Typography>
-
-                    {paystackAuthUrl && (
-                      <a
-                        href={paystackAuthUrl}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          window.location.assign(paystackAuthUrl);
-                        }}
-                        className="text-blue-600 underline break-all"
-                      >
-                        Continue payment
-                      </a>
-                    )}
-
-                    {paystackReference && (
-                      <TextField
-                        label="Reference"
-                        fullWidth
-                        value={paystackReference}
-                        InputProps={{ readOnly: true }}
-                      />
-                    )}
-                  </Box>
-                </DialogContent>
-
-                <DialogActions>
-                  <Button onClick={() => setOpenModal(false)}>Close</Button>
-                  <Button
-                    onClick={handleRenew}
-                    type="submit"
-                    variant="contained"
-                    disabled={initLoading || statusLoading}
-                  >
-                    {initLoading ? (
-                      <CircularProgress size={20} sx={{ color: "white" }} />
-                    ) : (
-                      "Pay with Paystack"
-                    )}
-                  </Button>
-
-                  <Button
-                    onClick={handleCheckRenewalStatus}
-                    variant="outlined"
-                    disabled={!paystackReference || statusLoading}
-                  >
-                    {statusLoading ? (
-                      <CircularProgress size={20} />
-                    ) : (
-                      "Check status"
-                    )}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            )}
           </>
+        )}
+
+        {upgradeModalOpen && (
+          <Dialog
+            open={upgradeModalOpen}
+            onClose={() => setUpgradeModalOpen(false)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle>
+              <Typography variant="h6">Select a plan</Typography>
+            </DialogTitle>
+            <DialogContent dividers>
+              <Box display={"flex"} flexDirection={"column"} gap={2}>
+                <Typography variant="body2" color="textSecondary">
+                  Choose a plan to subscribe to. You’ll then complete payment via Paystack.
+                </Typography>
+
+                {plansLoading && (
+                  <Box display="flex" justifyContent="center" py={2}>
+                    <CircularProgress />
+                  </Box>
+                )}
+
+                {plansError && (
+                  <Typography color="error">Failed to load plans.</Typography>
+                )}
+
+                {!plansLoading && !plansError && plans.length === 0 && (
+                  <Typography>No plans available.</Typography>
+                )}
+
+                {!plansLoading && !plansError && plans.length > 0 && (
+                  <Box display={"flex"} flexDirection={"column"} gap={1.5}>
+                    {plans.map((plan) => {
+                      const isSelected = selectedUpgradePlan?.id === plan.id;
+                      return (
+                        <Box
+                          key={plan.id}
+                          display="flex"
+                          justifyContent="space-between"
+                          alignItems="center"
+                          border="1px solid rgba(0,0,0,0.12)"
+                          borderRadius={1}
+                          px={2}
+                          py={1.5}
+                        >
+                          <Box>
+                            <Typography fontWeight={600}>{plan.name}</Typography>
+                            <Typography variant="body2" color="textSecondary">
+                              GHC{plan.price}/{plan.interval}
+                            </Typography>
+                          </Box>
+
+                          <Button
+                            onClick={() => setSelectedUpgradePlan(plan)}
+                            variant={isSelected ? "contained" : "outlined"}
+                            color={isSelected ? "success" : "inherit"}
+                          >
+                            {isSelected ? "Selected" : "Select"}
+                          </Button>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                )}
+              </Box>
+            </DialogContent>
+
+            <DialogActions>
+              <Button onClick={() => setUpgradeModalOpen(false)}>Cancel</Button>
+              <Button
+                onClick={handleUpgradeContinue}
+                variant="contained"
+                disabled={!selectedUpgradePlan || subscribing || upgradeInitLoading}
+              >
+                Continue
+              </Button>
+            </DialogActions>
+          </Dialog>
+        )}
+
+        {upgradePaymentOpen && (
+          <Dialog
+            open={upgradePaymentOpen}
+            onClose={() => setUpgradePaymentOpen(false)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle>
+              <Typography variant="h6">Complete your subscription</Typography>
+            </DialogTitle>
+            <DialogContent dividers>
+              <Box display={"flex"} flexDirection={"column"} gap={2}>
+                <Typography variant="body2" color="textSecondary">
+                  Payments are processed via Paystack. If you were redirected away, use “Continue payment” or “Check status”.
+                </Typography>
+
+                {upgradePaystackAuthUrl && (
+                  <a
+                    href={upgradePaystackAuthUrl}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.location.assign(upgradePaystackAuthUrl);
+                    }}
+                    className="text-blue-600 underline break-all"
+                  >
+                    Continue payment
+                  </a>
+                )}
+
+                {upgradePaystackReference && (
+                  <TextField
+                    label="Reference"
+                    fullWidth
+                    value={upgradePaystackReference}
+                    InputProps={{ readOnly: true }}
+                  />
+                )}
+              </Box>
+            </DialogContent>
+
+            <DialogActions>
+              <Button onClick={() => setUpgradePaymentOpen(false)}>Close</Button>
+              <Button
+                onClick={handleCheckUpgradeStatus}
+                variant="outlined"
+                disabled={!upgradePaystackReference || upgradeStatusLoading}
+              >
+                {upgradeStatusLoading ? (
+                  <CircularProgress size={20} />
+                ) : (
+                  "Check status"
+                )}
+              </Button>
+            </DialogActions>
+          </Dialog>
+        )}
+
+        {openModal && (
+          <Dialog
+            open={openModal}
+            onClose={() => setOpenModal(false)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle>
+              <Typography variant="h6">Renew your subscription</Typography>
+            </DialogTitle>
+            <DialogContent dividers>
+              <Box display={"flex"} flexDirection={"column"} gap={2}>
+                <Typography variant="body2" color="textSecondary">
+                  Renewal payments are processed via Paystack. Clicking “Pay with Paystack” will redirect you to the Paystack payment page in this tab.
+                </Typography>
+
+                {paystackAuthUrl && (
+                  <a
+                    href={paystackAuthUrl}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.location.assign(paystackAuthUrl);
+                    }}
+                    className="text-blue-600 underline break-all"
+                  >
+                    Continue payment
+                  </a>
+                )}
+
+                {paystackReference && (
+                  <TextField
+                    label="Reference"
+                    fullWidth
+                    value={paystackReference}
+                    InputProps={{ readOnly: true }}
+                  />
+                )}
+              </Box>
+            </DialogContent>
+
+            <DialogActions>
+              <Button onClick={() => setOpenModal(false)}>Close</Button>
+              <Button
+                onClick={handleRenew}
+                type="submit"
+                variant="contained"
+                disabled={initLoading || statusLoading || !mySubscriptions}
+              >
+                {initLoading ? (
+                  <CircularProgress size={20} sx={{ color: "white" }} />
+                ) : (
+                  "Pay with Paystack"
+                )}
+              </Button>
+
+              <Button
+                onClick={handleCheckRenewalStatus}
+                variant="outlined"
+                disabled={!paystackReference || statusLoading}
+              >
+                {statusLoading ? <CircularProgress size={20} /> : "Check status"}
+              </Button>
+            </DialogActions>
+          </Dialog>
         )}
       </section>
     </div>
