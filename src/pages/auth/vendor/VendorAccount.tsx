@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Navigate, useLocation } from "react-location";
 import { useRegisterMutation } from "@/redux/features/auth/authApiSlice";
 import {
@@ -151,6 +151,30 @@ const VendorAccount: React.FC = () => {
     return stepNum;
   };
 
+  const parsePlanIdFromSearch = (search: unknown): string | null => {
+    if (!search || typeof search !== "object") return null;
+    const raw = (search as Record<string, unknown>).plan;
+    if (typeof raw === "string" && raw.trim()) return raw;
+    if (typeof raw === "number" && Number.isFinite(raw)) return String(raw);
+    return null;
+  };
+
+  const parseAutoFromSearch = (search: unknown): boolean => {
+    if (!search || typeof search !== "object") return false;
+    const raw = (search as Record<string, unknown>).auto;
+    if (raw === true) return true;
+    if (raw === 1) return true;
+    if (typeof raw === "string") {
+      const v = raw.trim().toLowerCase();
+      return v === "1" || v === "true" || v === "yes";
+    }
+    return false;
+  };
+
+  const desiredPlanId = parsePlanIdFromSearch(location.current.search);
+  const autoSubscribe = parseAutoFromSearch(location.current.search);
+  const autoSubscribeAttemptedRef = useRef<string | null>(null);
+
   // Allow deep-linking into a specific onboarding step (e.g. vendors subscribing later: ?step=3)
   useEffect(() => {
     const desired = parseStepFromSearch(location.current.search);
@@ -160,6 +184,57 @@ const VendorAccount: React.FC = () => {
     setStep(desired);
     // Only run when URL/search changes or token becomes available.
   }, [location.current.search, token]);
+
+  // If a plan is provided in the URL (e.g. from an Upgrade action), preselect it.
+  useEffect(() => {
+    if (step !== 3) return;
+    if (!desiredPlanId) return;
+    if (!plans || plans.length === 0) return;
+
+    const match = plans.find((p) => p.id === desiredPlanId);
+    if (!match) return;
+    if (selectedPlan?.id === match.id) return;
+    setSelectedPlan(match);
+  }, [step, desiredPlanId, plans, selectedPlan?.id]);
+
+  // Optionally auto-subscribe when deep-linked with auto=1 (after plan is selected).
+  // This lets callers (like Settings->Upgrade) show their own plan picker modal first,
+  // then continue with the existing subscription flow.
+  useEffect(() => {
+    if (step !== 3) return;
+    if (!autoSubscribe) return;
+    if (!desiredPlanId) return;
+    if (!selectedPlan || selectedPlan.id !== desiredPlanId) return;
+    if (subscriptionId) return;
+    if (subLoading) return;
+
+    const key = desiredPlanId;
+    if (autoSubscribeAttemptedRef.current === key) return;
+    autoSubscribeAttemptedRef.current = key;
+
+    setSubscribeError(null);
+
+    (async () => {
+      try {
+        const res = await subscribePlan({ package: selectedPlan.id }).unwrap();
+        setSubscriptionId(res.id);
+        toast.success("Proceed to make payment");
+        setStep(4);
+      } catch (err: unknown) {
+        const msg = extractErrorMessage(err, "Subscription Failed");
+        setSubscribeError(msg);
+        toast.error(msg);
+      }
+    })();
+  }, [
+    step,
+    autoSubscribe,
+    desiredPlanId,
+    selectedPlan,
+    subscriptionId,
+    subLoading,
+    subscribePlan,
+  ]);
 
   // If Paystack redirects back to this page, auto-check the last pending reference
   // so users don't need to manually click "Check status".
