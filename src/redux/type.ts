@@ -83,6 +83,8 @@ export interface Plan {
   description: string;
   can_create_product: boolean;
   can_create_service: boolean;
+  max_products?: number;
+  max_services?: number;
 }
 
 export interface Product {
