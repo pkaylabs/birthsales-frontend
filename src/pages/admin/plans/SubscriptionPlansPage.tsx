@@ -25,11 +25,12 @@ import {
   Checkbox,
 } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material/Select";
-import { Add, Delete, Info } from "@mui/icons-material";
+import { Add, Delete, Edit, Info } from "@mui/icons-material";
 
 import {
   useGetPlansQuery,
   useAddPlanMutation,
+  useUpdatePlanMutation,
   useDeletePlanMutation,
 } from "@/redux/features/plans/plansApi";
 
@@ -40,15 +41,34 @@ type ChangeEventType =
   | SelectChangeEvent<string>;
 
 export default function SubscriptionPlansPage() {
+  const clampPositiveInt = (value: unknown, fallback: number) => {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return fallback;
+    return Math.max(1, Math.trunc(n));
+  };
+
+  const getErrorMessage = (error: unknown) => {
+    if (!error || typeof error !== "object") return "Operation Failed.";
+
+    const anyErr = error as any;
+    const data = anyErr?.data;
+    if (typeof data === "string" && data.trim()) return data;
+    if (typeof data?.message === "string" && data.message.trim()) return data.message;
+    if (typeof data?.detail === "string" && data.detail.trim()) return data.detail;
+    if (typeof anyErr?.error === "string" && anyErr.error.trim()) return anyErr.error;
+
+    return "Operation Failed.";
+  };
+
   const {
     data: plans = [],
     isLoading: isFetching,
     isError,
   } = useGetPlansQuery();
   const [addPlan, { isLoading: isAdding }] = useAddPlanMutation();
+  const [updatePlan, { isLoading: isUpdating }] = useUpdatePlanMutation();
   const [deletePlan, { isLoading: isDeleting }] = useDeletePlanMutation();
 
-  // Delete confirmation dialog state
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [planToDelete, setPlanToDelete] = useState<Plan | null>(null);
 
@@ -58,8 +78,8 @@ export default function SubscriptionPlansPage() {
     "success"
   );
 
-  // Dialog state and form state
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [viewingPlan, setViewingPlan] = useState<Plan | null>(null);
   const [form, setForm] = useState<Omit<Plan, "id">>({
     name: "",
@@ -68,10 +88,12 @@ export default function SubscriptionPlansPage() {
     description: "",
     can_create_product: false,
     can_create_service: false,
+    max_products: 5,
+    max_services: 5,
   });
 
-  // Handlers
   const openAdd = () => {
+    setEditingPlanId(null);
     setForm({
       name: "",
       price: "0",
@@ -79,6 +101,23 @@ export default function SubscriptionPlansPage() {
       description: "",
       can_create_product: false,
       can_create_service: false,
+      max_products: 5,
+      max_services: 5,
+    });
+    setDialogOpen(true);
+  };
+
+  const openEdit = (plan: Plan) => {
+    setEditingPlanId(plan.id);
+    setForm({
+      name: plan.name,
+      price: plan.price ?? "0",
+      interval: plan.interval ?? "month",
+      description: plan.description ?? "",
+      can_create_product: !!plan.can_create_product,
+      can_create_service: !!plan.can_create_service,
+      max_products: Math.max(1, Math.trunc(Number(plan.max_products ?? 5))),
+      max_services: Math.max(1, Math.trunc(Number(plan.max_services ?? 5))),
     });
     setDialogOpen(true);
   };
@@ -87,6 +126,25 @@ export default function SubscriptionPlansPage() {
 
   const onChange = (e: ChangeEventType) => {
     const { name, value } = e.target;
+
+    if (name === "max_products") {
+      const n = clampPositiveInt(value, 5);
+      setForm((f) => ({
+        ...f,
+        max_products: n,
+      }));
+      return;
+    }
+
+    if (name === "max_services") {
+      const n = clampPositiveInt(value, 5);
+      setForm((f) => ({
+        ...f,
+        max_services: n,
+      }));
+      return;
+    }
+
     setForm((f) => ({
       ...f,
       [name]: value,
@@ -102,15 +160,26 @@ export default function SubscriptionPlansPage() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log(form);
     try {
-      await addPlan(form).unwrap();
-      setToastMessage("Plan added successfully!");
+      const normalizedForm: Omit<Plan, "id"> = {
+        ...form,
+        price: String(form.price ?? "0"),
+        max_products: clampPositiveInt(form.max_products ?? 5, 5),
+        max_services: clampPositiveInt(form.max_services ?? 5, 5),
+      };
+
+      if (editingPlanId) {
+        await updatePlan({ id: editingPlanId, ...normalizedForm }).unwrap();
+        setToastMessage("Plan updated successfully!");
+      } else {
+        await addPlan(normalizedForm).unwrap();
+        setToastMessage("Plan added successfully!");
+      }
       setToastSeverity("success");
       setToastOpen(true);
       close();
     } catch (error) {
-      setToastMessage("Operation Failed.");
+      setToastMessage(getErrorMessage(error));
       setToastSeverity("error");
       setToastOpen(true);
       console.error("Submission error", error);
@@ -139,7 +208,7 @@ export default function SubscriptionPlansPage() {
     }
   };
 
-  const loadingOverlay = isFetching || isAdding || isDeleting;
+  const loadingOverlay = isFetching || isAdding || isUpdating || isDeleting;
 
   return (
     <Box p={4}>
@@ -192,6 +261,8 @@ export default function SubscriptionPlansPage() {
               <TableCell>Name</TableCell>
               <TableCell>Price</TableCell>
               <TableCell>Interval</TableCell>
+              <TableCell>Max Products</TableCell>
+              <TableCell>Max Services</TableCell>
               <TableCell>Description</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
@@ -202,10 +273,15 @@ export default function SubscriptionPlansPage() {
                 <TableCell>{plan.name}</TableCell>
                 <TableCell>GHC{plan.price}</TableCell>
                 <TableCell>{plan.interval}</TableCell>
+                <TableCell>{plan.max_products ?? "-"}</TableCell>
+                <TableCell>{plan.max_services ?? "-"}</TableCell>
                 <TableCell>{plan.description}</TableCell>
                 <TableCell align="right">
                   <IconButton onClick={() => setViewingPlan(plan)}>
                     <Info />
+                  </IconButton>
+                  <IconButton onClick={() => openEdit(plan)}>
+                    <Edit />
                   </IconButton>
                   <IconButton onClick={() => requestDelete(plan)}>
                     <Delete />
@@ -217,9 +293,8 @@ export default function SubscriptionPlansPage() {
         </Table>
       )}
 
-      {/* Add Dialog */}
       <Dialog open={dialogOpen} onClose={close} fullWidth maxWidth="sm">
-        <DialogTitle>{"Add Plan"}</DialogTitle>
+        <DialogTitle>{editingPlanId ? "Edit Plan" : "Add Plan"}</DialogTitle>
         <form onSubmit={onSubmit}>
           <DialogContent dividers>
             <Box display={"flex"} flexDirection={"column"} gap={2}>
@@ -231,6 +306,7 @@ export default function SubscriptionPlansPage() {
                 fullWidth
                 required
               />
+
               <FormControlLabel
                 control={
                   <Checkbox
@@ -245,6 +321,17 @@ export default function SubscriptionPlansPage() {
                 }
                 label="Can create product"
               />
+              <TextField
+                name="max_products"
+                label="Max Products"
+                type="number"
+                value={form.max_products ?? 5}
+                onChange={onChange}
+                fullWidth
+                required
+                inputProps={{ min: 1, step: 1 }}
+              />
+
               <FormControlLabel
                 control={
                   <Checkbox
@@ -260,6 +347,17 @@ export default function SubscriptionPlansPage() {
                 label="Can create service"
               />
               <TextField
+                name="max_services"
+                label="Max Services"
+                type="number"
+                value={form.max_services ?? 5}
+                onChange={onChange}
+                fullWidth
+                required
+                inputProps={{ min: 1, step: 1 }}
+              />
+
+              <TextField
                 name="price"
                 label="Price"
                 type="number"
@@ -268,6 +366,7 @@ export default function SubscriptionPlansPage() {
                 fullWidth
                 required
               />
+
               <FormControl fullWidth>
                 <InputLabel>Interval</InputLabel>
                 <Select
@@ -278,6 +377,7 @@ export default function SubscriptionPlansPage() {
                   <MenuItem value="month">Month</MenuItem>
                 </Select>
               </FormControl>
+
               <TextField
                 name="description"
                 label="Description"
@@ -292,50 +392,110 @@ export default function SubscriptionPlansPage() {
           <DialogActions>
             <Button onClick={close}>Cancel</Button>
             <Button type="submit" variant="contained">
-              {isAdding ? "Creating..." : "Create Plan"}
+              {editingPlanId
+                ? isUpdating
+                  ? "Saving..."
+                  : "Save Changes"
+                : isAdding
+                  ? "Creating..."
+                  : "Create Plan"}
             </Button>
           </DialogActions>
         </form>
       </Dialog>
-      {/* Plan details */}
-      <Dialog
-        open={!!viewingPlan}
-        onClose={() => setViewingPlan(null)}
-        fullWidth
-      >
+
+      <Dialog open={!!viewingPlan} onClose={() => setViewingPlan(null)} fullWidth>
         <DialogTitle>Plan Details</DialogTitle>
         <DialogContent dividers>
           {viewingPlan && (
             <Box display="flex" flexDirection="column" gap={2}>
-              <Typography>
-                <strong>Name:</strong> {viewingPlan.name}
-              </Typography>
-              <Typography>
-                <strong>Price:</strong> GHC{viewingPlan.price}
-              </Typography>
-              <Typography>
-                <strong>Interval:</strong> {viewingPlan.interval}
-              </Typography>
-              <Typography>
-                <strong>Description:</strong> {viewingPlan.description}
-              </Typography>
-              <Typography>
-                <strong>Can Create a product:</strong>{" "}
-                {viewingPlan.can_create_product ? "Yes" : "No"}
-              </Typography>
-              <Typography>
-                <strong>Can Create a service:</strong>{" "}
-                {viewingPlan.can_create_service ? "Yes" : "No"}
-              </Typography>
+              <Box
+                display="grid"
+                gridTemplateColumns={{ xs: "1fr", sm: "1fr 1fr" }}
+                gap={2}
+              >
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Name
+                  </Typography>
+                  <Typography fontWeight={600}>{viewingPlan.name}</Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Price
+                  </Typography>
+                  <Typography fontWeight={600}>GHC{viewingPlan.price}</Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Interval
+                  </Typography>
+                  <Typography fontWeight={600}>{viewingPlan.interval}</Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Description
+                  </Typography>
+                  <Typography>{viewingPlan.description || "-"}</Typography>
+                </Box>
+              </Box>
+
+              <Box>
+                <Typography fontWeight={700} gutterBottom>
+                  Capabilities
+                </Typography>
+                <Box
+                  display="grid"
+                  gridTemplateColumns={{ xs: "1fr", sm: "1fr 1fr" }}
+                  gap={2}
+                >
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Can create products
+                    </Typography>
+                    <Typography fontWeight={600}>
+                      {viewingPlan.can_create_product ? "Yes" : "No"}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Max products: {viewingPlan.max_products ?? "-"}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Can create services
+                    </Typography>
+                    <Typography fontWeight={600}>
+                      {viewingPlan.can_create_service ? "Yes" : "No"}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Max services: {viewingPlan.max_services ?? "-"}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
+          <Button
+            onClick={() => {
+              if (viewingPlan) {
+                openEdit(viewingPlan);
+                setViewingPlan(null);
+              }
+            }}
+            disabled={!viewingPlan}
+          >
+            Edit
+          </Button>
           <Button onClick={() => setViewingPlan(null)}>Close</Button>
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
         <DialogTitle>Confirm Deletion</DialogTitle>
         <DialogContent>
