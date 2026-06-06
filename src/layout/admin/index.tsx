@@ -33,6 +33,7 @@ import { classNames } from "@/utils";
 import { Link, Outlet, useNavigate } from "react-location";
 import {
   ADMIN_DELIVERY_FEES,
+  ADMIN_COUPONS,
   ADMIN_HOME,
   ADMIN_LOCATIONS,
   ADMIN_PAYMENTS,
@@ -72,6 +73,12 @@ const baseNavigation = [
     name: "Bookings",
     href: "/bookings",
     icon: CalendarDaysIcon,
+    current: false,
+  },
+  {
+    name: "Coupons",
+    href: ADMIN_COUPONS,
+    icon: TagIcon,
     current: false,
   },
 
