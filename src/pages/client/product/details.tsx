@@ -89,6 +89,8 @@ const ProductDetails: React.FC = () => {
   const mainImageSrc = selectedImage
     ? resolveImageUrl(selectedImage)
     : resolveProductImageUrl(product);
+  const stockQuantity = product?.stock_quantity ?? 0;
+  const isOutOfStock = !product?.in_stock || stockQuantity <= 0;
 
   const handleAddToCart = () => {
     if (!product) return toast.error("Product unavailable");
@@ -104,7 +106,7 @@ const ProductDetails: React.FC = () => {
         )
       : [];
 
-    if (!product.in_stock) {
+    if (isOutOfStock) {
       toast.error("This product is out of stock");
       return;
     }
@@ -214,8 +216,20 @@ const ProductDetails: React.FC = () => {
           <span className="text-gray-500">
             ({(product as any).ratings_count ?? product.reviews_count ?? 0} reviews)
           </span>
-          <span className="text-green-600 font-medium">
-            {product.in_stock ? "In Stock" : "Out of Stock"}
+          <span
+            className={`font-medium ${
+              isOutOfStock
+                ? "text-red-600"
+                : product.low_stock
+                  ? "text-amber-600"
+                  : "text-green-600"
+            }`}
+          >
+            {isOutOfStock
+              ? "Out of Stock"
+              : product.low_stock
+                ? `Low Stock: ${stockQuantity} left`
+                : `In Stock: ${stockQuantity} left`}
           </span>
         </div>
         <p className="text-2xl font-bold">GHC{product.price}</p>
@@ -277,9 +291,10 @@ const ProductDetails: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <button
             onClick={handleAddToCart}
-            className="flex-1 bg-rose-500 hover:bg-rose-600 text-white py-3 rounded-lg transition"
+            disabled={isOutOfStock}
+            className="flex-1 bg-rose-500 hover:bg-rose-600 text-white py-3 rounded-lg transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            Add to Cart
+            {isOutOfStock ? "Out of Stock" : "Add to Cart"}
           </button>
           <button className="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-lg flex items-center justify-center">
             <MdOutlineFavoriteBorder className="mr-2" /> Add to Wishlist
