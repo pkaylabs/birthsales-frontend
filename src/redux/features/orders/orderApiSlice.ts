@@ -36,6 +36,7 @@ export interface PlaceOrderRequest {
   location: string;
   customer_phone: string;
   other_location?: string;
+  coupon_code?: string;
 }
 
 export interface OrderResponse {
