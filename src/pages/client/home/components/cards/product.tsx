@@ -29,12 +29,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   } = product;
 
   const imageSrc = resolveProductImageUrl(product);
+  const stockQuantity = product.stock_quantity ?? 0;
+  const isOutOfStock = !product.in_stock || stockQuantity <= 0;
 
   const handleView = () => {
     navigate({ to: `/product-details/${id}` });
   };
 
   const handleAddToCart = () => {
+    if (isOutOfStock) {
+      toast.error("This product is out of stock");
+      return;
+    }
+
     const hasColors =
       Array.isArray(product.available_colors) &&
       product.available_colors.some((c) => (c ?? "").trim().length > 0);
@@ -98,19 +105,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Add to Cart on hover */}
         <motion.button
           onClick={handleAddToCart}
+          disabled={isOutOfStock}
           initial={{ y: "100%", opacity: 0 }}
           whileHover={{ y: 0, opacity: 1 }}
           animate={{ y: "100%", opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.3 }}
-          className="
-            absolute bottom-0 left-0 w-full bg-black text-white
+          className={`
+            absolute bottom-0 left-0 w-full text-white
             py-3 sm:py-2 lg:py-3
             text-sm sm:text-base md:text-lg
             hidden group-hover:flex items-center justify-center
-          "
+            disabled:cursor-not-allowed
+            ${isOutOfStock ? "bg-gray-500" : "bg-black"}
+          `}
         >
-          Add to Cart
+          {isOutOfStock ? "Out of Stock" : "Add to Cart"}
         </motion.button>
       </motion.div>
 
@@ -132,6 +142,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <h4 className="font-medium text-base sm:text-lg md:text-xl text-gray-500">
           {vendor_name}
         </h4>
+        <p className={`mt-1 text-sm ${isOutOfStock ? "text-red-600" : product.low_stock ? "text-amber-600" : "text-green-600"}`}>
+          {isOutOfStock
+            ? "Out of stock"
+            : product.low_stock
+              ? `Low stock: ${stockQuantity} left`
+              : "In stock"}
+        </p>
         <div className="mt-2 flex items-center space-x-2">
           <div className="flex space-x-1">
             {[...Array(5)].map((_, idx) => (
