@@ -7,6 +7,10 @@ import {
   usePaystackInitializePaymentMutation,
   usePlaceOrderMutation,
 } from "@/redux/features/orders/orderApiSlice";
+import {
+  useValidateCustomerCouponMutation,
+  ValidateCustomerCouponResponse,
+} from "@/redux/features/coupons/couponsApi";
 import { useGetServiceFeeQuery } from "@/redux/features/serviceFees/serviceFeesApi";
 import type { Location } from "@/redux/type";
 import { CircularProgress } from "@mui/material";
@@ -107,6 +111,9 @@ const Checkout = () => {
   const [locationId, setLocationId] = useState("");
   const [otherLocation, setOtherLocation] = useState("");
   const [customerPhone, setcustomerPhone] = useState("");
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] =
+    useState<ValidateCustomerCouponResponse | null>(null);
 
   const { data: locationsData, isLoading: locationsLoading } =
     useGetLocationsQuery();
@@ -118,6 +125,8 @@ const Checkout = () => {
   } = useGetServiceFeeQuery();
 
   const [placeOrder, { isLoading: placing }] = usePlaceOrderMutation();
+  const [validateCoupon, { isLoading: validatingCoupon }] =
+    useValidateCustomerCouponMutation();
   const [initializePaystack, { isLoading: initLoading }] =
     usePaystackInitializePaymentMutation();
   const [checkPaystackStatus, { isLoading: statusLoading }] =
@@ -162,7 +171,8 @@ const Checkout = () => {
     return 0;
   })();
 
-  const total = subTotal + deliveryFee + serviceFeeAmount;
+  const discountAmount = appliedCoupon ? Number(appliedCoupon.discount_amount) || 0 : 0;
+  const total = Math.max(0, subTotal - discountAmount) + deliveryFee + serviceFeeAmount;
 
   const serviceFeeLabel = (() => {
     if (serviceFeeLoading) return "Service fee";
@@ -269,7 +279,35 @@ const Checkout = () => {
 
   const handleRemove = (key: string) => {
     dispatch(removeFromCart(key));
+    setAppliedCoupon(null);
     toast.success("Removed item from cart");
+  };
+
+  const handleApplyCoupon = async () => {
+    const code = couponCode.trim();
+    if (!code) {
+      toast.error("Enter a coupon code");
+      return;
+    }
+    if (!items.length) {
+      toast.error("Your cart is empty");
+      return;
+    }
+    try {
+      const result = await validateCoupon({
+        code,
+        items: items.map(({ product, quantity }) => ({
+          product: Number(product.id),
+          quantity,
+        })),
+      }).unwrap();
+      setAppliedCoupon(result);
+      setCouponCode(result.coupon.code);
+      toast.success("Coupon applied");
+    } catch (error) {
+      setAppliedCoupon(null);
+      toast.error(extractErrorMessage(error, "Invalid coupon"));
+    }
   };
 
   const handlePlaceOrder = async () => {
@@ -299,6 +337,20 @@ const Checkout = () => {
       return;
     }
 
+    const invalidStockItem = items.find(({ product, quantity }) => {
+      const available = product.stock_quantity ?? 0;
+      return !product.in_stock || available <= 0 || quantity > available;
+    });
+    if (invalidStockItem) {
+      const available = invalidStockItem.product.stock_quantity ?? 0;
+      toast.error(
+        available <= 0
+          ? `${invalidStockItem.product.name} is out of stock`
+          : `Only ${available} unit(s) available for ${invalidStockItem.product.name}`
+      );
+      return;
+    }
+
     let orderIds: number[] = [];
     try {
       const res = await placeOrder({
@@ -309,7 +361,8 @@ const Checkout = () => {
           size,
         })),
         location: locationId,
-        customer_phone: customerPhone,
+          customer_phone: customerPhone,
+          ...(appliedCoupon ? { coupon_code: appliedCoupon.coupon.code } : {}),
           ...(isOtherSelected && otherLocation.trim()
             ? { other_location: otherLocation.trim() }
             : {}),
@@ -544,11 +597,48 @@ const Checkout = () => {
               </div>
             )}
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Coupon Code
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded p-2 uppercase"
+                  placeholder="Enter coupon"
+                  value={couponCode}
+                  onChange={(e) => {
+                    setCouponCode(e.target.value);
+                    setAppliedCoupon(null);
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyCoupon}
+                  disabled={validatingCoupon || !items.length}
+                  className="px-4 py-2 rounded bg-gray-900 text-white disabled:bg-gray-400"
+                >
+                  {validatingCoupon ? "Checking..." : "Apply"}
+                </button>
+              </div>
+              {appliedCoupon && (
+                <p className="mt-1 text-sm text-green-600">
+                  {appliedCoupon.coupon.code} applied.
+                </p>
+              )}
+            </div>
+
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span>GHC{Math.round(subTotal)}</span>
               </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>Coupon discount</span>
+                  <span>-GHC{discountAmount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span>Delivery fee</span>
                 <span>GHC{Math.round(deliveryFee)}</span>
