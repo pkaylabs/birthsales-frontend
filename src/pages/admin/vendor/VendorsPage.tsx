@@ -143,96 +143,7 @@ export default function VendorsPage() {
             </div>
 
             {/* Add New Vendor Dialog */}
-            {/* <Dialog
-              open={dialogOpen}
-              onClose={() => setDialogOpen(false)}
-              fullWidth
-              maxWidth="sm"
-            >
-              <DialogTitle>{"Add New Vendor"}</DialogTitle>
-              <DialogContent>
-                <Box display="flex" flexDirection="column" gap={2}>
-                  {users && (
-             <FormControl fullWidth>
-               <InputLabel>User Type</InputLabel>
-               <Select
-                 value={current.user}
-                 label="User Type"
-                 onChange={(e) =>
-                    setCurrent((f) => ({
-                     ...f,
-                     user: Number(e.target.value),
-                   }))
-                 }
-               >
-                 {users.map((user) => (
-                   <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>
-                 ))}
-               </Select>
-             </FormControl>
-           )}
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Name"
-                    value={current.vendor_name}
-                    onChange={(e) =>
-                      setCurrent({ ...current, vendor_name: e.target.value })
-                    }
-                  />
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Email"
-                    value={current.vendor_email}
-                    onChange={(e) =>
-                      setCurrent({ ...current, vendor_email: e.target.value })
-                    }
-                  />
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Phone"
-                    value={current.vendor_phone}
-                    onChange={(e) =>
-                      setCurrent({ ...current, vendor_phone: e.target.value })
-                    }
-                  />
-                  <TextField
-                    fullWidth
-                    margin="dense"
-                    label="Address"
-                    value={current.vendor_address}
-                    onChange={(e) =>
-                      setCurrent({
-                        ...current,
-                        vendor_address: e.target.value,
-                      })
-                    }
-                  />
-
-                  <Button variant="contained" component="label">
-                    Choose Avatar{" "}
-                    <input
-                      hidden
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarChange}
-                    />
-                  </Button>
-                  {currentForm.avatarPreview && (
-                    <img
-                      src={currentForm.avatarPreview}
-                      alt="preview"
-                      className="w-20 h-20 object-cover rounded-full"
-                    />
-                  )}
-                  <Button variant="contained" onClick={handleSave}>
-                    {"Create Vendor"}
-                  </Button>
-                </Box>
-              </DialogContent>
-            </Dialog> */}
+       
           </div>
           <TableContainer component={Paper}>
             {isLoading ? (
@@ -247,7 +158,7 @@ export default function VendorsPage() {
                     <TableCell>Name</TableCell>
                     <TableCell>Email</TableCell>
                     <TableCell>Phone</TableCell>
-                    <TableCell>Type</TableCell>
+                    <TableCell>Address</TableCell>
                     <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
@@ -317,7 +228,7 @@ export default function VendorsPage() {
                 <strong>Phone:</strong> {viewUser.vendor_phone}
               </Typography>
               <Typography>
-                <strong>Type:</strong> {viewUser.vendor_address}
+                <strong>Address:</strong> {viewUser.vendor_address}
               </Typography>
             </Box>
           )}
