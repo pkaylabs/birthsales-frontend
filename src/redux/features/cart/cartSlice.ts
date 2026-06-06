@@ -32,12 +32,15 @@ const cartSlice = createSlice({
       }>
     ) {
       const { product, quantity = 1, color, size } = action.payload;
+      const available =
+        product.stock_quantity ?? (product.in_stock ? Number.MAX_SAFE_INTEGER : 0);
+      if (available <= 0) return;
       const key = `${Number(product.id)}|${color ?? ""}|${size ?? ""}`;
       const existing = state.items.find((i) => i.key === key);
       if (existing) {
-        existing.quantity += quantity;
+        existing.quantity = Math.min(existing.quantity + quantity, available);
       } else {
-        state.items.push({ key, product, quantity, color, size });
+        state.items.push({ key, product, quantity: Math.min(quantity, available), color, size });
       }
     },
     removeFromCart(state, action: PayloadAction<string>) {
@@ -49,7 +52,10 @@ const cartSlice = createSlice({
     ) {
       const idx = state.items.findIndex((i) => i.key === action.payload.key);
       if (idx >= 0) {
-        state.items[idx].quantity = action.payload.quantity;
+        const available =
+          state.items[idx].product.stock_quantity ??
+          (state.items[idx].product.in_stock ? Number.MAX_SAFE_INTEGER : 0);
+        state.items[idx].quantity = Math.max(1, Math.min(action.payload.quantity, available));
       }
     },
     clearCart(state) {
