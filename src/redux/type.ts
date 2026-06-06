@@ -87,19 +87,6 @@ export interface Plan {
   max_services?: number;
 }
 
-export interface Product {
-  id: string;
-  business_id: number;
-  name: string;
-  category: string;
-  price: number;
-  qty: number;
-  date_added: string;
-  main_image_url: string;
-  vendor_name: string;
-  status: "pending" | "approved";
-}
-
 export interface Service {
   id: string;
   name: string;
@@ -184,22 +171,29 @@ export interface CategoryForm {
 export interface Product {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   price: number;
-  category: string;
+  category: string | number;
   in_stock: boolean;
+  stock_quantity: number;
+  low_stock_threshold?: number;
+  low_stock?: boolean;
   is_deleted: boolean;
-  vendor: string;
-  image?: string;
+  vendor: string | number;
+  vendor_id?: string;
+  vendor_name: string;
+  image?: string | null;
+  main_image_url?: string | null;
   is_published: boolean;
   created_at: string;
   updated_at: string;
   original_price?: number;
   discount_percent?: number;
-  rating?: number;
+  rating?: number | null;
+  ratings_count?: number;
   reviews_count?: number;
-  available_sizes?: string[];
-  available_colors?: string[];
+  available_sizes?: string[] | null;
+  available_colors?: string[] | null;
 }
 
 export interface ProductForm {
