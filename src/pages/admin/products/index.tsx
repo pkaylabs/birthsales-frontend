@@ -223,6 +223,7 @@ export default function ProductsPage() {
     vendor: "",
     vendor_id: "",
     in_stock: true as boolean,
+    stock_quantity: "0",
     imageFile: null as File | null,
     imagePreview: "",
     available_sizes: [] as string[],
@@ -300,6 +301,7 @@ export default function ProductsPage() {
       fd.append("vendor_id", form.vendor_id);
     }
     fd.append("in_stock", String(form.in_stock));
+    fd.append("stock_quantity", form.stock_quantity);
     fd.append("available_sizes", JSON.stringify(form.available_sizes));
     fd.append("available_colors", JSON.stringify(form.available_colors));
     if (form.imageFile) {
@@ -355,6 +357,7 @@ export default function ProductsPage() {
         return found?.vendor_id ?? "";
       })(),
       in_stock: Boolean(p.in_stock),
+      stock_quantity: p.stock_quantity != null ? String(p.stock_quantity) : "0",
       imageFile: null,
       imagePreview: (() => {
         const main = p.image ?? (p as unknown as { main_image_url?: string }).main_image_url;
@@ -380,6 +383,7 @@ export default function ProductsPage() {
       if (form.vendor_id) fd.append("vendor_id", form.vendor_id);
     }
     fd.append("in_stock", String(form.in_stock));
+    fd.append("stock_quantity", form.stock_quantity);
     fd.append("available_sizes", JSON.stringify(form.available_sizes));
     fd.append("available_colors", JSON.stringify(form.available_colors));
     if (form.imageFile) {
@@ -530,6 +534,22 @@ export default function ProductsPage() {
                 setForm((f) => ({ ...f, price: e.target.value }))
               }
             />
+            <TextField
+              label="Stock Quantity"
+              fullWidth
+              type="number"
+              inputProps={{ min: 0 }}
+              value={form.stock_quantity}
+              onChange={(e) => {
+                const value = e.target.value;
+                const quantity = Math.max(0, Number(value || 0));
+                setForm((f) => ({
+                  ...f,
+                  stock_quantity: value,
+                  in_stock: quantity > 0,
+                }));
+              }}
+            />
             <FormControl fullWidth>
               <InputLabel>Category</InputLabel>
               <Select
@@ -667,6 +687,22 @@ export default function ProductsPage() {
               onChange={(e) =>
                 setForm((f) => ({ ...f, price: e.target.value }))
               }
+            />
+            <TextField
+              label="Stock Quantity"
+              fullWidth
+              type="number"
+              inputProps={{ min: 0 }}
+              value={form.stock_quantity}
+              onChange={(e) => {
+                const value = e.target.value;
+                const quantity = Math.max(0, Number(value || 0));
+                setForm((f) => ({
+                  ...f,
+                  stock_quantity: value,
+                  in_stock: quantity > 0,
+                }));
+              }}
             />
             <FormControl fullWidth>
               <InputLabel>Category</InputLabel>
@@ -885,10 +921,17 @@ export default function ProductsPage() {
               </Box>
               <Box>
                 <Typography variant="subtitle2" color="textSecondary">
-                  In Stock
+                  Stock Quantity
+                </Typography>
+                <Typography>{detailProduct?.stock_quantity ?? 0}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Stock Status
                 </Typography>
                 <Typography>
-                  {detailProduct?.in_stock ? "Yes" : "No"}
+                  {(detailProduct?.stock_quantity ?? 0) > 0 ? "In stock" : "Out of stock"}
+                  {detailProduct?.low_stock ? " (Low)" : ""}
                 </Typography>
               </Box>
               <Box gridColumn="1 / -1">
@@ -1041,7 +1084,10 @@ export default function ProductsPage() {
 
                   {/* <TableCell>{p.vendor}</TableCell> */}
                   <TableCell>GHC{p.price}</TableCell>
-                  <TableCell>{p.in_stock ? "Yes" : "No"}</TableCell>
+                  <TableCell>
+                    {p.stock_quantity ?? 0}
+                    {p.low_stock ? " (Low)" : ""}
+                  </TableCell>
                   <TableCell>{p.is_published ? "✅" : "⏳"}</TableCell>
                   <TableCell>{p.is_deleted ? "Yes" : "No"}</TableCell>
                   <TableCell>
