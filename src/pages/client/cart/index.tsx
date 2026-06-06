@@ -21,7 +21,17 @@ const CartPage = () => {
   };
 
   const handleQuantityChange = (key: string, qty: number) => {
-    if (qty < 0) return;
+    if (qty < 1) return;
+    const item = items.find((i) => i.key === key);
+    const available = item?.product.stock_quantity ?? 0;
+    if (available <= 0) {
+      toast.error("This product is out of stock");
+      return;
+    }
+    if (qty > available) {
+      toast.info(`Only ${available} unit(s) available`);
+      return;
+    }
     dispatch(updateQuantity({ key, quantity: qty }));
     toast.info(`Quantity updated to ${qty}`);
   };
@@ -63,7 +73,10 @@ const CartPage = () => {
             </tr>
           </thead>
           <tbody>
-            {items.length ? items.map(({ key, product, quantity, color, size }) => (
+            {items.length ? items.map(({ key, product, quantity, color, size }) => {
+              const available = product.stock_quantity ?? 0;
+              const isOutOfStock = !product.in_stock || available <= 0;
+              return (
               <tr key={key} className="even:bg-gray-50">
                 <td className="p-3 flex items-center gap-2">
                   <img
@@ -80,6 +93,13 @@ const CartPage = () => {
                         {size ? `Size: ${size}` : ""}
                       </div>
                     )}
+                    <div className={`text-xs ${isOutOfStock ? "text-red-600" : product.low_stock ? "text-amber-600" : "text-gray-500"}`}>
+                      {isOutOfStock
+                        ? "Out of stock"
+                        : product.low_stock
+                          ? `Low stock: ${available} left`
+                          : `${available} available`}
+                    </div>
                   </div>
                 </td>
                 <td className="p-3 text-right hidden sm:table-cell">
@@ -91,7 +111,7 @@ const CartPage = () => {
                       onClick={() =>
                         handleQuantityChange(key, quantity - 1)
                       }
-                      disabled={quantity === 0}
+                      disabled={quantity <= 1}
                       className="px-2 py-1 hover:bg-gray-200 disabled:opacity-50"
                     >
                       −
@@ -101,6 +121,7 @@ const CartPage = () => {
                       onClick={() =>
                         handleQuantityChange(key, quantity + 1)
                       }
+                      disabled={quantity >= available || isOutOfStock}
                       className="px-2 py-1 hover:bg-gray-200"
                     >
                       +
@@ -121,7 +142,8 @@ const CartPage = () => {
                   </button>
                 </td>
               </tr>
-            )) : (
+              );
+            }) : (
               <tr>
                 <td colSpan={5} className="p-6 text-center text-gray-500">
                   Your cart is empty.
